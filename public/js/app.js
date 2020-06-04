@@ -1945,17 +1945,61 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       loading: false,
       usuario: '',
+      pass: '',
+      show: false,
+      recordar: false,
       usuarioRules: [function (v) {
         return !!v || 'El usuario es obligatorio';
       }, function (v) {
-        return v && v.length <= 6 || 'Debe escribir almenos 6';
+        return v && v.length >= 6 || 'Debe escribir almenos 6';
+      }],
+      passRules: [function (v) {
+        return !!v || 'La contraseña es obligatorio';
+      }, function (v) {
+        return v && v.length >= 5 || 'Debe escribir almenos 5';
       }]
     };
+  },
+  methods: {
+    login: function login() {
+      this.loading = true;
+    }
   }
 });
 
@@ -37828,8 +37872,8 @@ var render = function() {
       _c("v-card-subtitle", { staticClass: "pb-0" }, [_vm._v("Inicia sesión")]),
       _vm._v(" "),
       _c(
-        "div",
-        { staticClass: "px-4" },
+        "v-col",
+        { staticClass: "py-0  px-4", attrs: { cols: "12", sm: "12" } },
         [
           _c("v-text-field", {
             attrs: {
@@ -37851,11 +37895,79 @@ var render = function() {
       ),
       _vm._v(" "),
       _c(
-        "v-card-actions",
-        { staticClass: "text-center" },
+        "v-col",
+        { staticClass: "px-4 py-0", attrs: { cols: "12", sm: "12" } },
         [
-          _c("v-btn", { attrs: { color: "white", icon: "mdi-floppy" } }, [
-            _vm._v("\n          Guardar\n      ")
+          _c("v-text-field", {
+            staticClass: "input-group--focused",
+            attrs: {
+              "append-icon": _vm.show ? "mdi-eye" : "mdi-eye-off",
+              rules: _vm.passRules,
+              type: _vm.show ? "text" : "password",
+              label: "Contraseña",
+              counter: 5,
+              required: ""
+            },
+            on: {
+              "click:append": function($event) {
+                _vm.show = !_vm.show
+              }
+            },
+            model: {
+              value: _vm.pass,
+              callback: function($$v) {
+                _vm.pass = $$v
+              },
+              expression: "pass"
+            }
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "v-col",
+        { staticClass: "px-4 py-0 mt-0", attrs: { cols: "12", sm: "12" } },
+        [
+          _c("v-checkbox", {
+            attrs: { label: "Recordarme" },
+            model: {
+              value: _vm.recordar,
+              callback: function($$v) {
+                _vm.recordar = $$v
+              },
+              expression: "recordar"
+            }
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "v-col",
+        { attrs: { cols: "12", sm: "12" } },
+        [
+          _c(
+            "v-card-actions",
+            [
+              _c(
+                "v-btn",
+                {
+                  staticClass: "px-0",
+                  attrs: { color: "primary", block: true }
+                },
+                [
+                  _c("v-icon", [_vm._v("mdi mdi-login-variant")]),
+                  _vm._v(" Ingresar\n          ")
+                ],
+                1
+              )
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c("v-btn", { attrs: { text: "", link: "", block: true } }, [
+            _vm._v("\n              Terminos y condiciones\n      ")
           ])
         ],
         1

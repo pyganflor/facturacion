@@ -14,7 +14,7 @@
 
     <v-card-subtitle class="pb-0">Inicia sesión</v-card-subtitle>
 
-    <div class="px-4">
+    <v-col cols="12" sm="12" class="py-0  px-4">
         <v-text-field
             v-model="usuario"
             :counter="6"
@@ -22,16 +22,47 @@
             label="Usuario"
             required
         />
-    </div>
+    </v-col>
 
-    <v-card-actions class=text-center>
+    <v-col cols="12" sm="12" class="px-4 py-0">
+        <v-text-field
+            :append-icon="show ? 'mdi-eye' : 'mdi-eye-off'"
+            :rules="passRules"
+            :type="show ? 'text' : 'password'"
+            label="Contraseña"
+            :counter="5"
+            v-model="pass"
+            class="input-group--focused"
+            @click:append="show = !show"
+            required
+        ></v-text-field>
+    </v-col>
+
+    <v-col cols="12" sm="12" class="px-4 py-0 mt-0">
+        <v-checkbox
+            v-model="recordar"
+            label="Recordarme"
+        ></v-checkbox>
+    </v-col>
+
+    <v-col cols="12" sm="12" >
+        <v-card-actions>
+            <v-btn
+                color="primary"
+                :block=true
+                class="px-0"
+            >
+                <v-icon>mdi mdi-login-variant</v-icon> Ingresar
+            </v-btn>
+        </v-card-actions>
         <v-btn
-            color="white"
-            icon='mdi-floppy'
-        >
-            Guardar
+                text
+                link
+                :block=true
+            >
+                Terminos y condiciones
         </v-btn>
-    </v-card-actions>
+    </v-col>
   </v-card>
 </template>
 
@@ -42,11 +73,24 @@
         data: () =>({
             loading:false,
             usuario: '',
+            pass:'',
+            show : false,
+            recordar : false,
             usuarioRules:[
                 v => !!v || 'El usuario es obligatorio',
-                v => (v && v.length <= 6) || 'Debe escribir almenos 6',
+                v => (v && v.length >= 6) || 'Debe escribir almenos 6'
+            ],
+            passRules:[
+                v => !!v || 'La contraseña es obligatorio',
+                v => (v && v.length >= 5) || 'Debe escribir almenos 5',
             ]
-        })
+        }),
+        methods:{
+
+            login(){
+                this.loading=true
+            }
+        }
 
 
     }
