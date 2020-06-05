@@ -1,14 +1,19 @@
 <?php
 
-use App\Http\Controllers\HomeController;
-use Illuminate\Support\Facades\{
-    Route,
-    Auth
-};
-
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', 'HomeController@index');
+Route::get('login', 'Auth\LoginController@showLoginForm');
+Route::post('login', 'Auth\LoginController@login')->name('login');
+Route::get('logout', 'Auth\LoginController@logout')->name('logout');
 
-Auth::routes();
 
-//Route::get('/home', 'HomeController@index')->name('home');
+//USUARIOS LOGUEADOS
+Route::group(['middleware' => 'auth'],function () {
+
+    Route::get('perfil','PerfilController@inicio');
+
+});
+
+
+//Auth::routes();

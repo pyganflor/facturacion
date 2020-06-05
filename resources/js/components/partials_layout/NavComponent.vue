@@ -1,166 +1,120 @@
 <template>
-  <v-app-bar
-    id="app-bar"
-    absolute
-    app
-    color="transparent"
-    flat
-    height="75"
-  >
-    <v-btn
-      class="mr-3"
-      elevation="1"
-      fab
-      small
-      @click="setDrawer"
+    <v-app-bar
+            id="app-bar"
+            absolute
+            app
+            color="primary"
+            flat
+            height="50"
     >
-      <v-icon v-if="drawer"> mdi-close </v-icon>
-      <v-icon v-else> mdi-dots-vertical </v-icon>
-    </v-btn>
-
-    <v-toolbar-title
-      class="hidden-sm-and-down font-weight-light"
-    />
-
-    <v-spacer />
-
-    <!--<v-text-field
-      :label="$t('search')"
-      color="secondary"
-      hide-details
-      style="max-width: 165px;"
-    >
-      <template
-        v-if="$vuetify.breakpoint.mdAndUp"
-        v-slot:append-outer
-      >
         <v-btn
-          class="mt-n2"
-          elevation="1"
-          fab
-          small
+                class="mr-3 white--text"
+                elevation="1"
+                fab
+                small
+                @click="setDrawer"
+                :depressed=true
+                color="transparent"
         >
-          <v-icon>mdi-magnify</v-icon>
+            <v-icon v-if="drawer"> mdi-close </v-icon>
+            <v-icon v-else> mdi-dots-vertical </v-icon>
         </v-btn>
-      </template>
-    </v-text-field>-->
 
-    <div class="mx-3" />
+        <v-toolbar-title
+                class="hidden-sm-and-down font-weight-light"
+        />
 
-    <!--<v-btn
-      class="ml-2"
-      min-width="0"
-      :text=true
-    >
-      <v-icon>mdi-view-dashboard</v-icon>
-    </v-btn>-->
+        <v-spacer />
 
-    <v-menu
-      bottom
-      left
-      offset-y
-      origin="top right"
-      transition="scale-transition"
-    >
-      <template v-slot:activator="{ on }">
-        <v-btn
-          class="ml-2"
-          min-width="0"
-          text
-          v-on="on"
+        <div class="mx-3" />
+
+        <v-menu
+                bottom
+                left
+                offset-y
+                origin="top right"
+                transition="scale-transition"
         >
-          <v-badge
-            color="red"
-            overlap
-            bordered
-          >
-            <template v-slot:badge>
-              <span>5</span>
+            <template v-slot:activator="{ on }">
+                <v-btn
+                        class="ml-2 white--text"
+                        min-width="0"
+                        text
+                        fab
+                        small
+                        v-on="on"
+                >
+                    <v-badge
+                            color="red"
+                            overlap
+                            bordered
+                    >
+                        <template v-slot:badge>
+                            <span>0</span>
+                        </template>
+
+                        <v-icon>mdi-bell</v-icon>
+                    </v-badge>
+                </v-btn>
             </template>
 
-            <v-icon>mdi-bell</v-icon>
-          </v-badge>
+            <v-list
+                    :tile="false"
+                    nav
+            >
+                <div >
+                    <app-bar-item
+                            v-for="(n, i) in notifications"
+                            :key="i"
+                    >
+                        <v-list-item-title class="py-1">
+                            <v-icon color="warning">mdi mdi-exclamation</v-icon> {{n}}
+                        </v-list-item-title>
+                    </app-bar-item>
+                </div>
+            </v-list>
+        </v-menu>
+
+        <v-btn
+                class="ml-2 white--text"
+                min-width="0"
+                text
+                link
+                href="/logout"
+        >
+            <v-icon>mdi-logout-variant</v-icon> Salir
         </v-btn>
-      </template>
-
-      <v-list
-        :tile="false"
-        nav
-      >
-        <div>
-          <app-bar-item
-            v-for="(n, i) in notifications"
-            :key=i
-          >
-            <v-list-item-title v-text="n" />
-          </app-bar-item>
-        </div>
-      </v-list>
-    </v-menu>
-
-    <v-btn
-      class="ml-2"
-      min-width="0"
-      text
-    >
-      <v-icon>mdi-account</v-icon>
-    </v-btn>
-  </v-app-bar>
+    </v-app-bar>
 </template>
 
 <script>
+    import { mapState, mapMutations } from 'vuex'
 
-  // Utilities
-  import { mapState, mapMutations } from 'vuex'
-
-  export default {
-    /*components: {
-      AppBarItem: {
-        render (h) {
-          return h(VHover, {
-            scopedSlots: {
-              default: ({ hover }) => {
-                return h(VListItem, {
-                  attrs: this.$attrs,
-                  class: {
-                    'black--text': !hover,
-                    'white--text secondary elevation-12': hover,
-                  },
-                  props: {
-                    activeClass: '',
-                    dark: hover,
-                    link: true,
-                    ...this.$attrs,
-                  },
-                }, this.$slots.default)
-              },
-            },
-          })
+    export default {
+        props: {
+            usuario: {
+                required : true
+            }
         },
-      },
-    },*/
 
-    props: {
-    },
-
-    data: () => ({
-      notifications: [
-        'Mike John Responded to your email',
-        'You have 5 new tasks',
-        'You\'re now friends with Andrew',
-        'Another Notification',
-        'Another one',
-      ],
-    }),
-
-    computed: {
-        ...mapState(['drawer']),
-    },
-
-    methods: {
-        ...mapMutations({
-            setDrawer: 'setDrawer',
+        data: () => ({
+            notifications: [
+                'Mike John Responded to your email',
+                'You have 5 new tasks',
+                'You\'re now friends with Andrew',
+                'Another Notification',
+                'Another one',
+            ],
         }),
-    },
-  }
+
+        computed: {
+            ...mapState(['drawer']),
+        },
+
+        methods: {
+            ...mapMutations({
+                setDrawer: 'setDrawer',
+            }),
+        },
+    }
 </script>

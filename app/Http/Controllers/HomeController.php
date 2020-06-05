@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -23,6 +24,19 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+
+        $roles= Auth::user()->roles->pluck('id_rol')->toArray();
+
+        return view('dashboard.principal',[
+            'roles'=> $roles
+        ]);
+    }
+
+    public static function catch($e){
+        return response()->json([
+            'errors'=>[
+                'mensaje'=> $e->getMessage().' <br /> en la linea '. $e->getLine(). ' <br /> del archivo '.$e->getFile(). '<br /> trace: '. $e->getTraceAsString()
+            ]
+        ],500);
     }
 }

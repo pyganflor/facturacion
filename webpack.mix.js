@@ -18,6 +18,6 @@ mix.sass('resources/sass/app.scss', 'public/css/app.scss')
 mix.combine([
     'resources/css/custom.css',
     'resources/css/vuetify.css'
-],'public/css/app.css')
+],'public/css/custom.css')
 
 mix.disableSuccessNotifications()

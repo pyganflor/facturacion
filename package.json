@@ -24,6 +24,7 @@
         "vue-template-compiler": "^2.6.10"
     },
     "dependencies": {
+        "vue-chartist": "^2.3.0",
         "vuetify": "^2.2.30",
         "vuex": "^3.4.0"
     }

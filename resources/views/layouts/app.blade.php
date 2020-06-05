@@ -17,22 +17,38 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
 </head>
 <body>
     <div id="app">
         <v-app>
             @if(Auth::check())
-                <nav-component></nav-component>
-                <aside-component></aside-component>
+                <nav-component
+                        :usuario="{{Auth::user()}}"
+                ></nav-component>
+                <aside-component
+                        :usuario="{{Auth::user()}}"
+                        :roles="{{Auth::user()->roles->pluck('id_rol')}}"
+                ></aside-component>
             @endif
             <v-content>
                 <v-container fluid>
                     <main class="py-4">
                         @yield('content')
                     </main>
-                </v-containe>
+                    <v-footer
+                            padless
+                            :absolute=true
+                            color="grey lighten-2">
+                        <v-col
+                                class="text-center"
+                                cols="12"
+                        >
+                            <strong>{{now()->format('Y')}} Dasalflor - Facturación electrónia </strong>
+                        </v-col>
+                    </v-footer>
+                </v-container>
             </v-content>
-
         </v-app>
     </div>
 </body>
