@@ -2899,6 +2899,30 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
     usuario: {
@@ -2908,17 +2932,23 @@ __webpack_require__.r(__webpack_exports__);
   data: function data() {
     return {
       valid: false,
+      razonComercial: '',
       show1: false,
       show2: false,
+      pass: '',
+      oldPass: '',
       usuarioRules: [function (v) {
         return !!v || 'El usuario es obligatorio';
       }, function (v) {
         return v && v.length >= 6 || 'Debe escribir almenos 6';
       }],
       passRules: [function (v) {
-        return !!v || 'La contraseña es obligatorio';
+        return !!v || 'La contraseña es obligatoria';
       }, function (v) {
         return v && v.length >= 5 || 'Debe escribir almenos 5';
+      }],
+      image: [function (v) {
+        return !v || value.size < 10000 || 'La imagen debe pesar menos de 500kb';
       }]
     };
   }
@@ -40142,9 +40172,13 @@ var render = function() {
                                 { attrs: { cols: "12", md: "4" } },
                                 [
                                   _c("v-text-field", {
-                                    attrs: {
-                                      label: "Company (disabled)",
-                                      disabled: ""
+                                    attrs: { label: "Razon comercial" },
+                                    model: {
+                                      value: _vm.razonComercial,
+                                      callback: function($$v) {
+                                        _vm.razonComercial = $$v
+                                      },
+                                      expression: "razonComercial"
                                     }
                                   })
                                 ],
@@ -40269,7 +40303,7 @@ var render = function() {
                               _c(
                                 "v-col",
                                 {
-                                  staticClass: "text-right",
+                                  staticClass: "text-center",
                                   attrs: { cols: "12" }
                                 },
                                 [
@@ -40277,13 +40311,17 @@ var render = function() {
                                     "v-btn",
                                     {
                                       staticClass: "mr-0",
-                                      attrs: { color: "success" }
+                                      attrs: { color: "primary" }
                                     },
                                     [
+                                      _c("v-icon", [
+                                        _vm._v("mdi-content-save")
+                                      ]),
                                       _vm._v(
-                                        "\n                                    Update Profile\n                                "
+                                        " Actualizar\n                                "
                                       )
-                                    ]
+                                    ],
+                                    1
                                   )
                                 ],
                                 1
@@ -40340,7 +40378,10 @@ var render = function() {
                             [
                               _c(
                                 "v-col",
-                                { attrs: { cols: "12" } },
+                                {
+                                  staticClass: "py-0 mt-0",
+                                  attrs: { cols: "12" }
+                                },
                                 [
                                   _c("v-text-field", {
                                     attrs: {
@@ -40361,12 +40402,15 @@ var render = function() {
                               _vm._v(" "),
                               _c(
                                 "v-col",
-                                { attrs: { cols: "12" } },
+                                {
+                                  staticClass: "py-0 mt-0",
+                                  attrs: { cols: "12" }
+                                },
                                 [
                                   _c("v-text-field", {
                                     staticClass: "input-group--focused",
                                     attrs: {
-                                      "append-icon": _vm.show
+                                      "append-icon": _vm.show1
                                         ? "mdi-eye"
                                         : "mdi-eye-off",
                                       rules: _vm.passRules,
@@ -40376,15 +40420,15 @@ var render = function() {
                                     },
                                     on: {
                                       "click:append": function($event) {
-                                        _vm.show = !_vm.show
+                                        _vm.show1 = !_vm.show1
                                       }
                                     },
                                     model: {
-                                      value: _vm.olPass,
+                                      value: _vm.oldPass,
                                       callback: function($$v) {
-                                        _vm.olPass = $$v
+                                        _vm.oldPass = $$v
                                       },
-                                      expression: "olPass"
+                                      expression: "oldPass"
                                     }
                                   })
                                 ],
@@ -40393,12 +40437,15 @@ var render = function() {
                               _vm._v(" "),
                               _c(
                                 "v-col",
-                                { attrs: { cols: "12" } },
+                                {
+                                  staticClass: "py-0 mt-0",
+                                  attrs: { cols: "12" }
+                                },
                                 [
                                   _c("v-text-field", {
                                     staticClass: "input-group--focused",
                                     attrs: {
-                                      "append-icon": _vm.show
+                                      "append-icon": _vm.show2
                                         ? "mdi-eye"
                                         : "mdi-eye-off",
                                       rules: _vm.passRules,
@@ -40408,7 +40455,7 @@ var render = function() {
                                     },
                                     on: {
                                       "click:append": function($event) {
-                                        _vm.show = !_vm.show
+                                        _vm.show2 = !_vm.show2
                                       }
                                     },
                                     model: {
@@ -40419,6 +40466,62 @@ var render = function() {
                                       expression: "pass"
                                     }
                                   })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                {
+                                  staticClass: "py-0 mt-0",
+                                  attrs: { cols: "12" }
+                                },
+                                [
+                                  _c("v-file-input", {
+                                    attrs: {
+                                      rules: _vm.image,
+                                      accept:
+                                        "image/png, image/jpeg, image/jpg",
+                                      placeholder: "Seleccione una imagen",
+                                      "prepend-icon": "mdi-image-area",
+                                      label: "Avatar"
+                                    }
+                                  })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                { attrs: { cols: "12", sm: "12" } },
+                                [
+                                  _c(
+                                    "v-card-actions",
+                                    [
+                                      _c(
+                                        "v-btn",
+                                        {
+                                          staticClass: "px-0",
+                                          attrs: {
+                                            color: "primary",
+                                            block: true,
+                                            loading: _vm.$store.state.loadingBtn
+                                          },
+                                          on: { click: function($event) {} }
+                                        },
+                                        [
+                                          _c("v-icon", [
+                                            _vm._v("mdi-content-save")
+                                          ]),
+                                          _vm._v(
+                                            " Actualizar\n                                    "
+                                          )
+                                        ],
+                                        1
+                                      )
+                                    ],
+                                    1
+                                  )
                                 ],
                                 1
                               )
