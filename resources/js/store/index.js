@@ -9,7 +9,8 @@ export default new Vuex.Store({
         barColor: 'rgba(0, 0, 0, .8), rgba(0, 0, 0, .8)',
         barImage: 'https://demos.creative-tim.com/material-dashboard/assets/img/sidebar-1.jpg',
         drawer: true,
-        loadingBtn : false
+        loadingBtn : false,
+        loadingBtn2 : false
     },
     mutations: {
         setDrawer (state) {
@@ -17,10 +18,13 @@ export default new Vuex.Store({
         },
         setLoadingBtn(state) {
             state.loadingBtn = !state.loadingBtn
+        },
+        setLoadingBtn2(state) {
+            state.loadingBtn2 = !state.loadingBtn2
         }
       },
     actions:{
-        errorRequest({commit,state},datos,status){
+        errorRequest({commit,state},datos,status,LoadingBtn){
             console.log(datos,status);
             state.alertas='';
 
@@ -44,7 +48,7 @@ export default new Vuex.Store({
             }else{
                 state.alertas = 'Ha ocurrido un error inesperado, intente nuevamente';
             }
-            commit('setLoadingBtn')
+            commit('setLoadingBtn2')
             alert(state.alertas);
         }
     },

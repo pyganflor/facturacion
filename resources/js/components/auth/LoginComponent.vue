@@ -81,11 +81,11 @@
             recordar : false,
             usuarioRules:[
                 v => !!v || 'El usuario es obligatorio',
-                v => (v && v.length >= 6) || 'Debe escribir almenos 6'
+                v => (v && v.length >= 6) || 'Debe escribir por lo menos 6 caracteres'
             ],
             passRules:[
                 v => !!v || 'La contraseña es obligatorio',
-                v => (v && v.length >= 5) || 'Debe escribir almenos 5',
+                v => (v && v.length >= 5) || 'Debe escribir por lo menos 5 caracteres',
             ]
         }),
         methods:{
@@ -101,7 +101,7 @@
                     usuario: this.usuario,
                     contrasena: this.pass
                 }).then(response => {
-                    alert('Has iniciado sesión');
+                    //alert('Has iniciado sesión');
                     window.location = '/';
                     this.$store.commit('setLoadingBtn')
                 }).catch(error => {

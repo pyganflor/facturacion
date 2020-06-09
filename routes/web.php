@@ -11,7 +11,19 @@ Route::get('logout', 'Auth\LoginController@logout')->name('logout');
 //USUARIOS LOGUEADOS
 Route::group(['middleware' => 'auth'],function () {
 
-    Route::get('perfil','PerfilController@inicio');
+
+    Route::post('perfil/guardar_accesos', 'PerfilController@saveAcessos');
+
+
+    Route::group(['middleware'=>'Permiso'],function (){
+
+        //Usuario o Administrador
+        Route::get('perfil','PerfilController@inicio');
+
+
+    });
+
+
 
 });
 

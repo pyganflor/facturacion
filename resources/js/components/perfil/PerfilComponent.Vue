@@ -22,7 +22,7 @@
                         </div>
                     </template>
 
-                    <v-form>
+                    <v-form novalidate="true" ref="form_perfil">
                         <v-container class="py-0">
                             <v-row>
                                 <v-col
@@ -30,8 +30,10 @@
                                         md="4"
                                 >
                                     <v-text-field
-                                            label="Razon comercial"
-                                            v-model=razonComercial
+                                            :rules=razonSocialRule
+                                            label="Razon social"
+                                            v-model=razonSocial
+                                            required
                                     />
                                 </v-col>
 
@@ -40,8 +42,10 @@
                                         md="4"
                                 >
                                     <v-text-field
-                                            class="purple-input"
-                                            label="User Name"
+                                            label="Nombre comercial"
+                                            v-model=nombreComercial
+                                            :rules=nombreComercialRule
+                                            required
                                     />
                                 </v-col>
 
@@ -50,75 +54,67 @@
                                         md="4"
                                 >
                                     <v-text-field
-                                            label="Email Address"
-                                            class="purple-input"
-                                    />
-                                </v-col>
-
-                                <v-col
-                                        cols="12"
-                                        md="6"
-                                >
-                                    <v-text-field
-                                            label="First Name"
-                                            class="purple-input"
-                                    />
-                                </v-col>
-
-                                <v-col
-                                        cols="12"
-                                        md="6"
-                                >
-                                    <v-text-field
-                                            label="Last Name"
-                                            class="purple-input"
-                                    />
-                                </v-col>
-
-                                <v-col cols="12">
-                                    <v-text-field
-                                            label="Adress"
-                                            class="purple-input"
-                                    />
-                                </v-col>
-
-                                <v-col
-                                        cols="12"
-                                        md="4"
-                                >
-                                    <v-text-field
-                                            label="City"
-                                            class="purple-input"
-                                    />
-                                </v-col>
-
-                                <v-col
-                                        cols="12"
-                                        md="4"
-                                >
-                                    <v-text-field
-                                            label="Country"
-                                            class="purple-input"
-                                    />
-                                </v-col>
-
-                                <v-col
-                                        cols="12"
-                                        md="4"
-                                >
-                                    <v-text-field
-                                            class="purple-input"
-                                            label="Postal Code"
+                                            label="Ruc"
                                             type="number"
+                                            v-model="ruc"
+                                            :counter="13"
+                                            :rules=rucRules
+                                            required
                                     />
                                 </v-col>
 
-                                <v-col cols="12">
-                                    <v-textarea
-                                            class="purple-input"
-                                            label="About Me"
-                                            value="Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                                <v-col
+                                        cols="12"
+                                        sm="12"
+                                >
+                                    <v-text-field
+                                            label="Dirección matriz"
+                                            v-model="dirMatriz"
+                                            :rules=dirMatrizRule
+                                            required
                                     />
+                                </v-col>
+
+                                <v-col
+                                        cols="12"
+                                        md="12"
+                                >
+                                    <v-text-field
+                                            label="Dirección de establecimiento"
+                                            v-model="dirEstablecimiento"
+                                            :rules="dirEstablecimientoRule"
+                                            required
+                                    />
+                                </v-col>
+
+                                <v-col cols="6">
+                                    <v-text-field
+                                            label="N° Contribuyente especial"
+                                            v-model="contriEsp"
+                                    />
+                                </v-col>
+
+                                <v-col
+                                        cols="12"
+                                        md="6"
+                                >
+                                    <v-select
+                                            :items="OblContablidad"
+                                            label="Obligado a llevar contabilidad"
+                                            :rules=oblContRules
+                                            requied
+                                    ></v-select>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0 mt-0">
+                                    <v-file-input
+                                            :rules="firmElectRules"
+                                            accept=".P12"
+                                            placeholder="Seleccione un archivo .p12"
+                                            prepend-icon="mdi-file-lock"
+                                            label="Firma electrónica"
+                                            required
+                                    ></v-file-input>
                                 </v-col>
 
                                 <v-col
@@ -128,6 +124,8 @@
                                     <v-btn
                                             color="primary"
                                             class="mr-0"
+                                            @click="savePerfil"
+                                            :loading="$store.state.loadingBtn"
                                     >
                                         <v-icon>mdi-content-save</v-icon> Actualizar
                                     </v-btn>
@@ -144,28 +142,28 @@
             >
                 <base-material-card
                         class="v-card-profile"
-                        :avatar="usuario.imagen === null  ? '/imagenes/icono_usuario.png' : usuario.imagen"
+                        :avatar="usuario.imagen === null  ? '/imagenes/icono_usuario.png' : 'imagenes/'+usuario.imagen"
                 >
 
-                    <v-form v-model="valid">
+                    <v-form ref="form_accesos">
                         <v-container>
                             <v-row>
                                 <v-col cols="12" class="py-0 mt-0"
 
                                 >
                                     <v-text-field
-                                            v-model="usuario.nombre"
+                                            v-model="user"
                                             label="Usuario (De inicio de sesión)"
+                                            :rules="usuarioRules"
                                             required
                                     ></v-text-field>
                                 </v-col>
                                 <v-col cols="12" class="py-0 mt-0">
                                     <v-text-field
                                             :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-                                            :rules="passRules"
                                             :type="show1 ? 'text' : 'password'"
                                             label="Antigua contraseña"
-                                            v-model="oldPass"
+                                            v-model="actualPass"
                                             class="input-group--focused"
                                             @click:append="show1 = !show1"
                                             required
@@ -174,7 +172,6 @@
                                 <v-col cols="12" class="py-0 mt-0">
                                     <v-text-field
                                             :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
-                                            :rules="passRules"
                                             :type="show2 ? 'text' : 'password'"
                                             label="Nueva contraseña"
                                             v-model="pass"
@@ -186,11 +183,15 @@
 
                                 <v-col cols="12" class="py-0 mt-0">
                                     <v-file-input
-                                            :rules="image"
+                                            name="img"
+                                            id="img"
+                                            :rules="imagenRules"
                                             accept="image/png, image/jpeg, image/jpg"
                                             placeholder="Seleccione una imagen"
                                             prepend-icon="mdi-image-area"
                                             label="Avatar"
+                                            @change="getImagen"
+                                            ref="file"
                                     ></v-file-input>
                                 </v-col>
 
@@ -200,8 +201,8 @@
                                                 color="primary"
                                                 :block=true
                                                 class="px-0"
-                                                @click=""
-                                                :loading="$store.state.loadingBtn"
+                                                @click="saveAccesos"
+                                                :loading="$store.state.loadingBtn2"
                                         >
                                             <v-icon>mdi-content-save</v-icon> Actualizar
                                         </v-btn>
@@ -225,24 +226,110 @@
             }
         },
         data:() =>({
-            valid:false,
-            razonComercial: '',
+            razonSocial: '',
+            nombreComercial :'',
+            ruc: '',
+            dirMatriz:'',
+            dirEstablecimiento: '',
+            contriEsp: '',
+            OblContablidad : ['SI','NO'],
             show1:false,
             show2:false,
             pass:'',
-            oldPass:'',
+            actualPass:'',
+            imagen: '',
+            user:'',
+            razonSocialRule:[
+                v => !!v || 'La razón social es obligatoria',
+                v => (v && v.length <= 300) || 'El campo debe ser menor o igual 300 caracteres'
+            ],
+            nombreComercialRule: [
+                v => !!v || 'El nombre comercial es obligatorio',
+                v => (v && v.length <= 300) || 'El campo debe ser menor o igual 300 caracteres'
+            ],
+            rucRules:[
+                v => !!v || 'El ruc es obligatorio ',
+                v => (v && v.length === 13) || 'El ruc debe ser de 13 digitos',
+            ],
             usuarioRules:[
-                v => !!v || 'El usuario es obligatorio',
-                v => (v && v.length >= 6) || 'Debe escribir almenos 6'
+                v => (v && v.length >= 6) || 'Debe escribir por lo menos 6 caracteres'
             ],
-            passRules:[
-                v => !!v || 'La contraseña es obligatoria',
-                v => (v && v.length >= 5) || 'Debe escribir almenos 5',
+            dirMatrizRule: [
+                v => !!v || 'La dirección matriz es obligatoria',
+                v => (v && v.length <= 300) || 'El campo debe ser menor o igual 300 caracteres'
             ],
-            image:[
-                v => !v || value.size < 10000 || 'La imagen debe pesar menos de 500kb',
-            ]
-        })
+            dirEstablecimientoRule:[
+                v => !!v || 'La dirección del establecimiento es obligatoria',
+                v => (v && v.length <= 300) || 'El campo debe ser menor o igual 300 caracteres'
+            ],
+            oblContRules:[
+                v => !!v || 'Defina si es obligado a llevar contabilidad',
+            ],
+            firmElectRules:[
+                v => !!v || 'Debe cargar su firma electrónica para poder facturar',
+            ],
+            imagenRules:[
+                v => !v || v.size < 500000 || 'La imagen debe pesar menos de 500kb',
+            ],
+
+        }),
+        methods:{
+            getImagen(event){
+                this.imagen = event
+            },
+            savePerfil(){
+
+                console.log(this.$refs.form_perfil.validate(),this.usuario.nombre);
+
+                if(this.$refs.form_perfil.validate())
+                    return
+
+
+                this.$store.commit('setLoadingBtn')
+
+
+            },
+
+            saveAccesos(){
+
+                if(!this.$refs.form_accesos.validate())
+                    return
+
+                this.$store.commit('setLoadingBtn2')
+
+                var formAccesos = new FormData();
+                formAccesos.append('idUsuario',this.usuario.id_usuario)
+                formAccesos.append('usuario',this.user)
+                formAccesos.append('actualPass',this.actualPass)
+                formAccesos.append('pass',this.pass)
+                formAccesos.append('imagen',this.imagen)
+
+                axios.post('/perfil/guardar_accesos',
+                   formAccesos
+                ).then(response => {
+
+
+                    //this.usuario.imagen = this.imagen
+
+
+                }).then(()=>{
+                    this.$store.commit('setLoadingBtn')
+                }).catch(error => {
+                    console.log(error);
+                    let response = error.response;
+
+                    this.$store.dispatch({
+                        type: 'errorRequest',
+                        datos: response.data.errors,
+                        status : response.status,
+                        LoadingBtn : 'setLoadingBtn2'
+                    });
+                });
+            }
+        },
+        mounted() {
+            this.user= this.usuario.nombre
+        }
 
     }
 </script>

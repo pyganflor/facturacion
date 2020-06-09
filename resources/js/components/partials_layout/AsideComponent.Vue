@@ -69,28 +69,9 @@
                     </v-list-item-content>
                 </v-list-item>
 
-                <v-list-item
-                        v-for="(item, i) in this.items"
-                        :key="i"
-                        link
-                        dense
-                        :href=item.url
-                        v-if="item.title!=='Configuraciones'"
-                >
-                    <v-list-item-icon>
-                        <v-icon v-text="item.icon"></v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-content>
-                        <v-list-item-title
-                                v-text="item.title"
-                        ></v-list-item-title>
-                    </v-list-item-content>
-                </v-list-item>
-
                 <v-list-group
                         sub-group
-                        v-else
-                        :prepend-icon=item.icon
+                        prepend-icon="mdi-vector-circle"
                         class="ml-n5"
                         dense
 
@@ -99,24 +80,40 @@
                         <v-list-item-content >
                             <v-list-item-title
                                     style="font-size: .8125rem;font-weight: 500;line-height: 1rem;"
-                                    class="ml-3" v-text="item.title"></v-list-item-title>
+                                    class="ml-3">Configuración</v-list-item-title>
                         </v-list-item-content>
                     </template>
                     <v-list-item
-                            v-for="(subMenu, x) in item.subMenu"
+                            v-for="(ic, x) in itemsConfig"
                             :key="x"
                             dense
-                            :href=subMenu.url
+                            :href=ic.url
                     >
                         <v-list-item-icon>
-                            <v-icon v-text="subMenu.icon"></v-icon>
+                            <v-icon v-text="ic.icon"></v-icon>
                         </v-list-item-icon>
                         <v-list-item-title
-                                v-text="subMenu.title"
+                                v-text="ic.title"
                                 dense
                         ></v-list-item-title>
                     </v-list-item>
                 </v-list-group>
+
+                <v-list-item
+                        v-for="(iu, i) in this.itemsUser"
+                        :key="i"
+                        link
+                        dense
+                        :href=iu.url
+                >
+                    <v-list-item-icon>
+                        <v-icon v-text="iu.icon"></v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                        <v-list-item-title v-text="iu.title"></v-list-item-title>
+                    </v-list-item-content>
+                </v-list-item>
+
             </v-list-item-group>
             <div />
         </v-list>
@@ -142,11 +139,54 @@
                 default: [2]
             }
         },
-
         data: () => ({
             item: 0,
-            items:[],
-            itemsUsuario:[
+            itemsConfig:[],
+            itemsUser:[],
+            menuConfig:[
+                {
+                    usuario:[
+                        {
+                            title: 'Perfil',
+                            icon: 'mdi-account-check',
+                            url:'perfil'
+                        },
+                        {
+                            title: 'Clientes',
+                            icon: 'mdi-account-circle',
+                            url:'cliente'
+                        },
+                        {
+                            title: 'Proveedores',
+                            icon: 'mdi-account-star',
+                            url:'proveedor'
+                        },
+                        {
+                            title: 'Productos',
+                            icon: 'mdi-package-variant',
+                            url:'producto'
+                        },
+                    ],
+                    adminsirtador:[
+                        {
+                            title: 'Usuarios',
+                            icon: 'mdi-account-multiple',
+                            url:'usuario'
+                        },
+                        {
+                            title: 'Módulos',
+                            icon: 'mdi-view-dashboard',
+                            url:'modulo'
+                        },
+                        {
+                            title: 'Tienda',
+                            icon: 'mdi-store',
+                            url : 'tienda'
+                        }
+                    ]
+                }
+            ],
+            menuUsuario:[
                 {
                     title: 'Facturar',
                     icon: 'mdi-cash-multiple',
@@ -158,57 +198,12 @@
                     url:'documento'
                 },
                 {
-                    title: 'Perfil',
-                    icon: 'mdi-account-check',
-                    url:'perfil'
-                },
-                {
-                    title: 'Clientes',
-                    icon: 'mdi-account-circle',
-                    url:'cliente'
-                },
-                {
-                    title: 'Proveedores',
-                    icon: 'mdi-account-star',
-                    url:'proveedor'
-                },
-                {
-                    title: 'Productos',
-                    icon: 'mdi-package-variant',
-                    url:'producto'
-                },
-                {
                     title: 'Formularios',
                     icon: 'mdi-file-document',
                     url:'formulario'
                 }
-            ],
-            itemsAdministrador:[
-                {
-                    title: 'Configuraciones',
-                    icon: 'mdi-vector-circle',
-                    subMenu:[
-                        {
-                            title: 'Usuarios',
-                            icon: 'mdi-account-multiple',
-                            url:'usuario'
-                        },
-                        {
-                            title: 'Módulos',
-                            icon: 'mdi-view-dashboard',
-                            url:'modulo'
-                        }
-                        ,
-                        {
-                            title: 'Tienda',
-                            icon: 'mdi-store',
-                            url : 'tienda'
-                        }
-                    ]
-                }
             ]
         }),
-
         computed: {
             ...mapState(['barColor', 'barImage']),
             profile () {
@@ -218,24 +213,28 @@
                 }
             },
         },
-
         methods: {
-            itemsUsaurio(){
+            itemsMenu(){
                 for(let rol of this.roles){
+                    for(let mc of this.menuConfig){
+                        if(rol===2){ //USUARIO
+                            for(let usuario of mc.usuario)
+                                this.itemsConfig.push(usuario)
+                        }else if(rol===1){ // ADMINISTRADOR
+                            for(let adminsirtador of mc.adminsirtador)
+                                this.itemsConfig.push(adminsirtador)
+                        }
+                    }
 
                     if(rol===2)
-                        for(let iu of this.itemsUsuario)
-                            this.items.push(iu)
-
-                    if(rol===1)
-                        for(let ia of this.itemsAdministrador)
-                            this.items.push(ia)
+                        for(let mu of this.menuUsuario)
+                            this.itemsUser.push(mu)
                 }
 
             }
         },
         created(){
-            this.itemsUsaurio();
+            this.itemsMenu();
         }
 
     }

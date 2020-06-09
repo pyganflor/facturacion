@@ -1990,12 +1990,12 @@ __webpack_require__.r(__webpack_exports__);
       usuarioRules: [function (v) {
         return !!v || 'El usuario es obligatorio';
       }, function (v) {
-        return v && v.length >= 6 || 'Debe escribir almenos 6';
+        return v && v.length >= 6 || 'Debe escribir por lo menos 6 caracteres';
       }],
       passRules: [function (v) {
         return !!v || 'La contraseña es obligatorio';
       }, function (v) {
-        return v && v.length >= 5 || 'Debe escribir almenos 5';
+        return v && v.length >= 5 || 'Debe escribir por lo menos 5 caracteres';
       }]
     };
   },
@@ -2010,7 +2010,7 @@ __webpack_require__.r(__webpack_exports__);
         usuario: this.usuario,
         contrasena: this.pass
       }).then(function (response) {
-        alert('Has iniciado sesión');
+        //alert('Has iniciado sesión');
         window.location = '/';
 
         _this.$store.commit('setLoadingBtn');
@@ -2437,9 +2437,6 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
-//
-//
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
@@ -2459,40 +2456,27 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
   data: function data() {
     return {
       item: 0,
-      items: [],
-      itemsUsuario: [{
-        title: 'Facturar',
-        icon: 'mdi-cash-multiple',
-        url: 'factura'
-      }, {
-        title: 'Documentos',
-        icon: 'mdi-file-pdf',
-        url: 'documento'
-      }, {
-        title: 'Perfil',
-        icon: 'mdi-account-check',
-        url: 'perfil'
-      }, {
-        title: 'Clientes',
-        icon: 'mdi-account-circle',
-        url: 'cliente'
-      }, {
-        title: 'Proveedores',
-        icon: 'mdi-account-star',
-        url: 'proveedor'
-      }, {
-        title: 'Productos',
-        icon: 'mdi-package-variant',
-        url: 'producto'
-      }, {
-        title: 'Formularios',
-        icon: 'mdi-file-document',
-        url: 'formulario'
-      }],
-      itemsAdministrador: [{
-        title: 'Configuraciones',
-        icon: 'mdi-vector-circle',
-        subMenu: [{
+      itemsConfig: [],
+      itemsUser: [],
+      menuConfig: [{
+        usuario: [{
+          title: 'Perfil',
+          icon: 'mdi-account-check',
+          url: 'perfil'
+        }, {
+          title: 'Clientes',
+          icon: 'mdi-account-circle',
+          url: 'cliente'
+        }, {
+          title: 'Proveedores',
+          icon: 'mdi-account-star',
+          url: 'proveedor'
+        }, {
+          title: 'Productos',
+          icon: 'mdi-package-variant',
+          url: 'producto'
+        }],
+        adminsirtador: [{
           title: 'Usuarios',
           icon: 'mdi-account-multiple',
           url: 'usuario'
@@ -2505,6 +2489,19 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
           icon: 'mdi-store',
           url: 'tienda'
         }]
+      }],
+      menuUsuario: [{
+        title: 'Facturar',
+        icon: 'mdi-cash-multiple',
+        url: 'factura'
+      }, {
+        title: 'Documentos',
+        icon: 'mdi-file-pdf',
+        url: 'documento'
+      }, {
+        title: 'Formularios',
+        icon: 'mdi-file-document',
+        url: 'formulario'
       }]
     };
   },
@@ -2517,7 +2514,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     }
   }),
   methods: {
-    itemsUsaurio: function itemsUsaurio() {
+    itemsMenu: function itemsMenu() {
       var _iterator = _createForOfIteratorHelper(this.roles),
           _step;
 
@@ -2525,30 +2522,59 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
           var rol = _step.value;
 
-          if (rol === 2) {
-            var _iterator2 = _createForOfIteratorHelper(this.itemsUsuario),
-                _step2;
+          var _iterator2 = _createForOfIteratorHelper(this.menuConfig),
+              _step2;
 
-            try {
-              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-                var iu = _step2.value;
-                this.items.push(iu);
+          try {
+            for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+              var mc = _step2.value;
+
+              if (rol === 2) {
+                //USUARIO
+                var _iterator4 = _createForOfIteratorHelper(mc.usuario),
+                    _step4;
+
+                try {
+                  for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+                    var usuario = _step4.value;
+                    this.itemsConfig.push(usuario);
+                  }
+                } catch (err) {
+                  _iterator4.e(err);
+                } finally {
+                  _iterator4.f();
+                }
+              } else if (rol === 1) {
+                // ADMINISTRADOR
+                var _iterator5 = _createForOfIteratorHelper(mc.adminsirtador),
+                    _step5;
+
+                try {
+                  for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+                    var adminsirtador = _step5.value;
+                    this.itemsConfig.push(adminsirtador);
+                  }
+                } catch (err) {
+                  _iterator5.e(err);
+                } finally {
+                  _iterator5.f();
+                }
               }
-            } catch (err) {
-              _iterator2.e(err);
-            } finally {
-              _iterator2.f();
             }
+          } catch (err) {
+            _iterator2.e(err);
+          } finally {
+            _iterator2.f();
           }
 
-          if (rol === 1) {
-            var _iterator3 = _createForOfIteratorHelper(this.itemsAdministrador),
+          if (rol === 2) {
+            var _iterator3 = _createForOfIteratorHelper(this.menuUsuario),
                 _step3;
 
             try {
               for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-                var ia = _step3.value;
-                this.items.push(ia);
+                var mu = _step3.value;
+                this.itemsUser.push(mu);
               }
             } catch (err) {
               _iterator3.e(err);
@@ -2565,7 +2591,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
     }
   },
   created: function created() {
-    this.itemsUsaurio();
+    this.itemsMenu();
   }
 });
 
@@ -2923,6 +2949,7 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
     usuario: {
@@ -2931,26 +2958,96 @@ __webpack_require__.r(__webpack_exports__);
   },
   data: function data() {
     return {
-      valid: false,
-      razonComercial: '',
+      razonSocial: '',
+      nombreComercial: '',
+      ruc: '',
+      dirMatriz: '',
+      dirEstablecimiento: '',
+      contriEsp: '',
+      OblContablidad: ['SI', 'NO'],
       show1: false,
       show2: false,
       pass: '',
-      oldPass: '',
+      actualPass: '',
+      imagen: '',
+      user: '',
+      razonSocialRule: [function (v) {
+        return !!v || 'La razón social es obligatoria';
+      }, function (v) {
+        return v && v.length <= 300 || 'El campo debe ser menor o igual 300 caracteres';
+      }],
+      nombreComercialRule: [function (v) {
+        return !!v || 'El nombre comercial es obligatorio';
+      }, function (v) {
+        return v && v.length <= 300 || 'El campo debe ser menor o igual 300 caracteres';
+      }],
+      rucRules: [function (v) {
+        return !!v || 'El ruc es obligatorio ';
+      }, function (v) {
+        return v && v.length === 13 || 'El ruc debe ser de 13 digitos';
+      }],
       usuarioRules: [function (v) {
-        return !!v || 'El usuario es obligatorio';
-      }, function (v) {
-        return v && v.length >= 6 || 'Debe escribir almenos 6';
+        return v && v.length >= 6 || 'Debe escribir por lo menos 6 caracteres';
       }],
-      passRules: [function (v) {
-        return !!v || 'La contraseña es obligatoria';
+      dirMatrizRule: [function (v) {
+        return !!v || 'La dirección matriz es obligatoria';
       }, function (v) {
-        return v && v.length >= 5 || 'Debe escribir almenos 5';
+        return v && v.length <= 300 || 'El campo debe ser menor o igual 300 caracteres';
       }],
-      image: [function (v) {
-        return !v || value.size < 10000 || 'La imagen debe pesar menos de 500kb';
+      dirEstablecimientoRule: [function (v) {
+        return !!v || 'La dirección del establecimiento es obligatoria';
+      }, function (v) {
+        return v && v.length <= 300 || 'El campo debe ser menor o igual 300 caracteres';
+      }],
+      oblContRules: [function (v) {
+        return !!v || 'Defina si es obligado a llevar contabilidad';
+      }],
+      firmElectRules: [function (v) {
+        return !!v || 'Debe cargar su firma electrónica para poder facturar';
+      }],
+      imagenRules: [function (v) {
+        return !v || v.size < 500000 || 'La imagen debe pesar menos de 500kb';
       }]
     };
+  },
+  methods: {
+    getImagen: function getImagen(event) {
+      this.imagen = event;
+    },
+    savePerfil: function savePerfil() {
+      console.log(this.$refs.form_perfil.validate(), this.usuario.nombre);
+      if (this.$refs.form_perfil.validate()) return;
+      this.$store.commit('setLoadingBtn');
+    },
+    saveAccesos: function saveAccesos() {
+      var _this = this;
+
+      if (!this.$refs.form_accesos.validate()) return;
+      this.$store.commit('setLoadingBtn2');
+      var formAccesos = new FormData();
+      formAccesos.append('idUsuario', this.usuario.id_usuario);
+      formAccesos.append('usuario', this.user);
+      formAccesos.append('actualPass', this.actualPass);
+      formAccesos.append('pass', this.pass);
+      formAccesos.append('imagen', this.imagen);
+      axios.post('/perfil/guardar_accesos', formAccesos).then(function (response) {//this.usuario.imagen = this.imagen
+      }).then(function () {
+        _this.$store.commit('setLoadingBtn');
+      })["catch"](function (error) {
+        console.log(error);
+        var response = error.response;
+
+        _this.$store.dispatch({
+          type: 'errorRequest',
+          datos: response.data.errors,
+          status: response.status,
+          LoadingBtn: 'setLoadingBtn2'
+        });
+      });
+    }
+  },
+  mounted: function mounted() {
+    this.user = this.usuario.nombre;
   }
 });
 
@@ -39805,104 +39902,100 @@ var render = function() {
                 1
               ),
               _vm._v(" "),
-              _vm._l(this.items, function(item, i) {
-                return item.title !== "Configuraciones"
-                  ? _c(
-                      "v-list-item",
-                      {
-                        key: i,
-                        attrs: { link: "", dense: "", href: item.url }
+              _c(
+                "v-list-group",
+                {
+                  staticClass: "ml-n5",
+                  attrs: {
+                    "sub-group": "",
+                    "prepend-icon": "mdi-vector-circle",
+                    dense: ""
+                  },
+                  scopedSlots: _vm._u([
+                    {
+                      key: "activator",
+                      fn: function() {
+                        return [
+                          _c(
+                            "v-list-item-content",
+                            [
+                              _c(
+                                "v-list-item-title",
+                                {
+                                  staticClass: "ml-3",
+                                  staticStyle: {
+                                    "font-size": ".8125rem",
+                                    "font-weight": "500",
+                                    "line-height": "1rem"
+                                  }
+                                },
+                                [_vm._v("Configuración")]
+                              )
+                            ],
+                            1
+                          )
+                        ]
                       },
+                      proxy: true
+                    }
+                  ])
+                },
+                [
+                  _vm._v(" "),
+                  _vm._l(_vm.itemsConfig, function(ic, x) {
+                    return _c(
+                      "v-list-item",
+                      { key: x, attrs: { dense: "", href: ic.url } },
                       [
                         _c(
                           "v-list-item-icon",
                           [
                             _c("v-icon", {
-                              domProps: { textContent: _vm._s(item.icon) }
+                              domProps: { textContent: _vm._s(ic.icon) }
                             })
                           ],
                           1
                         ),
                         _vm._v(" "),
-                        _c(
-                          "v-list-item-content",
-                          [
-                            _c("v-list-item-title", {
-                              domProps: { textContent: _vm._s(item.title) }
-                            })
-                          ],
-                          1
-                        )
+                        _c("v-list-item-title", {
+                          attrs: { dense: "" },
+                          domProps: { textContent: _vm._s(ic.title) }
+                        })
                       ],
                       1
                     )
-                  : _c(
-                      "v-list-group",
-                      {
-                        staticClass: "ml-n5",
-                        attrs: {
-                          "sub-group": "",
-                          "prepend-icon": item.icon,
-                          dense: ""
-                        },
-                        scopedSlots: _vm._u([
-                          {
-                            key: "activator",
-                            fn: function() {
-                              return [
-                                _c(
-                                  "v-list-item-content",
-                                  [
-                                    _c("v-list-item-title", {
-                                      staticClass: "ml-3",
-                                      staticStyle: {
-                                        "font-size": ".8125rem",
-                                        "font-weight": "500",
-                                        "line-height": "1rem"
-                                      },
-                                      domProps: {
-                                        textContent: _vm._s(item.title)
-                                      }
-                                    })
-                                  ],
-                                  1
-                                )
-                              ]
-                            },
-                            proxy: true
-                          }
-                        ])
-                      },
+                  })
+                ],
+                2
+              ),
+              _vm._v(" "),
+              _vm._l(this.itemsUser, function(iu, i) {
+                return _c(
+                  "v-list-item",
+                  { key: i, attrs: { link: "", dense: "", href: iu.url } },
+                  [
+                    _c(
+                      "v-list-item-icon",
                       [
-                        _vm._v(" "),
-                        _vm._l(item.subMenu, function(subMenu, x) {
-                          return _c(
-                            "v-list-item",
-                            { key: x, attrs: { dense: "", href: subMenu.url } },
-                            [
-                              _c(
-                                "v-list-item-icon",
-                                [
-                                  _c("v-icon", {
-                                    domProps: {
-                                      textContent: _vm._s(subMenu.icon)
-                                    }
-                                  })
-                                ],
-                                1
-                              ),
-                              _vm._v(" "),
-                              _c("v-list-item-title", {
-                                attrs: { dense: "" },
-                                domProps: { textContent: _vm._s(subMenu.title) }
-                              })
-                            ],
-                            1
-                          )
+                        _c("v-icon", {
+                          domProps: { textContent: _vm._s(iu.icon) }
                         })
                       ],
-                      2
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c(
+                      "v-list-item-content",
+                      [
+                        _c("v-list-item-title", {
+                          domProps: { textContent: _vm._s(iu.title) }
+                        })
+                      ],
+                      1
                     )
+                  ],
+                  1
+                )
               })
             ],
             2
@@ -40159,6 +40252,7 @@ var render = function() {
                   _vm._v(" "),
                   _c(
                     "v-form",
+                    { ref: "form_perfil", attrs: { novalidate: "true" } },
                     [
                       _c(
                         "v-container",
@@ -40172,13 +40266,17 @@ var render = function() {
                                 { attrs: { cols: "12", md: "4" } },
                                 [
                                   _c("v-text-field", {
-                                    attrs: { label: "Razon comercial" },
+                                    attrs: {
+                                      rules: _vm.razonSocialRule,
+                                      label: "Razon social",
+                                      required: ""
+                                    },
                                     model: {
-                                      value: _vm.razonComercial,
+                                      value: _vm.razonSocial,
                                       callback: function($$v) {
-                                        _vm.razonComercial = $$v
+                                        _vm.razonSocial = $$v
                                       },
-                                      expression: "razonComercial"
+                                      expression: "razonSocial"
                                     }
                                   })
                                 ],
@@ -40190,94 +40288,17 @@ var render = function() {
                                 { attrs: { cols: "12", md: "4" } },
                                 [
                                   _c("v-text-field", {
-                                    staticClass: "purple-input",
-                                    attrs: { label: "User Name" }
-                                  })
-                                ],
-                                1
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "v-col",
-                                { attrs: { cols: "12", md: "4" } },
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "purple-input",
-                                    attrs: { label: "Email Address" }
-                                  })
-                                ],
-                                1
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "v-col",
-                                { attrs: { cols: "12", md: "6" } },
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "purple-input",
-                                    attrs: { label: "First Name" }
-                                  })
-                                ],
-                                1
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "v-col",
-                                { attrs: { cols: "12", md: "6" } },
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "purple-input",
-                                    attrs: { label: "Last Name" }
-                                  })
-                                ],
-                                1
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "v-col",
-                                { attrs: { cols: "12" } },
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "purple-input",
-                                    attrs: { label: "Adress" }
-                                  })
-                                ],
-                                1
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "v-col",
-                                { attrs: { cols: "12", md: "4" } },
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "purple-input",
-                                    attrs: { label: "City" }
-                                  })
-                                ],
-                                1
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "v-col",
-                                { attrs: { cols: "12", md: "4" } },
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "purple-input",
-                                    attrs: { label: "Country" }
-                                  })
-                                ],
-                                1
-                              ),
-                              _vm._v(" "),
-                              _c(
-                                "v-col",
-                                { attrs: { cols: "12", md: "4" } },
-                                [
-                                  _c("v-text-field", {
-                                    staticClass: "purple-input",
                                     attrs: {
-                                      label: "Postal Code",
-                                      type: "number"
+                                      label: "Nombre comercial",
+                                      rules: _vm.nombreComercialRule,
+                                      required: ""
+                                    },
+                                    model: {
+                                      value: _vm.nombreComercial,
+                                      callback: function($$v) {
+                                        _vm.nombreComercial = $$v
+                                      },
+                                      expression: "nombreComercial"
                                     }
                                   })
                                 ],
@@ -40286,14 +40307,123 @@ var render = function() {
                               _vm._v(" "),
                               _c(
                                 "v-col",
-                                { attrs: { cols: "12" } },
+                                { attrs: { cols: "12", md: "4" } },
                                 [
-                                  _c("v-textarea", {
-                                    staticClass: "purple-input",
+                                  _c("v-text-field", {
                                     attrs: {
-                                      label: "About Me",
-                                      value:
-                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+                                      label: "Ruc",
+                                      type: "number",
+                                      counter: 13,
+                                      rules: _vm.rucRules,
+                                      required: ""
+                                    },
+                                    model: {
+                                      value: _vm.ruc,
+                                      callback: function($$v) {
+                                        _vm.ruc = $$v
+                                      },
+                                      expression: "ruc"
+                                    }
+                                  })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                { attrs: { cols: "12", sm: "12" } },
+                                [
+                                  _c("v-text-field", {
+                                    attrs: {
+                                      label: "Dirección matriz",
+                                      rules: _vm.dirMatrizRule,
+                                      required: ""
+                                    },
+                                    model: {
+                                      value: _vm.dirMatriz,
+                                      callback: function($$v) {
+                                        _vm.dirMatriz = $$v
+                                      },
+                                      expression: "dirMatriz"
+                                    }
+                                  })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                { attrs: { cols: "12", md: "12" } },
+                                [
+                                  _c("v-text-field", {
+                                    attrs: {
+                                      label: "Dirección de establecimiento",
+                                      rules: _vm.dirEstablecimientoRule,
+                                      required: ""
+                                    },
+                                    model: {
+                                      value: _vm.dirEstablecimiento,
+                                      callback: function($$v) {
+                                        _vm.dirEstablecimiento = $$v
+                                      },
+                                      expression: "dirEstablecimiento"
+                                    }
+                                  })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                { attrs: { cols: "6" } },
+                                [
+                                  _c("v-text-field", {
+                                    attrs: {
+                                      label: "N° Contribuyente especial"
+                                    },
+                                    model: {
+                                      value: _vm.contriEsp,
+                                      callback: function($$v) {
+                                        _vm.contriEsp = $$v
+                                      },
+                                      expression: "contriEsp"
+                                    }
+                                  })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                { attrs: { cols: "12", md: "6" } },
+                                [
+                                  _c("v-select", {
+                                    attrs: {
+                                      items: _vm.OblContablidad,
+                                      label: "Obligado a llevar contabilidad",
+                                      rules: _vm.oblContRules,
+                                      requied: ""
+                                    }
+                                  })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                {
+                                  staticClass: "py-0 mt-0",
+                                  attrs: { cols: "12" }
+                                },
+                                [
+                                  _c("v-file-input", {
+                                    attrs: {
+                                      rules: _vm.firmElectRules,
+                                      accept: ".P12",
+                                      placeholder: "Seleccione un archivo .p12",
+                                      "prepend-icon": "mdi-file-lock",
+                                      label: "Firma electrónica",
+                                      required: ""
                                     }
                                   })
                                 ],
@@ -40311,7 +40441,11 @@ var render = function() {
                                     "v-btn",
                                     {
                                       staticClass: "mr-0",
-                                      attrs: { color: "primary" }
+                                      attrs: {
+                                        color: "primary",
+                                        loading: _vm.$store.state.loadingBtn
+                                      },
+                                      on: { click: _vm.savePerfil }
                                     },
                                     [
                                       _c("v-icon", [
@@ -40354,21 +40488,13 @@ var render = function() {
                     avatar:
                       _vm.usuario.imagen === null
                         ? "/imagenes/icono_usuario.png"
-                        : _vm.usuario.imagen
+                        : "imagenes/" + _vm.usuario.imagen
                   }
                 },
                 [
                   _c(
                     "v-form",
-                    {
-                      model: {
-                        value: _vm.valid,
-                        callback: function($$v) {
-                          _vm.valid = $$v
-                        },
-                        expression: "valid"
-                      }
-                    },
+                    { ref: "form_accesos" },
                     [
                       _c(
                         "v-container",
@@ -40386,14 +40512,15 @@ var render = function() {
                                   _c("v-text-field", {
                                     attrs: {
                                       label: "Usuario (De inicio de sesión)",
+                                      rules: _vm.usuarioRules,
                                       required: ""
                                     },
                                     model: {
-                                      value: _vm.usuario.nombre,
+                                      value: _vm.user,
                                       callback: function($$v) {
-                                        _vm.$set(_vm.usuario, "nombre", $$v)
+                                        _vm.user = $$v
                                       },
-                                      expression: "usuario.nombre"
+                                      expression: "user"
                                     }
                                   })
                                 ],
@@ -40413,7 +40540,6 @@ var render = function() {
                                       "append-icon": _vm.show1
                                         ? "mdi-eye"
                                         : "mdi-eye-off",
-                                      rules: _vm.passRules,
                                       type: _vm.show1 ? "text" : "password",
                                       label: "Antigua contraseña",
                                       required: ""
@@ -40424,11 +40550,11 @@ var render = function() {
                                       }
                                     },
                                     model: {
-                                      value: _vm.oldPass,
+                                      value: _vm.actualPass,
                                       callback: function($$v) {
-                                        _vm.oldPass = $$v
+                                        _vm.actualPass = $$v
                                       },
-                                      expression: "oldPass"
+                                      expression: "actualPass"
                                     }
                                   })
                                 ],
@@ -40448,7 +40574,6 @@ var render = function() {
                                       "append-icon": _vm.show2
                                         ? "mdi-eye"
                                         : "mdi-eye-off",
-                                      rules: _vm.passRules,
                                       type: _vm.show2 ? "text" : "password",
                                       label: "Nueva contraseña",
                                       required: ""
@@ -40478,14 +40603,18 @@ var render = function() {
                                 },
                                 [
                                   _c("v-file-input", {
+                                    ref: "file",
                                     attrs: {
-                                      rules: _vm.image,
+                                      name: "img",
+                                      id: "img",
+                                      rules: _vm.imagenRules,
                                       accept:
                                         "image/png, image/jpeg, image/jpg",
                                       placeholder: "Seleccione una imagen",
                                       "prepend-icon": "mdi-image-area",
                                       label: "Avatar"
-                                    }
+                                    },
+                                    on: { change: _vm.getImagen }
                                   })
                                 ],
                                 1
@@ -40505,9 +40634,10 @@ var render = function() {
                                           attrs: {
                                             color: "primary",
                                             block: true,
-                                            loading: _vm.$store.state.loadingBtn
+                                            loading:
+                                              _vm.$store.state.loadingBtn2
                                           },
-                                          on: { click: function($event) {} }
+                                          on: { click: _vm.saveAccesos }
                                         },
                                         [
                                           _c("v-icon", [
@@ -96182,7 +96312,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     barColor: 'rgba(0, 0, 0, .8), rgba(0, 0, 0, .8)',
     barImage: 'https://demos.creative-tim.com/material-dashboard/assets/img/sidebar-1.jpg',
     drawer: true,
-    loadingBtn: false
+    loadingBtn: false,
+    loadingBtn2: false
   },
   mutations: {
     setDrawer: function setDrawer(state) {
@@ -96190,10 +96321,13 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
     },
     setLoadingBtn: function setLoadingBtn(state) {
       state.loadingBtn = !state.loadingBtn;
+    },
+    setLoadingBtn2: function setLoadingBtn2(state) {
+      state.loadingBtn2 = !state.loadingBtn2;
     }
   },
   actions: {
-    errorRequest: function errorRequest(_ref, datos, status) {
+    errorRequest: function errorRequest(_ref, datos, status, LoadingBtn) {
       var commit = _ref.commit,
           state = _ref.state;
       console.log(datos, status);
@@ -96221,7 +96355,7 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
         state.alertas = 'Ha ocurrido un error inesperado, intente nuevamente';
       }
 
-      commit('setLoadingBtn');
+      commit('setLoadingBtn2');
       alert(state.alertas);
     }
   }

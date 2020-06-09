@@ -26,7 +26,7 @@ class Usuario extends Authenticatable
     ];
 
     protected $guarded=[
-        'id_usuario'
+        'id_usuario','contrasena','remember_token'
     ];
 
     public function getAuthPassword() {
