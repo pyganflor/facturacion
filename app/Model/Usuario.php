@@ -17,7 +17,9 @@ class Usuario extends Authenticatable
 
     protected $fillable = [
         'nombre',
+        'contrasena',
         'imagen',
+        'remember_token',
         'fecha_registro'
     ];
 
@@ -26,7 +28,7 @@ class Usuario extends Authenticatable
     ];
 
     protected $guarded=[
-        'id_usuario','contrasena','remember_token'
+        'id_usuario'
     ];
 
     public function getAuthPassword() {

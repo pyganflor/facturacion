@@ -30,7 +30,7 @@
                         contain
                 >
                     <v-img
-                            :src="usuario.imagen === null  ? '/imagenes/icono_usuario.png' : usuario.imagen"
+                            :src="usuario.imagen === null  ? '/imagenes/icono_usuario.png' : storage+'/'+usuario.imagen"
                             max-height="42"
                     />
                 </v-list-item-avatar>
@@ -137,6 +137,10 @@
                 required : true,
                 type: Array,
                 default: [2]
+            },
+            storage:{
+                required:true,
+                type:String
             }
         },
         data: () => ({

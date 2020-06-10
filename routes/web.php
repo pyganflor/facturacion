@@ -12,7 +12,7 @@ Route::get('logout', 'Auth\LoginController@logout')->name('logout');
 Route::group(['middleware' => 'auth'],function () {
 
 
-    Route::post('perfil/guardar_accesos', 'PerfilController@saveAcessos');
+    Route::post('perfil/guardar_accesos', 'PerfilController@updateAcessos');
 
 
     Route::group(['middleware'=>'Permiso'],function (){

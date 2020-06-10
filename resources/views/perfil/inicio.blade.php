@@ -3,5 +3,8 @@
     Perfil
 @endsection
 @section('content')
-    <perfil-component :usuario="{{$usuario}}"></perfil-component>
+    <perfil-component
+            :usuario="{{$usuario}}"
+            :storage="'{{\Illuminate\Support\Facades\Storage::url('img_user')}}'"
+    ></perfil-component>
 @endsection

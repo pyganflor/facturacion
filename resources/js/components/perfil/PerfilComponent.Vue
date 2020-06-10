@@ -125,7 +125,7 @@
                                             color="primary"
                                             class="mr-0"
                                             @click="savePerfil"
-                                            :loading="$store.state.loadingBtn"
+                                            :loading=this.$store.state.loadingBtn
                                     >
                                         <v-icon>mdi-content-save</v-icon> Actualizar
                                     </v-btn>
@@ -142,7 +142,7 @@
             >
                 <base-material-card
                         class="v-card-profile"
-                        :avatar="usuario.imagen === null  ? '/imagenes/icono_usuario.png' : 'imagenes/'+usuario.imagen"
+                        :avatar="usuario.imagen === null  ? '/imagenes/icono_usuario.png' : storage+'/'+usuario.imagen"
                 >
 
                     <v-form ref="form_accesos">
@@ -162,7 +162,7 @@
                                     <v-text-field
                                             :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
                                             :type="show1 ? 'text' : 'password'"
-                                            label="Antigua contraseña"
+                                            label="Contraseña actual"
                                             v-model="actualPass"
                                             class="input-group--focused"
                                             @click:append="show1 = !show1"
@@ -202,9 +202,10 @@
                                                 :block=true
                                                 class="px-0"
                                                 @click="saveAccesos"
-                                                :loading="$store.state.loadingBtn2"
+                                                :loading=this.$store.state.loadingBtn2
                                         >
                                             <v-icon>mdi-content-save</v-icon> Actualizar
+
                                         </v-btn>
                                     </v-card-actions>
                                 </v-col>
@@ -223,6 +224,10 @@
         props :{
             usuario:{
                 required:true
+            },
+            storage:{
+                required:true,
+                type:String
             }
         },
         data:() =>({
@@ -269,23 +274,24 @@
                 v => !!v || 'Debe cargar su firma electrónica para poder facturar',
             ],
             imagenRules:[
-                v => !v || v.size < 500000 || 'La imagen debe pesar menos de 500kb',
+                v => !v || v.size < 100000 || 'La imagen debe pesar menos de 100kb',
             ],
 
         }),
         methods:{
             getImagen(event){
-                this.imagen = event
+                console.log(event);
+                this.imagen = typeof event != "undefined" ? event : ''
             },
             savePerfil(){
 
-                console.log(this.$refs.form_perfil.validate(),this.usuario.nombre);
+
 
                 if(this.$refs.form_perfil.validate())
                     return
 
 
-                this.$store.commit('setLoadingBtn')
+                //this.$store.commit('setLoadingBtn')
 
 
             },
@@ -295,34 +301,46 @@
                 if(!this.$refs.form_accesos.validate())
                     return
 
+
                 this.$store.commit('setLoadingBtn2')
 
                 var formAccesos = new FormData();
-                formAccesos.append('idUsuario',this.usuario.id_usuario)
                 formAccesos.append('usuario',this.user)
-                formAccesos.append('actualPass',this.actualPass)
-                formAccesos.append('pass',this.pass)
-                formAccesos.append('imagen',this.imagen)
+
+                if(this.actualPass !=='')
+                    formAccesos.append('actualPass',this.actualPass)
+                if(this.pass !=='')
+                    formAccesos.append('pass',this.pass)
+                if(this.imagen !=='')
+                    formAccesos.append('imagen',this.imagen)
 
                 axios.post('/perfil/guardar_accesos',
                    formAccesos
                 ).then(response => {
+                    console.log(response.data);
+                    this.$store.commit('setLoadingBtn2')
+                    this.$store.dispatch({
+                        type: 'alertNotification',
+                        param:{
+                            html: response.data.msg,
+                        }
+                    });
 
+                    /*this.$store.commit('alertSnackBar',{
+                        text: 'Los accesos se han actualizado exitosamente'
+                    });*/
 
-                    //this.usuario.imagen = this.imagen
-
-
-                }).then(()=>{
-                    this.$store.commit('setLoadingBtn')
                 }).catch(error => {
-                    console.log(error);
-                    let response = error.response;
 
+                    let response = error.response;
+                    console.log(response);
                     this.$store.dispatch({
                         type: 'errorRequest',
-                        datos: response.data.errors,
-                        status : response.status,
-                        LoadingBtn : 'setLoadingBtn2'
+                        data : {
+                            datos: response.data.errors,
+                            status : response.status,
+                            btn: 2
+                        }
                     });
                 });
             }

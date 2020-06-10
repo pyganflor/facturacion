@@ -13,7 +13,7 @@
         </v-img>
 
         <v-card-subtitle class="pb-0">Inicia sesión</v-card-subtitle>
-        <v-form v-model="valid" ref="form">
+        <v-form v-model="valid" ref="form" style="color:#fff">
 
             <v-col cols="12" sm="12" class="py-0  px-4">
                 <v-text-field
@@ -101,24 +101,26 @@
                     usuario: this.usuario,
                     contrasena: this.pass
                 }).then(response => {
-                    //alert('Has iniciado sesión');
                     window.location = '/';
                     this.$store.commit('setLoadingBtn')
                 }).catch(error => {
-                    console.log(error);
+
                     let response = error.response;
 
                     this.$store.dispatch({
                         type: 'errorRequest',
-                        datos: response.data.errors,
-                        status : response.status
+                        data:{
+                            datos: response.data.errors,
+                            status : response.status,
+                        }
                     });
+
                 });
             },
-
             terminosCondiciones(){
 
-            }
+            },
+
         }
 
     }

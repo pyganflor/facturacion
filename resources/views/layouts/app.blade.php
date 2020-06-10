@@ -29,6 +29,7 @@
                 <aside-component
                         :usuario="{{Auth::user()}}"
                         :roles="{{Auth::user()->roles->pluck('id_rol')}}"
+                        :storage="'{{\Illuminate\Support\Facades\Storage::url('img_user')}}'"
                 ></aside-component>
             @endif
             <v-content>
@@ -36,6 +37,7 @@
                     <main class="py-4">
                         @yield('content')
                     </main>
+                    <!--<alert-component></alert-component>-->
                     <v-footer
                             padless
                             :absolute=true
@@ -49,6 +51,7 @@
                     </v-footer>
                 </v-container>
             </v-content>
+
         </v-app>
     </div>
 </body>

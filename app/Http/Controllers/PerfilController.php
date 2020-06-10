@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\SaveAccesos;
+use App\Http\Requests\RequestUpdteAccesos;
 use Illuminate\Support\Facades\Auth;
 use App\Model\Usuario;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class PerfilController extends Controller
@@ -15,24 +17,45 @@ class PerfilController extends Controller
         ]);
     }
 
-    public function saveAcessos(SaveAccesos $request){
+    public function updateAcessos(RequestUpdteAccesos $request){
 
         try{
 
-            $usuario = Usuario::updateOrCreate(
+            $usuario = Usuario::all()
+                ->where('id_usuario',Auth::id())->first();
+            $usuario->nombre = $request->usuario;
+
+            if(isset($request->imagen)){
+                $archivo = $request->file('imagen');
+                $imagen  =  mt_rand().$archivo->getClientOriginalName();
+                $disk = Storage::disk('img_user');
+
+                if($disk->exists(Auth::user()->imagen))
+                    $disk->delete(Auth::user()->imagen);
+
+                $disk->put($imagen, \File::get($archivo));
+
+                 $usuario->imagen = $imagen;
+            }
+
+            if(isset($request->pass))
+                $usuario->contrasena = Hash::make($request->pass);
+
+
+            $usuario->save();
+
+            /*$usuario = Usuario::updateOrCreate(
                 [
-                    'id_usuario' =>$request->idUSuario // BUSCAR POR EL ID DEL REGISTRO
+                    'id_usuario' =>Auth::id() // BUSCAR POR EL ID DEL REGISTRO
                 ],
                 [
                     'nombre'=>$request->usuario,
-                    'contrasena'=>$request->pass
+                    'contrasena'=> Hash::make($request->pass)
                 ]
-            );
-            //dump($usuario->id);  DEVUELVE EL ID INGRESADO O ACTUALIZADO
+            );*/
 
             return response()->json([
-                'success'=>true,
-                'usuario'=>$usuario,
+                'msg'=>'Accesos actualizados!',
             ],200);
 
         }catch (\Exception $e){
