@@ -87,7 +87,7 @@
                                     />
                                 </v-col>
 
-                                <v-col cols="6">
+                                <v-col cols="12" md="6">
                                     <v-text-field
                                             label="N° Contribuyente especial"
                                             v-model="contriEsp"
@@ -99,22 +99,37 @@
                                         md="6"
                                 >
                                     <v-select
-                                            :items="OblContablidad"
+                                            :items="oblContablidad"
                                             label="Obligado a llevar contabilidad"
                                             :rules=oblContRules
+                                            v-model="obligadoContabilidad"
                                             requied
                                     ></v-select>
                                 </v-col>
 
-                                <v-col cols="12" class="py-0 mt-0">
+                                <v-col cols="12" md="6" class="py-0 mt-0">
                                     <v-file-input
-                                            :rules="firmElectRules"
                                             accept=".P12"
                                             placeholder="Seleccione un archivo .p12"
                                             prepend-icon="mdi-file-lock"
                                             label="Firma electrónica"
+                                            @change="getFileP12"
+                                            :append-icon="fileP12Save != null ? 'mdi-eye' : ''"
                                             required
+                                            @click:append="dataP12"
                                     ></v-file-input>
+                                </v-col>
+
+                                <v-col cols="12" md="6" class="py-0 mt-0">
+                                    <v-text-field
+                                            :append-icon="show3 ? 'mdi-eye' : 'mdi-eye-off'"
+                                            :type="show3 ? 'text' : 'password'"
+                                            label="Constraseña de la firma electrónica"
+                                            v-model="passFileP12"
+                                            class="input-group--focused"
+                                            @click:append="show3 = !show3"
+                                            required
+                                    ></v-text-field>
                                 </v-col>
 
                                 <v-col
@@ -124,7 +139,7 @@
                                     <v-btn
                                             color="primary"
                                             class="mr-0"
-                                            @click="savePerfil"
+                                            @click="updatePerfil"
                                             :loading=this.$store.state.loadingBtn
                                     >
                                         <v-icon>mdi-content-save</v-icon> Actualizar
@@ -139,6 +154,7 @@
             <v-col
                     cols="12"
                     md="4"
+                    class="mt-5 mt-md-0"
             >
                 <base-material-card
                         class="v-card-profile"
@@ -191,7 +207,16 @@
                                             prepend-icon="mdi-image-area"
                                             label="Avatar"
                                             @change="getImagen"
-                                            ref="file"
+                                    ></v-file-input>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0 mt-0">
+                                    <v-file-input
+                                            accept="image/png, image/jpeg, image/jpg"
+                                            placeholder="Imagen de empresa"
+                                            prepend-icon="mdi-image-area"
+                                            label="Logo de las facturas"
+                                            @change="getImagenEmpresa"
                                     ></v-file-input>
                                 </v-col>
 
@@ -201,11 +226,10 @@
                                                 color="primary"
                                                 :block=true
                                                 class="px-0"
-                                                @click="saveAccesos"
+                                                @click="updateAccesos"
                                                 :loading=this.$store.state.loadingBtn2
                                         >
                                             <v-icon>mdi-content-save</v-icon> Actualizar
-
                                         </v-btn>
                                     </v-card-actions>
                                 </v-col>
@@ -223,6 +247,10 @@
     export default {
         props :{
             usuario:{
+                required:true,
+                type: Object
+            },
+            perfil:{
                 required:true
             },
             storage:{
@@ -237,13 +265,20 @@
             dirMatriz:'',
             dirEstablecimiento: '',
             contriEsp: '',
-            OblContablidad : ['SI','NO'],
+            oblContablidad : ['SI','NO'],
+            obligadoContabilidad:'',
             show1:false,
             show2:false,
+            show3:false,
+            passFileP12:'',
             pass:'',
+            userPerfil:'',
             actualPass:'',
             imagen: '',
+            fileP12: '',
             user:'',
+            fileP12Save:null,
+            passFileP12Save:null,
             razonSocialRule:[
                 v => !!v || 'La razón social es obligatoria',
                 v => (v && v.length <= 300) || 'El campo debe ser menor o igual 300 caracteres'
@@ -271,40 +306,80 @@
                 v => !!v || 'Defina si es obligado a llevar contabilidad',
             ],
             firmElectRules:[
-                v => !!v || 'Debe cargar su firma electrónica para poder facturar',
+                v => !!v || 'Debe cargar su firma electrónica para poder facturar'
             ],
             imagenRules:[
                 v => !v || v.size < 100000 || 'La imagen debe pesar menos de 100kb',
             ],
-
         }),
         methods:{
             getImagen(event){
-                console.log(event);
                 this.imagen = typeof event != "undefined" ? event : ''
             },
-            savePerfil(){
 
+            getFileP12(event){
+                this.fileP12 = typeof event != "undefined" ? event : ''
+            },
 
+            getImagenEmpresa(event){
 
-                if(this.$refs.form_perfil.validate())
+            },
+
+            updatePerfil(){
+
+                if(!this.$refs.form_perfil.validate())
                     return
 
+                this.$store.commit('setLoadingBtn')
 
-                //this.$store.commit('setLoadingBtn')
+                let formPerfil = new FormData();
+                formPerfil.append('razonSocial',this.razonSocial)
+                formPerfil.append('nombreComercial',this.nombreComercial)
+                formPerfil.append('ruc',this.ruc)
+                formPerfil.append('dirMatriz',this.dirMatriz)
+                formPerfil.append('dirEstablecimiento',this.dirEstablecimiento)
+                formPerfil.append('contriEsp',this.contriEsp)
+                formPerfil.append('obligadoContabilidad',this.obligadoContabilidad)
+                formPerfil.append('fileP12',this.fileP12)
+                formPerfil.append('passFileP12',this.passFileP12)
+
+                axios.post('/perfil/update_perfil',
+                    formPerfil
+                ).then(response => {
+                    console.log(response.data);
+                    this.$store.commit('setLoadingBtn')
+                    this.$store.dispatch({
+                        type: 'alertNotification',
+                        param:{
+                            html: response.data.msg
+                        }
+                    });
+
+                }).catch(error => {
+
+                    let response = error.response;
+                    console.log(response,error);
+
+                    this.$store.dispatch({
+                        type: 'errorRequest',
+                        data : {
+                            datos: response.data.errors,
+                            status : response.status
+                        }
+                    });
+                });
 
 
             },
 
-            saveAccesos(){
+            updateAccesos(){
 
                 if(!this.$refs.form_accesos.validate())
                     return
 
-
                 this.$store.commit('setLoadingBtn2')
 
-                var formAccesos = new FormData();
+                let formAccesos = new FormData();
                 formAccesos.append('usuario',this.user)
 
                 if(this.actualPass !=='')
@@ -314,7 +389,7 @@
                 if(this.imagen !=='')
                     formAccesos.append('imagen',this.imagen)
 
-                axios.post('/perfil/guardar_accesos',
+                axios.post('/perfil/update_accesos',
                    formAccesos
                 ).then(response => {
                     console.log(response.data);
@@ -322,31 +397,70 @@
                     this.$store.dispatch({
                         type: 'alertNotification',
                         param:{
-                            html: response.data.msg,
+                            html: response.data.msg
                         }
                     });
-
-                    /*this.$store.commit('alertSnackBar',{
-                        text: 'Los accesos se han actualizado exitosamente'
-                    });*/
 
                 }).catch(error => {
 
                     let response = error.response;
-                    console.log(response);
+                    console.log(response,error);
+
                     this.$store.dispatch({
                         type: 'errorRequest',
                         data : {
                             datos: response.data.errors,
                             status : response.status,
-                            btn: 2
+                            btn:2
                         }
                     });
+                });
+            },
+
+            dataP12(){
+
+                let html ="<div>" +
+                            "<p><b>EXPIDIDO POR:</b> "+this.perfil.empresa_firma+"</p>" +
+                            "<p><b>PROPIETARIO:</b> "+this.perfil.nombre_firma+"</p>" +
+                            "<p><b>VÁLIDO DESDE:</b> "+this.perfil.firma_desde+"</p>" +
+                            "<p><b>VÁLIDO HASTA:</b> "+this.perfil.firma_hasta+"</p>" +
+                         "</div>";
+
+                Vue.swal({
+                    title:'Firma electrónica',
+                    html: html,
+                    iconHtml:'<img src="/imagenes/llave_electronica3.png" style="width:50px">',
+                    icon: 'info',
+                    timerProgressBar : true,
+                    timer: 20000,
+                    position: 'top',
+                    showConfirmButton:false,
+                    showCloseButton: true,
+                    closeButtonHtml:'<span class="mdi mdi-close"></span>',
                 });
             }
         },
         mounted() {
             this.user= this.usuario.nombre
+            console.log(this.perfil);
+            if(typeof this.perfil.razon_social !=="undefined")
+                this.razonSocial = this.perfil.razon_social
+            if(typeof this.perfil.nombre_comercial !=="undefined")
+                this.nombreComercial = this.perfil.nombre_comercial
+            if(typeof this.perfil.ruc !=="undefined")
+                this.ruc = this.perfil.ruc
+            if(typeof this.perfil.direc_matriz !=="undefined")
+                this.dirMatriz = this.perfil.direc_matriz
+            if(typeof this.perfil.direc_establecimiento !=="undefined")
+                this.dirEstablecimiento = this.perfil.direc_establecimiento
+            if(typeof this.perfil.contri_esp !=="undefined")
+                this.contriEsp = this.perfil.contri_esp
+            if(typeof this.perfil.oblig_cont !=="undefined")
+                this.obligadoContabilidad = this.perfil.oblig_cont
+            if(typeof this.perfil.pass_firma_elec !=="undefined")
+                this.fileP12Save = this.perfil.pass_firma_elec
+            if(typeof this.perfil.firma_elec !=="undefined")
+                this.passFileP12Save = this.perfil.firma_elec
         }
 
     }

@@ -2955,9 +2955,37 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
     usuario: {
+      required: true,
+      type: Object
+    },
+    perfil: {
       required: true
     },
     storage: {
@@ -2973,13 +3001,20 @@ __webpack_require__.r(__webpack_exports__);
       dirMatriz: '',
       dirEstablecimiento: '',
       contriEsp: '',
-      OblContablidad: ['SI', 'NO'],
+      oblContablidad: ['SI', 'NO'],
+      obligadoContabilidad: '',
       show1: false,
       show2: false,
+      show3: false,
+      passFileP12: '',
       pass: '',
+      userPerfil: '',
       actualPass: '',
       imagen: '',
+      fileP12: '',
       user: '',
+      fileP12Save: null,
+      passFileP12Save: null,
       razonSocialRule: [function (v) {
         return !!v || 'La razón social es obligatoria';
       }, function (v) {
@@ -3021,14 +3056,53 @@ __webpack_require__.r(__webpack_exports__);
   },
   methods: {
     getImagen: function getImagen(event) {
-      console.log(event);
       this.imagen = typeof event != "undefined" ? event : '';
     },
-    savePerfil: function savePerfil() {
-      if (this.$refs.form_perfil.validate()) return; //this.$store.commit('setLoadingBtn')
+    getFileP12: function getFileP12(event) {
+      this.fileP12 = typeof event != "undefined" ? event : '';
     },
-    saveAccesos: function saveAccesos() {
+    getImagenEmpresa: function getImagenEmpresa(event) {},
+    updatePerfil: function updatePerfil() {
       var _this = this;
+
+      if (!this.$refs.form_perfil.validate()) return;
+      this.$store.commit('setLoadingBtn');
+      var formPerfil = new FormData();
+      formPerfil.append('razonSocial', this.razonSocial);
+      formPerfil.append('nombreComercial', this.nombreComercial);
+      formPerfil.append('ruc', this.ruc);
+      formPerfil.append('dirMatriz', this.dirMatriz);
+      formPerfil.append('dirEstablecimiento', this.dirEstablecimiento);
+      formPerfil.append('contriEsp', this.contriEsp);
+      formPerfil.append('obligadoContabilidad', this.obligadoContabilidad);
+      formPerfil.append('fileP12', this.fileP12);
+      formPerfil.append('passFileP12', this.passFileP12);
+      axios.post('/perfil/update_perfil', formPerfil).then(function (response) {
+        console.log(response.data);
+
+        _this.$store.commit('setLoadingBtn');
+
+        _this.$store.dispatch({
+          type: 'alertNotification',
+          param: {
+            html: response.data.msg
+          }
+        });
+      })["catch"](function (error) {
+        var response = error.response;
+        console.log(response, error);
+
+        _this.$store.dispatch({
+          type: 'errorRequest',
+          data: {
+            datos: response.data.errors,
+            status: response.status
+          }
+        });
+      });
+    },
+    updateAccesos: function updateAccesos() {
+      var _this2 = this;
 
       if (!this.$refs.form_accesos.validate()) return;
       this.$store.commit('setLoadingBtn2');
@@ -3037,26 +3111,22 @@ __webpack_require__.r(__webpack_exports__);
       if (this.actualPass !== '') formAccesos.append('actualPass', this.actualPass);
       if (this.pass !== '') formAccesos.append('pass', this.pass);
       if (this.imagen !== '') formAccesos.append('imagen', this.imagen);
-      axios.post('/perfil/guardar_accesos', formAccesos).then(function (response) {
+      axios.post('/perfil/update_accesos', formAccesos).then(function (response) {
         console.log(response.data);
 
-        _this.$store.commit('setLoadingBtn2');
+        _this2.$store.commit('setLoadingBtn2');
 
-        _this.$store.dispatch({
+        _this2.$store.dispatch({
           type: 'alertNotification',
           param: {
             html: response.data.msg
           }
         });
-        /*this.$store.commit('alertSnackBar',{
-            text: 'Los accesos se han actualizado exitosamente'
-        });*/
-
       })["catch"](function (error) {
         var response = error.response;
-        console.log(response);
+        console.log(response, error);
 
-        _this.$store.dispatch({
+        _this2.$store.dispatch({
           type: 'errorRequest',
           data: {
             datos: response.data.errors,
@@ -3065,10 +3135,35 @@ __webpack_require__.r(__webpack_exports__);
           }
         });
       });
+    },
+    dataP12: function dataP12() {
+      var html = "<div>" + "<p><b>EXPIDIDO POR:</b> " + this.perfil.empresa_firma + "</p>" + "<p><b>PROPIETARIO:</b> " + this.perfil.nombre_firma + "</p>" + "<p><b>VÁLIDO DESDE:</b> " + this.perfil.firma_desde + "</p>" + "<p><b>VÁLIDO HASTA:</b> " + this.perfil.firma_hasta + "</p>" + "</div>";
+      Vue.swal({
+        title: 'Firma electrónica',
+        html: html,
+        iconHtml: '<img src="/imagenes/llave_electronica3.png" style="width:50px">',
+        icon: 'info',
+        timerProgressBar: true,
+        timer: 20000,
+        position: 'top',
+        showConfirmButton: false,
+        showCloseButton: true,
+        closeButtonHtml: '<span class="mdi mdi-close"></span>'
+      });
     }
   },
   mounted: function mounted() {
     this.user = this.usuario.nombre;
+    console.log(this.perfil);
+    if (typeof this.perfil.razon_social !== "undefined") this.razonSocial = this.perfil.razon_social;
+    if (typeof this.perfil.nombre_comercial !== "undefined") this.nombreComercial = this.perfil.nombre_comercial;
+    if (typeof this.perfil.ruc !== "undefined") this.ruc = this.perfil.ruc;
+    if (typeof this.perfil.direc_matriz !== "undefined") this.dirMatriz = this.perfil.direc_matriz;
+    if (typeof this.perfil.direc_establecimiento !== "undefined") this.dirEstablecimiento = this.perfil.direc_establecimiento;
+    if (typeof this.perfil.contri_esp !== "undefined") this.contriEsp = this.perfil.contri_esp;
+    if (typeof this.perfil.oblig_cont !== "undefined") this.obligadoContabilidad = this.perfil.oblig_cont;
+    if (typeof this.perfil.pass_firma_elec !== "undefined") this.fileP12Save = this.perfil.pass_firma_elec;
+    if (typeof this.perfil.firma_elec !== "undefined") this.passFileP12Save = this.perfil.firma_elec;
   }
 });
 
@@ -43627,7 +43722,7 @@ var render = function() {
                               _vm._v(" "),
                               _c(
                                 "v-col",
-                                { attrs: { cols: "6" } },
+                                { attrs: { cols: "12", md: "6" } },
                                 [
                                   _c("v-text-field", {
                                     attrs: {
@@ -43651,10 +43746,17 @@ var render = function() {
                                 [
                                   _c("v-select", {
                                     attrs: {
-                                      items: _vm.OblContablidad,
+                                      items: _vm.oblContablidad,
                                       label: "Obligado a llevar contabilidad",
                                       rules: _vm.oblContRules,
                                       requied: ""
+                                    },
+                                    model: {
+                                      value: _vm.obligadoContabilidad,
+                                      callback: function($$v) {
+                                        _vm.obligadoContabilidad = $$v
+                                      },
+                                      expression: "obligadoContabilidad"
                                     }
                                   })
                                 ],
@@ -43665,17 +43767,59 @@ var render = function() {
                                 "v-col",
                                 {
                                   staticClass: "py-0 mt-0",
-                                  attrs: { cols: "12" }
+                                  attrs: { cols: "12", md: "6" }
                                 },
                                 [
                                   _c("v-file-input", {
                                     attrs: {
-                                      rules: _vm.firmElectRules,
                                       accept: ".P12",
                                       placeholder: "Seleccione un archivo .p12",
                                       "prepend-icon": "mdi-file-lock",
                                       label: "Firma electrónica",
+                                      "append-icon":
+                                        _vm.fileP12Save != null
+                                          ? "mdi-eye"
+                                          : "",
                                       required: ""
+                                    },
+                                    on: {
+                                      change: _vm.getFileP12,
+                                      "click:append": _vm.dataP12
+                                    }
+                                  })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                {
+                                  staticClass: "py-0 mt-0",
+                                  attrs: { cols: "12", md: "6" }
+                                },
+                                [
+                                  _c("v-text-field", {
+                                    staticClass: "input-group--focused",
+                                    attrs: {
+                                      "append-icon": _vm.show3
+                                        ? "mdi-eye"
+                                        : "mdi-eye-off",
+                                      type: _vm.show3 ? "text" : "password",
+                                      label:
+                                        "Constraseña de la firma electrónica",
+                                      required: ""
+                                    },
+                                    on: {
+                                      "click:append": function($event) {
+                                        _vm.show3 = !_vm.show3
+                                      }
+                                    },
+                                    model: {
+                                      value: _vm.passFileP12,
+                                      callback: function($$v) {
+                                        _vm.passFileP12 = $$v
+                                      },
+                                      expression: "passFileP12"
                                     }
                                   })
                                 ],
@@ -43697,7 +43841,7 @@ var render = function() {
                                         color: "primary",
                                         loading: this.$store.state.loadingBtn
                                       },
-                                      on: { click: _vm.savePerfil }
+                                      on: { click: _vm.updatePerfil }
                                     },
                                     [
                                       _c("v-icon", [
@@ -43730,7 +43874,7 @@ var render = function() {
           _vm._v(" "),
           _c(
             "v-col",
-            { attrs: { cols: "12", md: "4" } },
+            { staticClass: "mt-5 mt-md-0", attrs: { cols: "12", md: "4" } },
             [
               _c(
                 "base-material-card",
@@ -43855,7 +43999,6 @@ var render = function() {
                                 },
                                 [
                                   _c("v-file-input", {
-                                    ref: "file",
                                     attrs: {
                                       name: "img",
                                       id: "img",
@@ -43867,6 +44010,27 @@ var render = function() {
                                       label: "Avatar"
                                     },
                                     on: { change: _vm.getImagen }
+                                  })
+                                ],
+                                1
+                              ),
+                              _vm._v(" "),
+                              _c(
+                                "v-col",
+                                {
+                                  staticClass: "py-0 mt-0",
+                                  attrs: { cols: "12" }
+                                },
+                                [
+                                  _c("v-file-input", {
+                                    attrs: {
+                                      accept:
+                                        "image/png, image/jpeg, image/jpg",
+                                      placeholder: "Imagen de empresa",
+                                      "prepend-icon": "mdi-image-area",
+                                      label: "Logo de las facturas"
+                                    },
+                                    on: { change: _vm.getImagenEmpresa }
                                   })
                                 ],
                                 1
@@ -43889,14 +44053,14 @@ var render = function() {
                                             loading: this.$store.state
                                               .loadingBtn2
                                           },
-                                          on: { click: _vm.saveAccesos }
+                                          on: { click: _vm.updateAccesos }
                                         },
                                         [
                                           _c("v-icon", [
                                             _vm._v("mdi-content-save")
                                           ]),
                                           _vm._v(
-                                            " Actualizar\n\n                                    "
+                                            " Actualizar\n                                    "
                                           )
                                         ],
                                         1
@@ -99631,8 +99795,8 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
       timer: 5000,
       confirmButtonText: '<span class="mdi mdi-close-circle-outline"></span> Cerrar',
       timerProgressBar: true,
-      width: 600,
-      position: 'top'
+      position: 'top',
+      confirmButtonColor: '#a5dc86'
     }
   },
   mutations: {
@@ -99650,21 +99814,22 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
       if (typeof payload.title != "undefined") state.sweetAlert.title = payload.title;
       if (typeof payload.icon != "undefined") state.sweetAlert.icon = payload.icon;
       if (typeof payload.toast != "undefined") state.sweetAlert.toast = payload.toast;
+      if (typeof payload.confirmButtonColor != "undefined") state.sweetAlert.confirmButtonColor = payload.confirmButtonColor;
       state.sweetAlert.html = payload.html;
     }
   },
   actions: {
     errorRequest: function errorRequest(_ref, payload) {
       var commit = _ref.commit,
-          state = _ref.state;
-      console.log(payload);
+          state = _ref.state,
+          dispatch = _ref.dispatch;
       state.alertas = '';
       var errorValidacion = false;
 
       if (typeof payload.data != 'undefined') {
-        if (payload.data.status === 422) errorValidacion = true;
+        errorValidacion = payload.data.status === 422;
       } else if (typeof payload.status != 'undefined') {
-        if (payload.status === 422) errorValidacion = true;
+        errorValidacion = payload.status === 422;
       }
 
       if (errorValidacion) {
@@ -99692,40 +99857,48 @@ vue__WEBPACK_IMPORTED_MODULE_0___default.a.use(vuex__WEBPACK_IMPORTED_MODULE_1__
 
       if (typeof payload.data.btn == "undefined") commit('setLoadingBtn');else if (payload.data.btn === 2) commit('setLoadingBtn2');
       var error500 = !(typeof payload.data != "undefined" && payload.data.status === 500);
-      vue__WEBPACK_IMPORTED_MODULE_0___default.a.swal({
-        title: 'Error!',
-        html: state.alertas,
-        icon: 'error',
-        toast: error500,
-        //width: !error500 ? 900: 600,
-        timerProgressBar: state.sweetAlert.timerProgressBar,
-        timer: !error500 ? 25000 : state.sweetAlert.timer,
-        confirmButtonText: state.sweetAlert.confirmButtonText,
-        position: state.sweetAlert.position,
-        grow: 'row'
-      });
+      var data = {
+        param: {
+          title: 'Error!',
+          html: state.alertas,
+          icon: 'error',
+          toast: error500,
+          timer: !error500 ? 25000 : state.sweetAlert.timer,
+          position: state.sweetAlert.position,
+          confirmButtonColor: '#d60400'
+        }
+      };
+      dispatch('alertNotification', data);
     },
     alertNotification: function alertNotification(_ref2, payload) {
       var commit = _ref2.commit,
           state = _ref2.state;
       commit('setSeewtAlert', {
         html: payload.param.html,
-        timer: typeof payload.param.timer != "undefined" ? payload.param.timer : undefined,
-        title: typeof payload.param.title != "undefined" ? payload.param.title : undefined,
-        icon: typeof payload.param.icon != "undefined" ? payload.param.icon : undefined,
-        toast: typeof payload.param.toast != "undefined" ? payload.param.toast : undefined
+        timer: payload.param.timer,
+        title: payload.param.title,
+        icon: payload.param.icon,
+        toast: payload.param.toast,
+        confirmButtonColor: payload.param.confirmButtonColor
       });
       vue__WEBPACK_IMPORTED_MODULE_0___default.a.swal({
         title: state.sweetAlert.title,
         html: state.sweetAlert.html,
         icon: state.sweetAlert.icon,
         toast: state.sweetAlert.toast,
-        //width: state.sweetAlert.width,
         timerProgressBar: state.sweetAlert.timerProgressBar,
         timer: state.sweetAlert.timer,
         position: state.sweetAlert.position,
         confirmButtonText: state.sweetAlert.confirmButtonText,
-        grow: 'row'
+        grow: 'row',
+        confirmButtonColor: state.sweetAlert.confirmButtonColor
+      });
+      commit('setSeewtAlert', {
+        title: 'Éxito',
+        icon: 'success',
+        toast: true,
+        timer: 5000,
+        confirmButtonColor: '#a5dc86'
       });
     }
   }

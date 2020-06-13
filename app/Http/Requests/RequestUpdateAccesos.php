@@ -8,7 +8,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Hash;
 use App\Model\Usuario;
 
-class RequestUpdteAccesos extends FormRequest
+class RequestUpdateAccesos extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,7 +27,6 @@ class RequestUpdteAccesos extends FormRequest
      */
     public function rules(Request $request)
     {
-       // dd($request->all());
         return [
             'usuario' => function($attribute,$value,$onFailure) use ($request){
                 if(strlen($value)<1)

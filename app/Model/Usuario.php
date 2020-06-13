@@ -37,8 +37,11 @@ class Usuario extends Authenticatable
 
 
     public function roles(){
-
         return $this->hasMany('App\Model\UsuarioRol','id_usuario');
+    }
 
+    public function perfil(){
+        return $this->hasOne('App\Model\UsuarioPerfil','id_usuario');
     }
 }
+
