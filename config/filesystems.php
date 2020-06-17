@@ -55,6 +55,12 @@ return [
             'url' => env('APP_URL').'/storage/filesp12',
             'visibility' => 'public',
         ],
+        'logo_empresa' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/logo_empresa'),
+            'url' => env('APP_URL').'/storage/logo_empresa',
+            'visibility' => 'public',
+        ],
 
         'local' => [
             'driver' => 'local',

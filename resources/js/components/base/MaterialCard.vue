@@ -11,7 +11,7 @@
         class="mx-auto v-card--material__avatar elevation-4"
         color="grey"
       >
-        <v-img :src="avatar" />
+        <v-img id="avatar" :src="avatar" />
       </v-avatar>
 
       <v-sheet

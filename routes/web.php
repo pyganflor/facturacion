@@ -21,6 +21,7 @@ Route::group(['middleware' => 'auth'],function () {
         //Usuario o Administrador
         Route::get('perfil','PerfilController@inicio');
 
+        include_once 'usuarios/rutas.php';
 
     });
 

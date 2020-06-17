@@ -28,6 +28,11 @@ class UsuarioPerfil extends Model
         'nombre_firma',
         'empresa_firma',
         'pass_firma_elec',
+        'logo_empresa',
         'fecha_registro'
+    ];
+
+    protected $hidden = [
+        'pass_firma_elec','empresa_firma','firma_desde','firma_hasta','firma_elec'
     ];
 }

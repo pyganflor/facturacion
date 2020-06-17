@@ -63,9 +63,20 @@
                                     />
                                 </v-col>
 
+                                <v-col cols="12" sm="4">
+                                    <v-file-input
+                                            accept="image/png, image/jpeg, image/jpg"
+                                            placeholder="Logo empresa"
+                                            :rules=logoEmpresaRules
+                                            prepend-icon="mdi-image-area"
+                                            label="Logo de las facturas"
+                                            @change="getLogoEmpresa"
+                                    ></v-file-input>
+                                </v-col>
+
                                 <v-col
                                         cols="12"
-                                        sm="12"
+                                        sm="8"
                                 >
                                     <v-text-field
                                             label="Dirección matriz"
@@ -158,7 +169,7 @@
             >
                 <base-material-card
                         class="v-card-profile"
-                        :avatar="usuario.imagen === null  ? '/imagenes/icono_usuario.png' : storage+'/'+usuario.imagen"
+                        :avatar="avatar"
                 >
 
                     <v-form ref="form_accesos">
@@ -174,6 +185,7 @@
                                             required
                                     ></v-text-field>
                                 </v-col>
+
                                 <v-col cols="12" class="py-0 mt-0">
                                     <v-text-field
                                             :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
@@ -185,6 +197,7 @@
                                             required
                                     ></v-text-field>
                                 </v-col>
+
                                 <v-col cols="12" class="py-0 mt-0">
                                     <v-text-field
                                             :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
@@ -194,6 +207,29 @@
                                             class="input-group--focused"
                                             @click:append="show2 = !show2"
                                             required
+                                    ></v-text-field>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0 mt-0"
+
+                                >
+                                    <v-text-field
+                                            type="email"
+                                            v-model="correo"
+                                            label="Correo"
+                                            :rules="correoRules"
+                                            required
+                                    ></v-text-field>
+                                </v-col>
+
+                                <v-col cols="12" class="py-0 mt-0"
+
+                                >
+                                    <v-text-field
+                                            v-model="tlf"
+                                            label="Teléfono"
+                                            :rules="tlfRules"
+                                            min="0"
                                     ></v-text-field>
                                 </v-col>
 
@@ -207,16 +243,6 @@
                                             prepend-icon="mdi-image-area"
                                             label="Avatar"
                                             @change="getImagen"
-                                    ></v-file-input>
-                                </v-col>
-
-                                <v-col cols="12" class="py-0 mt-0">
-                                    <v-file-input
-                                            accept="image/png, image/jpeg, image/jpg"
-                                            placeholder="Imagen de empresa"
-                                            prepend-icon="mdi-image-area"
-                                            label="Logo de las facturas"
-                                            @change="getImagenEmpresa"
                                     ></v-file-input>
                                 </v-col>
 
@@ -272,10 +298,14 @@
             show3:false,
             passFileP12:'',
             pass:'',
+            correo:'',
+            tlf:'',
+            avatar :'',
             userPerfil:'',
+            logoEmpresa: '',
+            fileP12: '',
             actualPass:'',
             imagen: '',
-            fileP12: '',
             user:'',
             fileP12Save:null,
             passFileP12Save:null,
@@ -311,18 +341,41 @@
             imagenRules:[
                 v => !v || v.size < 100000 || 'La imagen debe pesar menos de 100kb',
             ],
+            logoEmpresaRules:[
+                v => !v || v.size < 500000 || 'La imagen debe pesar menos de 500kb',
+            ],
+            correoRules:[
+                v => !!v || 'Debe escribir un correo electrónico personal',
+                v => /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe escribir un correo válido'
+            ],
+            tlfRules:[
+                v => (!v || v.length <= 10) || 'El teléfono debe ser menor o igual a 10 digitos ',
+                v => /^\d*$/.test(v) || 'El número no puede tener caracteres especiales',
+            ]
         }),
         methods:{
             getImagen(event){
-                this.imagen = typeof event != "undefined" ? event : ''
+                if(typeof event != "undefined"){
+                    this.imagen = event
+
+                    let reader = new FileReader();
+                    reader.onload = (e)=> {
+                        $('div#avatar div.v-image__image').css('background-image', 'url(' + e.target.result + ')');
+                    }
+
+                    reader.readAsDataURL(event);
+                }else{
+                    this.imagen = ''
+                    $('div#avatar div.v-image__image').css('background-image', 'url('+this.storage+'/icono_usuario.png'+')');
+                }
             },
 
             getFileP12(event){
                 this.fileP12 = typeof event != "undefined" ? event : ''
             },
 
-            getImagenEmpresa(event){
-
+            getLogoEmpresa(event){
+                this.logoEmpresa = typeof event != "undefined" ? event : ''
             },
 
             updatePerfil(){
@@ -341,12 +394,14 @@
                 formPerfil.append('contriEsp',this.contriEsp)
                 formPerfil.append('obligadoContabilidad',this.obligadoContabilidad)
                 formPerfil.append('fileP12',this.fileP12)
+                if(this.logoEmpresa != "")
+                    formPerfil.append('logoEmpresa',this.logoEmpresa)
                 formPerfil.append('passFileP12',this.passFileP12)
 
                 axios.post('/perfil/update_perfil',
                     formPerfil
                 ).then(response => {
-                    console.log(response.data);
+
                     this.$store.commit('setLoadingBtn')
                     this.$store.dispatch({
                         type: 'alertNotification',
@@ -354,12 +409,15 @@
                             html: response.data.msg
                         }
                     });
+                    this.fileP12Save = true
+                    this.perfil.empresa_firma = response.data.empresaFirma
+                    this.perfil.nombre_firma = response.data.nombreFirma
+                    this.perfil.firma_desde = response.data.firmaDesde
+                    this.perfil.firma_hasta = response.data.firmaHasta
 
                 }).catch(error => {
 
                     let response = error.response;
-                    console.log(response,error);
-
                     this.$store.dispatch({
                         type: 'errorRequest',
                         data : {
@@ -367,6 +425,7 @@
                             status : response.status
                         }
                     });
+
                 });
 
 
@@ -381,6 +440,7 @@
 
                 let formAccesos = new FormData();
                 formAccesos.append('usuario',this.user)
+                formAccesos.append('correo',this.correo)
 
                 if(this.actualPass !=='')
                     formAccesos.append('actualPass',this.actualPass)
@@ -388,6 +448,9 @@
                     formAccesos.append('pass',this.pass)
                 if(this.imagen !=='')
                     formAccesos.append('imagen',this.imagen)
+                if(this.tlf !=='')
+                    formAccesos.append('tlf',this.tlf)
+
 
                 axios.post('/perfil/update_accesos',
                    formAccesos
@@ -441,8 +504,9 @@
             }
         },
         mounted() {
+            console.log(this.usuario);
             this.user= this.usuario.nombre
-            console.log(this.perfil);
+            this.avatar=this.storage+'/icono_usuario.png'
             if(typeof this.perfil.razon_social !=="undefined")
                 this.razonSocial = this.perfil.razon_social
             if(typeof this.perfil.nombre_comercial !=="undefined")
@@ -455,12 +519,19 @@
                 this.dirEstablecimiento = this.perfil.direc_establecimiento
             if(typeof this.perfil.contri_esp !=="undefined")
                 this.contriEsp = this.perfil.contri_esp
-            if(typeof this.perfil.oblig_cont !=="undefined")
+            if(typeof this.perfil.oblig_cont !=="undefined" && this.perfil.oblig_cont !=null)
                 this.obligadoContabilidad = this.perfil.oblig_cont
             if(typeof this.perfil.pass_firma_elec !=="undefined")
-                this.fileP12Save = this.perfil.pass_firma_elec
+                this.fileP12Save = true
             if(typeof this.perfil.firma_elec !=="undefined")
                 this.passFileP12Save = this.perfil.firma_elec
+            if(typeof this.usuario.correo !== "undefined")
+                this.correo = this.usuario.correo
+            if(typeof this.usuario.tlf !=="undefined" && this.usuario.tlf!=null)
+                this.tlf = this.usuario.tlf
+            if(typeof this.usuario.imagen !="undefined")
+                this.avatar = this.storage+'/'+this.usuario.imagen
+
         }
 
     }

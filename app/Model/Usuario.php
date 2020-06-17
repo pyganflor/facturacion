@@ -19,6 +19,8 @@ class Usuario extends Authenticatable
         'nombre',
         'contrasena',
         'imagen',
+        'correo',
+        'tlf',
         'remember_token',
         'fecha_registro'
     ];
@@ -35,13 +37,16 @@ class Usuario extends Authenticatable
         return $this->contrasena;
     }
 
-
     public function roles(){
         return $this->hasMany('App\Model\UsuarioRol','id_usuario');
     }
 
     public function perfil(){
         return $this->hasOne('App\Model\UsuarioPerfil','id_usuario');
+    }
+
+    public function modulos(){
+        return $this->hasMany('App\Model\UsuarioModulo','id_usuario');
     }
 }
 

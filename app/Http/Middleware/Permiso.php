@@ -18,9 +18,6 @@ class Permiso
     public function handle($request, Closure $next)
     {
 
-
-
-
         $usuario = Auth::user();
 
         $roles = $usuario->roles->pluck('id_rol');

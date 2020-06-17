@@ -16,5 +16,9 @@ Vue.component('administrador-component', require('./components/dashboard/Adminis
 Vue.component('perfil-component', require('./components/perfil/PerfilComponent.vue').default);
 
 
+//USUARIOS
+Vue.component('gestion-usuario', require('./components/usuarios/UsuariosComponent.vue').default);
+
 //COMPONENTES TEMPLATE BASE
 Vue.component('base-material-card', require('./components/base/MaterialCard.vue').default);
+Vue.component('base-breadcumbs', require('./components/base/BreadCumbsComponent.vue').default);

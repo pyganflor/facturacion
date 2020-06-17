@@ -33,6 +33,7 @@
                 ></aside-component>
             @endif
             <v-content>
+                <base-breadcumbs></base-breadcumbs>
                 <v-container fluid>
                     <main class="py-4">
                         @yield('content')

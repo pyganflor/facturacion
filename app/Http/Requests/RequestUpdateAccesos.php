@@ -51,7 +51,29 @@ class RequestUpdateAccesos extends FormRequest
                     $onFailure('Debe Colocar su contraseña actual para actualizar su nueva contraseña');
                 }
             },
-            'imagen'=>'sometimes|mimes:jpeg,png,JPEG,JPG,PNG|max:100'
+            'imagen'=>'sometimes|mimes:jpeg,png,JPEG,JPG,PNG|max:100',
+            'correo' => function($attribute,$value,$onFailure) {
+                if(!isset($value))
+                    $onFailure('Debe escribir un correo personal');
+
+                $valid = preg_match('/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/',$value);
+                if($valid==0)
+                    $onFailure('El correo debe ser un formato válido');
+
+                if(Auth::user()->correo != $value)
+                    if(Usuario::where('correo',$value)->exists())
+                        $onFailure('El '. $attribute. ' ya está en uso, por favor escriba otro');
+
+            },
+            'tlf' =>function($attribute,$value,$onFailure){
+                if(isset($value)){
+                    if(strlen($value)>10)
+                        $onFailure('El número de telefono debe ser máximo de 10 caracteres');
+
+                    if((int)$value == 0)
+                        $onFailure('El número de telefono no debe tener caracteres especiales');
+                }
+            }
         ];
     }
 
@@ -59,7 +81,10 @@ class RequestUpdateAccesos extends FormRequest
     {
         return [
             'imagen.mimes'=>'La imagen debe ser en formato .jpeg .jpg .JPEG .png .PNG',
-            'imagen.max' => 'La imagen debe pesar menos de 100KB'
+            'imagen.max' => 'La imagen debe pesar menos de 100KB',
+            'correo.requires' => 'Debe escribir un correo personal',
+            'correo.email' => 'Debe escribir un correo válido',
+            'correo.unique' => 'El correo ingresado ya está en uso'
         ];
     }
 }

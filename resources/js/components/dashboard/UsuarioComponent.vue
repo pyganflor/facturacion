@@ -1,5 +1,5 @@
 <template>
-    
+    Vista del usuario
 </template>
 
 <script>
