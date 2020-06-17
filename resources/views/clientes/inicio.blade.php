@@ -1,0 +1,12 @@
+@extends('layouts.app')
+@section('title')
+    clientes
+@endsection
+@section('content')
+    <gestion-cliente
+        :clientes="{{$clientes}}"
+        :impuestos="{{$impuestos}}"
+        :tipopago="{{$tipoPago}}"
+        :tipoidentificacion="{{$tipoIdentificacion}}"
+    ></gestion-cliente>
+@endsection

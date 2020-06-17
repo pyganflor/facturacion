@@ -21,6 +21,7 @@ class Usuario extends Authenticatable
         'imagen',
         'correo',
         'tlf',
+        'estado',
         'remember_token',
         'fecha_registro'
     ];

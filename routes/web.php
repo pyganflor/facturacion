@@ -14,11 +14,11 @@ Route::group(['middleware' => 'auth'],function () {
 
     Route::post('perfil/update_accesos', 'PerfilController@updateAcessos');
     Route::post('perfil/update_perfil', 'PerfilController@updatePerfil');
-
+    Route::get('cliente','ClienteController@inicio');
 
     Route::group(['middleware'=>'Permiso'],function (){
 
-        //Usuario o Administrador
+        //Administrador
         Route::get('perfil','PerfilController@inicio');
 
         include_once 'usuarios/rutas.php';

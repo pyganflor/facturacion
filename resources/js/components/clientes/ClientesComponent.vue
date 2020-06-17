@@ -4,12 +4,12 @@
             <v-alert
                     color="primary"
                     dark
-                    icon="mdi-account-multiple"
+                    icon="mdi-account-convert"
                     border="left"
                     dense
 
             >
-                En esta sección puede realizar acciones con los usuario, agregar nuevos, editar y eliminar
+                En esta sección puede gestionar sus clientes, agregar nuevos, editar y eliminar
             </v-alert>
             <v-data-table
                     :headers="headers"
@@ -41,7 +41,7 @@
                         ></v-text-field>
                         <v-dialog
                                 v-model="dialog"
-                                max-width="700px"
+                                max-width="900px"
                                 :persistent=true
                         >
                             <template v-slot:activator="{ on }">
@@ -60,6 +60,61 @@
                                 <v-card-text>
                                     <v-container>
                                         <v-row>
+                                            <v-col cols="12" sm="4">
+                                                <v-text-field
+                                                        v-model="editedItem.nombre"
+                                                        label="Nombre"
+                                                ></v-text-field>
+                                            </v-col>
+
+                                            <v-col cols="12" sm="4">
+                                                <v-select
+                                                        :items="tipoidentificacion"
+                                                        attach
+                                                        v-model="editedItem.id_tipo_identificacion"
+                                                        label="Tipo de identificacion"
+                                                        item-text="nombre"
+                                                        item-value="id_tipo_identificacion"
+                                                        @change="consumidorFinal(editedItem.id_tipo_identificacion)"
+                                                >
+                                                </v-select>
+                                            </v-col>
+
+                                            <v-col cols="12" sm="4">
+                                                <v-text-field
+                                                        v-model="editedItem.identificacion"
+                                                        label="Identificación"
+                                                        :disabled=cm
+                                                ></v-text-field>
+                                            </v-col>
+
+                                            <v-col cols="12" sm="3">
+                                                <v-select
+                                                        :items="impuestos"
+                                                        attach
+                                                        v-model="editedItem.id_impuesto"
+                                                        label="Impuesto"
+                                                        item-text="nombre"
+                                                        item-value="id_impuesto"
+                                                        @change="impuesto(editedItem.id_impuesto)"
+                                                >
+                                                </v-select>
+                                            </v-col>
+
+                                            <v-col cols="12" sm="5">
+                                                <v-select
+                                                        :items="tipo_impuestos"
+                                                        attach
+                                                        v-model="editedItem.id_tipo_impuesto"
+                                                        label="Tipo de impuesto"
+                                                        item-text="descripcion"
+                                                        item-value="id_tipo_impuesto"
+                                                >
+                                                </v-select>
+                                            </v-col>
+
+                                        </v-row>
+                                        <!--<v-row>
                                             <v-col cols="12" sm="4">
                                                 <v-text-field
                                                         v-model="editedItem.nombre"
@@ -121,7 +176,7 @@
                                             <template v-slot:item="{ item }">
                                                 {{ item.nombre }}
                                             </template>
-                                        </v-select>
+                                        </v-select>-->
                                     </v-container>
                                 </v-card-text>
                             </v-card>
@@ -159,7 +214,7 @@
                     <a :href="'tel:'+item.tlf" v-text="item.tlf"></a>
                 </template>
                 <template v-slot:item.estado="{ item }">
-                        <span v-text="item.estado ? 'Activo': 'Inactivo' "></span>
+                    <span v-text="item.estado ? 'Activo': 'Inactivo' "></span>
                 </template>
                 <template v-slot:item.actions="{ item }">
                     <v-btn
@@ -202,15 +257,19 @@
 <script>
     export default {
         props:{
-            usuarios:{
+            clientes:{
                 required:true,
                 type: Array
             },
-            modulosactivos:{
+            impuestos:{
                 required:true,
                 type: Array
             },
-            rolesactivos:{
+            tipopago:{
+                required:true,
+                type: Array
+            },
+            tipoidentificacion:{
                 required:true,
                 type: Array
             }
@@ -221,43 +280,58 @@
                 { text: 'Razón social',value: 'razon_social' },
                 { text: 'Ruc', value: 'ruc' },
                 { text: 'Correo', value: 'correo' },
-                { text:'Estado', value:'estado'},
                 { text: 'Teléfono', value: 'tlf', sortable: false },
+                { text:'Estado', value:'estado'},
                 { text: 'Acciones', value:'actions', sotable:false }
             ],
             dialog: false,
             loadTable:false,
-            correo :'',
-            show: false,
-            chip:true,
-            contrasena:'',
-            modulos:'',
-            roles:'',
+            cm:false, //consumidor final
             search : '',
             textAlert: 'No se encontraron registros',
             editedIndex: -1,
-            rolesActivos : [],
             desserts: [],
+            tipo_impuestos:[],
             editedItem: {
-                idUsuario:'',
+                id_cliente:'',
+                id_usuario:'',
+                id_tipo_identificacion:'',
                 correo: '',
                 nombre: '',
-                contrasena:'',
-                roles:[],
-                modulos:[]
+                tipo_imp:'',
+                tipo_pago:'',
+                codigo_pais:'',
+                tlf:'',
+                identificacion:'',
+                id_impuesto:'',
+                ciudad:'',
+                direccion:'',
+                plazo_pago:'',
+                ut_plazo_pago:'',
+                id_tipo_impuesto:''
             },
             defaultItem: {
-                idUsuario:'',
+                id_cliente:'',
+                id_usuario:'',
+                id_tipo_identificacion:'',
                 correo: '',
                 nombre: '',
-                roles:[],
-                constrasena:'',
-                modulos:[]
+                tipo_imp:'',
+                tipo_pago:'',
+                codigo_pais:'',
+                tlf:'',
+                identificacion:'',
+                id_impuesto:'',
+                ciudad:'',
+                direccion:'',
+                plazo_pago:'',
+                ut_plazo_pago:'',
+                id_tipo_impuesto:''
             },
         }),
         computed: {
             formTitle () {
-                return this.editedIndex === -1 ? 'Nuevo usuario' : 'Editar usuario'
+                return this.editedIndex === -1 ? 'Nuevo cliente' : 'Editar cliente'
             },
         },
         watch: {
@@ -267,18 +341,35 @@
         },
         methods:{
 
+            consumidorFinal(idTipIdent){
+
+                if(idTipIdent===4){ // 4 es el ID del consumidor final en la tabla tipo_identificacion
+                    this.editedItem.identificacion = 9999999999999
+                    this.cm=true
+                }else{
+                    this.editedItem.identificacion = ''
+                    this.cm=false
+                }
+            },
+
+            impuesto(idImpuesto){
+                for(let impuestos of this.impuestos){
+                    if(impuestos.id_impuesto === idImpuesto){
+                        this.tipo_impuestos = impuestos.tipo_impuesto
+                        break;
+                    }
+                }
+            },
+
             editItem (item) {
-                this.show= false
                 this.editedIndex = this.desserts.indexOf(item)
                 this.editedItem = Object.assign({}, item)
-                this.contrasena=''
                 this.dialog = true
-                console.log(item);
             },
 
             estadoItem (item) {
                 Vue.swal({
-                    text: "¿Esta seguro de "+(item.estado ? 'desactivar': 'activar')+" al usuario "+item.nombre.toUpperCase()+".?",
+                    text: "¿Esta seguro de "+(item.estado ? 'desactivar': 'activar')+" al cliente "+item.nombre.toUpperCase()+".?",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#00b388',
@@ -287,7 +378,7 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.value) {
-                        axios.post('/usuario/estado',{
+                        axios.post('/cliente/estado',{
                             idUsuario : item.id_usuario,
                             estado : item.estado
                         }).then(response =>{
@@ -329,8 +420,6 @@
                 this.$nextTick(() => {
                     this.editedItem = Object.assign({}, this.defaultItem)
                     this.editedIndex = -1
-                    this.modulos=''
-                    this.roles=''
                 });
             },
 
@@ -341,28 +430,22 @@
 
                 this.$store.commit('setLoadingBtn')
 
-                axios.post('/usuario/store',{
-                    idUsuario : this.editedItem.id_usuario,
-                    nombre: this.editedItem.nombre,
-                    correo: this.editedItem.correo,
-                    contrasena: this.contrasena,
-                    modulos : this.editedItem.modulos,
-                    roles : this.editedItem.roles
+                axios.post('/cliente/store',{
+                    data : this.editedItem
                 }).then(response => {
 
-                    let data= {
-                        id_usuario : response.data.usuario.id_usuario,
-                        nombre : response.data.usuario.nombre,
-                        correo : response.data.usuario.correo,
-                        estado : response.data.usuario.estado,
-                        modulos : response.data.usuario.modulos,
-                        roles : response.data.usuario.roles
-                    };
+                    /*  let data= {
+                          id_usuario : response.data.usuario.id_usuario,
+                          nombre : response.data.usuario.nombre,
+                          correo : response.data.usuario.correo,
+                          estado : response.data.usuario.estado,
+
+                      };*/
 
                     if (this.editedIndex > -1) { // ACTUALIZA
-                        Object.assign(this.desserts[this.editedIndex],data)
+                        Object.assign(this.desserts[this.editedIndex],this.editedItem)
                     } else { // GUARDA
-                        this.desserts.push(data)
+                        this.desserts.push(this.editedItem)
                     }
 
                     this.closeModal();
@@ -390,12 +473,8 @@
             }
         },
         mounted() {
-            console.log(this.usuarios);
-            this.desserts = this.usuarios
+            this.desserts = this.clientes
+            console.log(this.impuestos);
         }
     }
 </script>
-
-<style scoped>
-
-</style>

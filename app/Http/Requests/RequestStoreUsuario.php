@@ -38,8 +38,12 @@ class RequestStoreUsuario extends FormRequest
                 }else{
                     if(!isset($request->contrasena))
                         $onFailure('La contraseña es obligatoria');
+                    else
+                        if(strlen($request->contrasena)<5)
+                            $onFailure('La contraseña debe ser igual o mayor a 5 caracteres');
                 }
-            }
+            },
+            'roles'=>'required|min:1'
         ];
     }
 
@@ -50,7 +54,9 @@ class RequestStoreUsuario extends FormRequest
             'correo.required'=>'El correo es obligatorio',
             'modulos.min'=>'Al menos uno de los módulos débe ser habilitado',
             'modulos.required'=>'Los módulos son requeridos',
-            'idUSuario.exists' => 'Este usuario no esta registrado'
+            'idUSuario.exists' => 'Este usuario no esta registrado',
+            'roles.required'=> 'Debe asignar al menos un rol al usuario',
+            'roles.min'=> 'Debe asignar al menos un rol al usuario'
         ];
     }
 }

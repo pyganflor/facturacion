@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Model\Usuario;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RequestLogin extends FormRequest
@@ -24,7 +25,16 @@ class RequestLogin extends FormRequest
     public function rules()
     {
         return [
-            'usuario' => 'required|min:6|exists:usuario,nombre',
+            'usuario' => ['min:6','exists:usuario,nombre',
+                function($attribute,$value,$onFailure){
+                    if(!isset($value)){
+                        $onFailure('Escriba el usuario');
+                    }else{
+                        $usuario= Usuario::where('nombre',$value)->first();
+                        if(isset($usuario) && !$usuario->estado)
+                            $onFailure('El usuario esta desactivado del sistema, comuniquese con la administración para activarlo');
+                    }
+                }],
             'contrasena' => 'required|min:5|alpha_num'
         ];
     }

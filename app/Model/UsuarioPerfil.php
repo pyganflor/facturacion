@@ -29,6 +29,12 @@ class UsuarioPerfil extends Model
         'empresa_firma',
         'pass_firma_elec',
         'logo_empresa',
+        'entorno',
+        'n_factura',
+        'n_guia_remision',
+        'n_retencion',
+        'pto_emision',
+        'n_establecimiento',
         'fecha_registro'
     ];
 

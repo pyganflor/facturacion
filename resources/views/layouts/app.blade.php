@@ -33,7 +33,9 @@
                 ></aside-component>
             @endif
             <v-content>
-                <base-breadcumbs></base-breadcumbs>
+                @if(Auth::check())
+                    <base-breadcumbs></base-breadcumbs>
+                @endif
                 <v-container fluid>
                     <main class="py-4">
                         @yield('content')
