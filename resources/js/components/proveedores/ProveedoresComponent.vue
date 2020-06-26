@@ -4,12 +4,12 @@
             <v-alert
                     color="primary"
                     dark
-                    icon="mdi-account-convert"
+                    icon="mdi-account-switch"
                     border="left"
                     dense
 
             >
-                En esta sección puede gestionar sus clientes, agregar nuevos, editar y eliminar
+                En esta sección puede gestionar sus proveedores, agregar nuevos, editar y eliminar
             </v-alert>
             <v-data-table
                     :headers="headers"
@@ -25,7 +25,7 @@
             >
                 <template v-slot:top>
                     <v-toolbar flat color="white">
-                        <v-toolbar-title>Clientes</v-toolbar-title>
+                        <v-toolbar-title>Proveedores</v-toolbar-title>
                         <v-divider
                                 class="mx-4"
                                 inset
@@ -62,89 +62,71 @@
                                         <v-row>
                                             <v-col cols="12" sm="4">
                                                 <v-text-field
-                                                        v-model="editedItem.nombre"
-                                                        label="Nombre o razón social"
+                                                        v-model="editedItem.nombre_comercial"
+                                                        label="Nombre comercial"
+                                                        :rules="requierdRules"
                                                 ></v-text-field>
                                             </v-col>
-
                                             <v-col cols="12" sm="4">
-                                                <v-select
-                                                        :items="tipoidentificacion"
-                                                        attach
-                                                        v-model="editedItem.id_tipo_identificacion"
-                                                        label="Tipo de identificacion"
-                                                        item-text="nombre"
-                                                        item-value="id_tipo_identificacion"
-                                                        @change="consumidorFinal(editedItem.id_tipo_identificacion)"
+                                                <v-text-field
+                                                        v-model="editedItem.razon_social"
+                                                        label="Razón social"
+                                                        :rules="requierdRules"
                                                 >
-                                                </v-select>
+                                                </v-text-field>
                                             </v-col>
-
                                             <v-col cols="12" sm="4">
                                                 <v-text-field
                                                         v-model="editedItem.identificacion"
                                                         label="Identificación"
-                                                        :disabled=cm
+                                                        :rules="requierdRules"
                                                 ></v-text-field>
                                             </v-col>
-                                            <v-col cols="12" sm="4">
-                                                <v-autocomplete
-                                                        v-model="editedItem.codigo_pais"
-                                                        :items="paises"
-                                                        label="País"
-                                                        persistent-hint
-                                                        prepend-icon="mdi-google-maps"
-                                                        item-text="nombre"
-                                                        item-value="codigo"
-                                                >
-                                                </v-autocomplete>
-                                            </v-col>
-                                            <v-col cols="12" sm="4">
-                                                <v-autocomplete
-                                                        v-model="editedItem.id_tipo_pago"
-                                                        :items="tipopago"
-                                                        label="Tipo de pago"
-                                                        prepend-icon="mdi-cash-multiple"
-                                                        item-text="nombre"
-                                                        item-value="id_tipo_pago"
-                                                >
-                                                </v-autocomplete>
-                                            </v-col>
+
                                             <v-col cols="12" sm="4">
                                                 <v-text-field
                                                         v-model="editedItem.correo"
                                                         label="Correo"
+                                                        type="email"
                                                         prepend-icon="mdi-email"
+                                                        :rules="correoRules"
                                                 ></v-text-field>
                                             </v-col>
-                                            <v-col cols="12" sm="3">
+                                            <v-col cols="12" sm="4">
                                                 <v-text-field
                                                         v-model="editedItem.tlf"
                                                         label="Teléfono"
                                                         prepend-icon="mdi-cellphone-android"
+                                                        :rules="tlfRules"
                                                 ></v-text-field>
                                             </v-col>
-                                            <v-col cols="12" sm="2">
-                                                <v-text-field
-                                                        v-model.number="editedItem.plazo_pago"
-                                                        label="Plazo de pago"
-                                                ></v-text-field>
-                                            </v-col>
-                                            <v-col cols="12" sm="2">
+                                            <v-col cols="12" sm="4">
                                                 <v-select
-                                                        :items=ut
+                                                        :items=tc
                                                         attach
-                                                        v-model="editedItem.ut_plazo_pago"
-                                                        label="Und. tiempo"
+                                                        v-model="editedItem.tipo_cta"
+                                                        label="Tipo de cuenta"
                                                 >
                                                 </v-select>
                                             </v-col>
-
-                                            <v-col cols="12" sm="5">
+                                            <v-col cols="12" sm="3">
+                                                <v-text-field
+                                                        v-model.number="editedItem.banco"
+                                                        label="Banco"
+                                                ></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" sm="3">
+                                                <v-text-field
+                                                        v-model.number="editedItem.numero_cta"
+                                                        label="Número de cta"
+                                                ></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12" sm="6">
                                                 <v-text-field
                                                         v-model="editedItem.direccion"
                                                         label="Dirección"
                                                         prepend-icon="mdi-home-map-marker"
+                                                        :rules="requierdRules"
                                                 ></v-text-field>
                                             </v-col>
                                         </v-row>
@@ -158,7 +140,7 @@
                                                 class="ma-2"
                                                 color="primary"
                                                 @click="save"
-                                                :loading=$store.state.loadingBtn
+                                                :loading=loadingBtn
                                         >
                                             <v-icon>mdi-floppy</v-icon> Guardar
                                         </v-btn>
@@ -226,28 +208,19 @@
 </template>
 
 <script>
+    import {mapState,mapMutations,mapActions} from 'vuex'
+
     export default {
         props:{
-            clientes:{
+            proveedores:{
                 required:true,
-                type: Array
-            },
-            tipopago:{
-                required:true,
-                type: Array
-            },
-            tipoidentificacion:{
-                required:true,
-                type: Array
-            },
-            paises:{
-                required:true,
-                type: Array
+                type: Array,
+                default:[]
             }
         },
         data:() =>({
             headers: [
-                { text: 'Nombre / Razón social',value: 'nombre' },
+                { text: 'Nombre',value: 'nombre_comercial' },
                 { text: 'Identificación', value: 'identificacion' },
                 { text: 'Correo', value: 'correo' },
                 { text: 'Teléfono', value: 'tlf', sortable: false },
@@ -256,49 +229,55 @@
             ],
             dialog: false,
             loadTable:false,
-            cm:false, //consumidor final
             search : '',
             textAlert: 'No se encontraron registros',
             editedIndex: -1,
             desserts: [],
-            //tipo_impuestos:[],
-            ut:['Días','Mes','Años'],
+            tc:['Ahorro','Corriente'], // TIPOS DE CUENTAS
             editedItem: {
-                id_cliente:'',
-                id_tipo_identificacion:'',
-                correo: '',
-                nombre: '',
-                id_tipo_pago:'',
-                codigo_pais:'',
-                tlf:'',
+                id_proveedor:'',
                 identificacion:'',
-                //id_impuesto:'',
+                nombre_comercial: '',
+                razon_social:'',
+                tlf:'',
+                correo: '',
                 direccion:'',
-                plazo_pago:'',
-                ut_plazo_pago:'',
-                estado:true
-                //id_tipo_impuesto:''
+                banco:'',
+                estado:'',
+                tipo_cta:'',
+                numero_cta:''
             },
             defaultItem: {
-                id_cliente:'',
-                id_tipo_identificacion:'',
+                id_proveedor:'',
                 correo: '',
-                nombre: '',
-                id_tipo_pago:'',
-                codigo_pais:'',
+                nombre_comercial: '',
+                razon_social:'',
                 tlf:'',
                 identificacion:'',
-                //id_impuesto:'',
                 direccion:'',
-                plazo_pago:'',
-                ut_plazo_pago:'',
-                estado:true
-                //id_tipo_impuesto:''
+                banco:'',
+                estado:'',
+                tipo_cta:'',
+                numero_cta:''
             },
+            requierdRules:[
+                v => !!v || 'El campo es obligatorio'
+            ],
+            correoRules:[
+                v => !!v || 'Debe escribir el correo electrónico del proveedor',
+                v => /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe escribir un correo válido'
+            ],
+            tlfRules:[
+                v => !!v || 'Debe escribir el  teléfono del proveedor',
+                v => (!v || v.length <= 10) || 'El teléfono debe ser menor o igual a 10 digitos ',
+                v => /^\d*$/.test(v) || 'El número no puede tener caracteres especiales',
+            ]
         }),
         computed: {
+            ...mapState(['loadingBtn']),
+
             formTitle () {
-                return this.editedIndex === -1 ? 'Nuevo cliente' : 'Editar cliente '+this.editedItem.nombre
+                return this.editedIndex === -1 ? 'Nuevo proveedor' : 'Editar proveedor '+this.editedItem.nombre_comercial
             },
         },
         watch: {
@@ -308,35 +287,19 @@
         },
         methods:{
 
-            consumidorFinal(idTipIdent){
-                if(idTipIdent===4){ // 4 es el ID del consumidor final en la tabla tipo_identificacion
-                    this.editedItem.identificacion = 9999999999999
-                    this.cm=true
-                }else{
-                    this.editedItem.identificacion = ''
-                    this.cm=false
-                }
-            },
+            ...mapMutations(['setLoadingBtn']),
 
-            /*impuesto(idImpuesto){
-                for(let impuestos of this.impuestos){
-                    if(impuestos.id_impuesto === idImpuesto){
-                        this.tipo_impuestos = impuestos.tipo_impuesto
-                        break;
-                    }
-                }
-            },*/
+            ...mapActions(['errorRequest','alertNotification','httpRequest']),
 
             editItem (item) {
                 this.editedIndex = this.desserts.indexOf(item)
                 this.editedItem = Object.assign({}, item)
-                //this.impuesto(item.id_impuesto)
                 this.dialog = true
             },
 
             estadoItem (item) {
                 Vue.swal({
-                    text: "¿Esta seguro de "+(item.estado ? 'desactivar': 'activar')+" al cliente "+item.nombre.toUpperCase()+".?",
+                    text: "¿Esta seguro de "+(item.estado ? 'desactivar': 'activar')+" al proveedor "+item.nombre_comercial.toUpperCase()+".?",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#00b388',
@@ -345,27 +308,27 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.value) {
-                        axios.post('/cliente/estado',{
-                            idCliente : item.id_cliente,
-                            estado : item.estado
-                        }).then(response =>{
-                            Vue.swal(
-                                'Éxito!',
-                                response.data.msg,
-                                'success'
-                            );
+
+                        this.httpRequest({
+                            method:'post',
+                            url:'proveedor/estado',
+                            data : {
+                                idProveedor : item.id_proveedor,
+                                estado : item.estado
+                            }
+                        }).then(res => {
+
                             item.estado =  !item.estado
+                            /*if (this.editedIndex > -1) { // ACTUALIZA
+                                Object.assign(this.desserts[this.editedIndex],res.data.proveedor)
+                            } else { // GUARDA
+                                this.desserts.push(res.data.proveedor)
+                            }*/
 
-                        }).catch(error =>{
+                            this.closeModal()
 
-                            let response = error.response;
-                            Vue.swal(
-                                'Error!',
-                                response.data.message+', '+response.data.file+' en la línea '+response.data.line,
-                                'error'
-                            );
+                        })
 
-                        });
                     }
                 })
             },
@@ -383,46 +346,30 @@
                 if (!this.$refs.form.validate())
                     return;
 
-                this.$store.commit('setLoadingBtn')
+                this.setLoadingBtn()
 
-                axios.post('/cliente/store',{
+                this.httpRequest({
+                    method:'post',
+                    url:'proveedor/store',
                     data : this.editedItem
-                }).then(response => {
+                }).then(res => {
 
                     if (this.editedIndex > -1) { // ACTUALIZA
-                        Object.assign(this.desserts[this.editedIndex],this.editedItem)
+                        Object.assign(this.desserts[this.editedIndex],res.data.proveedor)
                     } else { // GUARDA
-                        this.editedItem.id_cliente = response.data.idCliente;
-                        this.desserts.push(this.editedItem)
+                        this.desserts.push(res.data.proveedor)
                     }
 
-                    this.closeModal();
+                    this.closeModal()
 
-                    this.$store.commit('setLoadingBtn')
-                    this.$store.dispatch({
-                        type: 'alertNotification',
-                        param:{
-                            html: response.data.msg
-                        }
-                    });
+                    this.setLoadingBtn()
 
-                }).catch(error => {
-                    let response = error.response;
-
-                    this.$store.dispatch({
-                        type: 'errorRequest',
-                        data : {
-                            datos: response.data.errors,
-                            status : response.status,
-                        }
-                    });
-                });
+                })
 
             }
         },
         mounted() {
-            this.desserts = this.clientes
-            console.log(this.impuestos);
+            this.desserts = this.proveedores
         }
     }
 </script>

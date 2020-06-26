@@ -47,7 +47,11 @@ class Usuario extends Authenticatable
     }
 
     public function modulos(){
-        return $this->hasMany('App\Model\UsuarioModulo','id_usuario');
+        return $this->hasMany('App\Model\UsuarioModulo','id_usuario')->with('modulo');
+    }
+
+    public function inventario(){
+        return $this->hasOne('App\Model\Inventario','id_usuario');
     }
 }
 

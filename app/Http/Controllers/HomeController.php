@@ -35,7 +35,8 @@ class HomeController extends Controller
     public static function catch($e){
         return response()->json([
             'errors'=>[
-                'mensaje'=> $e->getMessage().' <br /> en la linea '. $e->getLine(). ' <br /> del archivo '.$e->getFile(). '<br /> trace: '. $e->getTraceAsString()
+                'mensaje'=> $e->getMessage().' <br /> en la linea '. $e->getLine(). ' <br /> 
+                                del archivo '.$e->getFile(). '<br /> trace: '. $e->getTraceAsString()
             ]
         ],500);
     }

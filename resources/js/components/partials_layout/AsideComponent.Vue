@@ -166,9 +166,9 @@
                             url:'proveedor'
                         },
                         {
-                            title: 'Productos',
+                            title: 'Inventario',
                             icon: 'mdi-package-variant',
-                            url:'producto'
+                            url:'inventario'
                         },
                     ],
                     adminsirtador:[

@@ -15,12 +15,9 @@ class Cliente extends Model
     protected $fillable = [
         'id_usuario',
         'id_tipo_identificacion',
-        'id_impuesto',
-        'id_detalle_impuesto',
         'nombre',
         'identificacion',
         'tlf',
-        'ciudad',
         'correo',
         'direccion',
         'plazo_pago',

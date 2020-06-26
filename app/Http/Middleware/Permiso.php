@@ -26,7 +26,7 @@ class Permiso
             return $next($request);
         }else{
             $request->ajax()
-                ? $content = "<div class='text-center'><img src=".asset('archivos/acceso_denegado.jpg')."></div>"
+                ? $content = "<div class='text-center'><img src=".asset('imagenes/acceso_denegado.jpg')."></div>"
                 : $content = view('error.permiso_denegado');
 
             return new Response($content);

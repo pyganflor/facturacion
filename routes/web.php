@@ -11,23 +11,18 @@ Route::get('logout', 'Auth\LoginController@logout')->name('logout');
 //USUARIOS LOGUEADOS
 Route::group(['middleware' => 'auth'],function () {
 
-
-    Route::post('perfil/update_accesos', 'PerfilController@updateAcessos');
-    Route::post('perfil/update_perfil', 'PerfilController@updatePerfil');
-    Route::get('cliente','ClienteController@inicio');
+    include_once 'usuarios/perfil/rutas.php';
+    include_once 'usuarios/clientes/rutas.php';
+    include_once 'usuarios/inventario/rutas.php';
+    include_once 'usuarios/proveedores/rutas.php';
 
     Route::group(['middleware'=>'Permiso'],function (){
 
         //Administrador
-        Route::get('perfil','PerfilController@inicio');
-
-        include_once 'usuarios/rutas.php';
-
+        include_once 'super_administrador/usuarios/rutas.php';
+        include_once 'super_administrador/modulos/rutas.php';
     });
 
 
 
 });
-
-
-//Auth::routes();

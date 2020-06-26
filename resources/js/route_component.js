@@ -22,6 +22,15 @@ Vue.component('gestion-usuario', require('./components/usuarios/UsuariosComponen
 //CLIENTES
 Vue.component('gestion-cliente', require('./components/clientes/ClientesComponent.vue').default);
 
+//INVENTARIO
+Vue.component('gestion-inventario', require('./components/inventario/InventarioComponent.vue').default);
+
+//MODULOS
+Vue.component('gestion-modulos', require('./components/modulos/ModuloComponent.vue').default);
+
+//PROVEEDORES
+Vue.component('gestion-proveedores', require('./components/proveedores/ProveedoresComponent.vue').default);
+
 //COMPONENTES TEMPLATE BASE
 Vue.component('base-material-card', require('./components/base/MaterialCard.vue').default);
 Vue.component('base-breadcumbs', require('./components/base/BreadCumbsComponent.vue').default);

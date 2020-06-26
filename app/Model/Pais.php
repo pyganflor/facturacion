@@ -4,11 +4,11 @@ namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Rol extends Model
+class Pais extends Model
 {
-    protected $table= "rol";
+    protected $table= "pais";
 
-    protected $primaryKey = "id_rol";
+    protected $primaryKey = "codigo";
     public $incrementing = false;
     public $timestamps = false;
 
@@ -16,8 +16,4 @@ class Rol extends Model
         'nombre',
         'fecha_registro'
     ];
-
-    protected function rolViewActions(){
-        return $this->hasMany('App\Model\RolViewAction','id_rol');
-    }
 }

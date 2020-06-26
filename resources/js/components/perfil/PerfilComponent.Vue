@@ -155,6 +155,192 @@
                                     >
                                         <v-icon>mdi-content-save</v-icon> Actualizar
                                     </v-btn>
+                                    <v-dialog
+                                            v-model="dialogInfoAdicional"
+                                            persistent
+                                            max-width="800px"
+                                    >
+                                        <template v-slot:activator="{ on, attrs }">
+                                            <v-btn
+                                                    color="primary"
+                                                    dark
+                                                    v-bind="attrs"
+                                                    v-on="on"
+                                            >
+                                                <v-icon>mdi-information-outline</v-icon> Info adicional
+                                            </v-btn>
+                                        </template>
+                                        <v-card>
+                                            <v-card-title>
+                                                <span class="headline">Datos adicionales para la facturación</span>
+                                            </v-card-title>
+                                            <v-container class="py-0">
+                                                <v-col class="py-0" >
+                                                    <v-form ref="form_dataos_adicionales">
+                                                        <v-row>
+                                                            <v-col
+                                                                    class="12"
+                                                                    md="3"
+                                                                    v-if="modulos.facturacion"
+                                                            >
+                                                                <v-text-field
+                                                                        label="Nº de factura"
+                                                                        v-model="secuencial.n_factura"
+                                                                        required
+                                                                        type="number"
+                                                                        min="0"
+                                                                />
+                                                            </v-col>
+                                                            <v-col
+                                                                    md="3"
+                                                                    v-if="modulos.guiaRemision"
+                                                            >
+                                                                <v-text-field
+
+                                                                        label="Nº de guía"
+                                                                        v-model="secuencial.n_guia_remison"
+                                                                        required
+                                                                        type="number"
+                                                                        min="0"
+                                                                />
+                                                            </v-col>
+                                                            <v-col
+                                                                    class="12"
+                                                                    md="3"
+                                                                    v-if="modulos.notaDebito"
+                                                            >
+                                                                <v-text-field
+                                                                        label="Nº de nota de débito"
+                                                                        v-model="secuencial.n_nota_debito"
+                                                                        required
+                                                                        type="number"
+                                                                        min="0"
+                                                                />
+                                                            </v-col>
+                                                            <v-col
+                                                                    class="12"
+                                                                    md="3"
+                                                                    v-if="modulos.notaCredito"
+                                                            >
+                                                                <v-text-field
+
+                                                                        label="Nº de nota de crédito"
+                                                                        v-model="secuencial.n_nota_credito"
+                                                                        required
+                                                                        type="number"
+                                                                        min="0"
+                                                                />
+                                                            </v-col>
+                                                        </v-row>
+                                                        <v-row>
+                                                            <v-col cols="12" sm="6">
+                                                                <v-col cols="12">
+                                                                    <v-row>
+                                                                        <div class="headline col-sm-9 col-md-10">Puntos de emisión</div>
+                                                                        <div class="col-sm-3 col-md-2">
+                                                                            <v-btn
+                                                                                    color="primary"
+                                                                                    fab
+                                                                                    x-small
+                                                                                    @click="addNumeroEsp('pe')"
+                                                                            >
+                                                                                <v-icon>mdi-plus-circle-outline</v-icon>
+                                                                            </v-btn>
+                                                                        </div>
+                                                                    </v-row>
+                                                                </v-col>
+                                                                <v-row>
+                                                                    <v-col
+                                                                            cols="12"
+                                                                            md="4"
+                                                                            sm="6"
+                                                                            v-for="(pe, x) in ptoEmision"
+                                                                            :key="`pto_${x}`"
+                                                                            :id="`pto_${x}`"
+                                                                    >
+                                                                        <v-text-field
+                                                                                label="Número"
+                                                                                v-model="pe.numero"
+                                                                                :rules="requiredRule"
+                                                                                type="number"
+                                                                                required
+                                                                                append-icon="mdi-delete-forever"
+                                                                                @click:append="removeInput(`pto_${x}`)"
+                                                                        />
+                                                                    </v-col>
+                                                                </v-row>
+                                                            </v-col>
+                                                            <v-divider
+
+                                                                    inset
+                                                                    vertical
+                                                            ></v-divider>
+                                                            <v-col
+                                                            >
+                                                                <v-col cols="12">
+                                                                    <v-row>
+                                                                        <div class="headline col-sm-9 col-md-10">Números de factureros</div>
+                                                                        <div class="col-sm-3 col-md-2">
+                                                                            <v-btn
+                                                                                    color="primary"
+                                                                                    fab
+                                                                                    x-small
+                                                                                    @click="addNumeroEsp('fact')"
+                                                                            >
+                                                                                <v-icon>mdi-plus-circle-outline</v-icon>
+                                                                            </v-btn>
+                                                                        </div>
+                                                                    </v-row>
+                                                                </v-col>
+                                                                <v-row>
+                                                                    <v-col
+                                                                            cols="12"
+                                                                            md="4"
+                                                                            sm="6"
+                                                                            v-for="(fac, y) in facturero"
+                                                                            :key="`fac_${y}`"
+                                                                            :id="`fac_${y}`"
+                                                                    >
+                                                                        <v-text-field
+                                                                                label="Número"
+                                                                                v-model="fac.numero"
+                                                                                :rules="requiredRule"
+                                                                                type="number"
+                                                                                required
+                                                                                append-icon="mdi-delete-forever"
+                                                                                @click:append="removeInput(`fac_${y}`)"
+                                                                        />
+                                                                    </v-col>
+                                                                </v-row>
+                                                            </v-col>
+                                                        </v-row>
+                                                    </v-form>
+                                                </v-col>
+                                            </v-container>
+                                            <v-card-actions >
+                                                <v-row class="text-center">
+                                                    <v-col cols="12">
+                                                        <v-btn
+                                                                color="primary"
+                                                                class="ma-2"
+                                                                @click="updateInfoAdicional"
+                                                                :loading=loadingBtn3
+                                                        >
+                                                            <v-icon>mdi-content-save</v-icon> Actualizar
+                                                        </v-btn>
+                                                        <v-btn
+                                                                color="secondary"
+                                                                class="ma-2"
+                                                                @click="dialogInfoAdicional=!dialogInfoAdicional"
+                                                                :loading=loadingBtn3
+                                                        >
+                                                            <v-icon>mdi-cancel</v-icon> Cancelar
+                                                        </v-btn>
+                                                    </v-col>
+                                                </v-row>
+                                            </v-card-actions>
+                                        </v-card>
+                                    </v-dialog>
                                 </v-col>
                             </v-row>
                         </v-container>
@@ -253,10 +439,11 @@
                                                 :block=true
                                                 class="px-0"
                                                 @click="updateAccesos"
-                                                :loading=this.$store.state.loadingBtn2
+                                                :loading=loadingBtn2
                                         >
                                             <v-icon>mdi-content-save</v-icon> Actualizar
                                         </v-btn>
+
                                     </v-card-actions>
                                 </v-col>
                             </v-row>
@@ -269,6 +456,8 @@
 </template>
 
 <script>
+
+    import {mapState,mapMutations,mapActions} from 'vuex'
 
     export default {
         props :{
@@ -290,18 +479,28 @@
             ruc: '',
             dirMatriz:'',
             dirEstablecimiento: '',
+            secuencial:{
+                n_factura:'',
+                n_guia_remison:'',
+                n_nota_debito:'',
+                n_nota_credito:''
+            },
+            ptoEmision:[{numero:''}],
+            facturero:[{numero:''}],
             contriEsp: '',
             oblContablidad : ['SI','NO'],
             obligadoContabilidad:'',
             show1:false,
             show2:false,
             show3:false,
+            dialogInfoAdicional:false,
             passFileP12:'',
             pass:'',
             correo:'',
             tlf:'',
             avatar :'',
             userPerfil:'',
+            loadingBtn3:false,
             logoEmpresa: '',
             fileP12: '',
             actualPass:'',
@@ -335,6 +534,11 @@
             oblContRules:[
                 v => !!v || 'Defina si es obligado a llevar contabilidad',
             ],
+            requiredRule:[
+                v => !!v || 'Campo obligatorio',
+                v => (!v || v.length == 3) || 'El número debe ser igual a 3 digitos',
+                v => /^\d*$/.test(v) || 'El número no puede tener caracteres especiales',
+            ],
             firmElectRules:[
                 v => !!v || 'Debe cargar su firma electrónica para poder facturar'
             ],
@@ -344,6 +548,12 @@
             logoEmpresaRules:[
                 v => !v || v.size < 500000 || 'La imagen debe pesar menos de 500kb',
             ],
+            modulos:{
+                facturacion:false,
+                notaDebito:false,
+                notaCredito: false,
+                guiaRemision:false
+            },
             correoRules:[
                 v => !!v || 'Debe escribir un correo electrónico personal',
                 v => /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe escribir un correo válido'
@@ -353,7 +563,28 @@
                 v => /^\d*$/.test(v) || 'El número no puede tener caracteres especiales',
             ]
         }),
+        computed:{
+            ...mapState(['loadingBtn2'])
+        },
         methods:{
+            ...mapMutations(['setLoadingBtn2','setLoadingBtn']),
+
+            ...mapActions(['alertNotification','errorRequest']),
+
+            addNumeroEsp(tipo){
+
+                if(tipo==='pe'){
+                    this.ptoEmision.push({numero:''})
+                }else{
+                    this.facturero.push({numero:''})
+                }
+                console.log(tipo,this.ptoEmision,this.facturero)
+            },
+
+            removeInput(id){
+                $("div#"+id).remove();
+            },
+
             getImagen(event){
                 if(typeof event != "undefined"){
                     this.imagen = event
@@ -383,7 +614,7 @@
                 if(!this.$refs.form_perfil.validate())
                     return
 
-                this.$store.commit('setLoadingBtn')
+                this.setLoadingBtn()
 
                 let formPerfil = new FormData();
                 formPerfil.append('razonSocial',this.razonSocial)
@@ -402,9 +633,8 @@
                     formPerfil
                 ).then(response => {
 
-                    this.$store.commit('setLoadingBtn')
-                    this.$store.dispatch({
-                        type: 'alertNotification',
+                    this.setLoadingBtn()
+                    this.alertNotification({
                         param:{
                             html: response.data.msg
                         }
@@ -418,8 +648,7 @@
                 }).catch(error => {
 
                     let response = error.response;
-                    this.$store.dispatch({
-                        type: 'errorRequest',
+                    this.errorRequest({
                         data : {
                             datos: response.data.errors,
                             status : response.status
@@ -428,7 +657,6 @@
 
                 });
 
-
             },
 
             updateAccesos(){
@@ -436,7 +664,7 @@
                 if(!this.$refs.form_accesos.validate())
                     return
 
-                this.$store.commit('setLoadingBtn2')
+                this.setLoadingBtn2()
 
                 let formAccesos = new FormData();
                 formAccesos.append('usuario',this.user)
@@ -455,10 +683,10 @@
                 axios.post('/perfil/update_accesos',
                    formAccesos
                 ).then(response => {
+
                     console.log(response.data);
-                    this.$store.commit('setLoadingBtn2')
-                    this.$store.dispatch({
-                        type: 'alertNotification',
+                    this.setLoadingBtn2()
+                    this.alertNotification({
                         param:{
                             html: response.data.msg
                         }
@@ -469,8 +697,7 @@
                     let response = error.response;
                     console.log(response,error);
 
-                    this.$store.dispatch({
-                        type: 'errorRequest',
+                    this.errorRequest({
                         data : {
                             datos: response.data.errors,
                             status : response.status,
@@ -501,10 +728,15 @@
                     showCloseButton: true,
                     closeButtonHtml:'<span class="mdi mdi-close"></span>',
                 });
+            },
+
+            updateInfoAdicional(){
+
+
             }
         },
         mounted() {
-            console.log(this.usuario);
+
             this.user= this.usuario.nombre
             this.avatar=this.storage+'/icono_usuario.png'
             if(typeof this.perfil.razon_social !=="undefined")
@@ -532,6 +764,12 @@
             if(typeof this.usuario.imagen !="undefined")
                 this.avatar = this.storage+'/'+this.usuario.imagen
 
+            for(let modulo of this.usuario.modulos){
+                this.modulos.facturacion = (this.modulos.facturacion || modulo.id_modulo === 1)
+                this.modulos.guiaRemision = (this.modulos.guiaRemision || modulo.id_modulo === 2)
+                this.modulos.notaDebito = (this.modulos.notaDebito || modulo.id_modulo === 3)
+                this.modulos.notaCredito = (this.modulos.notaCredito || modulo.id_modulo === 4)
+            }
         }
 
     }

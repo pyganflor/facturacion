@@ -2,23 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RequestUpdateAccesos;
-use App\Http\Requests\RequestUpdatePerfil;
-use App\Model\UsuarioPerfil;
+use App\Http\Requests\{RequestUpdateAccesos,RequestUpdatePerfil};
+use App\Model\{UsuarioPerfil,Usuario};
+use Illuminate\Support\Facades\{Auth,Hash,Storage};
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
-use App\Model\Usuario;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Arr;
-
 use Illuminate\Http\Request;
 
 class PerfilController extends Controller
 {
     public function inicio(){
         return view('perfil.inicio',[
-            'usuario'=> Auth::user(),
+            'usuario'=> Usuario::where('id_usuario',Auth::user()->id_usuario)->with('modulos')->first(),
             'storage' => Storage::url('img_user')
         ]);
     }

@@ -27,12 +27,15 @@ export default new Vuex.Store({
         setDrawer (state) {
             state.drawer = !state.drawer
         },
+
         setLoadingBtn(state) {
             state.loadingBtn = !state.loadingBtn
         },
+
         setLoadingBtn2(state) {
             state.loadingBtn2 = !state.loadingBtn2
         },
+
         setSeewtAlert(state,payload){
 
             if(typeof payload.timer != "undefined")
@@ -59,7 +62,7 @@ export default new Vuex.Store({
 
             state.alertas='';
             let errorValidacion=false;
-
+            console.log(payload);
             if(typeof payload.data != 'undefined'){
                 errorValidacion = payload.data.status === 422
             }else if(typeof payload.status != 'undefined'){
@@ -87,7 +90,7 @@ export default new Vuex.Store({
                         state.alertas += item+' '+msg + '<br />';
                     i++;
                 });
-            }else{
+            }else {
                 state.alertas = 'Ha ocurrido un error inesperado, intente nuevamente';
             }
 
@@ -143,6 +146,41 @@ export default new Vuex.Store({
                 timer:5000,
                 confirmButtonColor: '#a5dc86',
             });
+        },
+
+        httpRequest({commit,state,dispatch},payload){
+
+            return new Promise((resolve, reject)=>{
+
+                axios({
+                    method:payload.method,
+                    url: payload.url,
+                    params : payload.data
+                }).then(res => {
+
+                    resolve(res)
+                    dispatch('alertNotification',{
+                        param:{
+                            html: res.data.msg
+                        }
+                    });
+
+                }).catch(err => {
+
+                    reject(err)
+
+                    console.log(err);
+                    let response = err.response;
+                    dispatch('errorRequest',{
+                        data : {
+                            datos: response.data.errors,
+                            status : response.status,
+                        }
+                    });
+
+                });
+
+            })
         }
     }
 })
