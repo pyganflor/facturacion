@@ -53,5 +53,13 @@ class Usuario extends Authenticatable
     public function inventario(){
         return $this->hasOne('App\Model\Inventario','id_usuario');
     }
+
+    public function ptoEmision(){
+        return $this->hasMany('App\Model\UsuarioPtoEmision','id_usuario');
+    }
+
+    public function factureros(){
+        return $this->hasMany('App\Model\UsuarioFacturero','id_usuario');
+    }
 }
 

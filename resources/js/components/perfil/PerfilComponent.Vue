@@ -158,7 +158,8 @@
                                     <v-dialog
                                             v-model="dialogInfoAdicional"
                                             persistent
-                                            max-width="800px"
+                                            max-width="900px"
+                                            v-if="fileP12Save"
                                     >
                                         <template v-slot:activator="{ on, attrs }">
                                             <v-btn
@@ -176,32 +177,34 @@
                                             </v-card-title>
                                             <v-container class="py-0">
                                                 <v-col class="py-0" >
-                                                    <v-form ref="form_dataos_adicionales">
+                                                    <v-form ref="form_datos_adicionales">
                                                         <v-row>
                                                             <v-col
                                                                     class="12"
-                                                                    md="3"
+                                                                    md="2"
                                                                     v-if="modulos.facturacion"
                                                             >
                                                                 <v-text-field
                                                                         label="Nº de factura"
                                                                         v-model="secuencial.n_factura"
                                                                         required
+                                                                        :rules="secuencialRule"
                                                                         type="number"
                                                                         min="0"
                                                                 />
                                                             </v-col>
                                                             <v-col
-                                                                    md="3"
+                                                                    md="2"
                                                                     v-if="modulos.guiaRemision"
                                                             >
                                                                 <v-text-field
 
                                                                         label="Nº de guía"
-                                                                        v-model="secuencial.n_guia_remison"
+                                                                        v-model="secuencial.n_guia_remision"
                                                                         required
                                                                         type="number"
                                                                         min="0"
+                                                                        :rules="secuencialRule"
                                                                 />
                                                             </v-col>
                                                             <v-col
@@ -214,6 +217,7 @@
                                                                         v-model="secuencial.n_nota_debito"
                                                                         required
                                                                         type="number"
+                                                                        :rules="secuencialRule"
                                                                         min="0"
                                                                 />
                                                             </v-col>
@@ -228,8 +232,34 @@
                                                                         v-model="secuencial.n_nota_credito"
                                                                         required
                                                                         type="number"
+                                                                        :rules="secuencialRule"
                                                                         min="0"
                                                                 />
+                                                            </v-col>
+                                                            <v-col
+                                                                    class="12"
+                                                                    md="2"
+                                                                    v-if="modulos.retencion"
+                                                            >
+                                                                <v-text-field
+
+                                                                        label="Nº de retención"
+                                                                        v-model="secuencial.n_retencion"
+                                                                        required
+                                                                        type="number"
+                                                                        min="0"
+                                                                        :rules="secuencialRule"
+                                                                />
+                                                            </v-col>
+                                                        </v-row>
+                                                        <v-row>
+                                                            <v-col cols="12" class="py-0">
+                                                                <v-switch
+                                                                        class="py-0"
+                                                                        v-model="entorno"
+                                                                        inset
+                                                                        :label="`Entorno para autorizaciones con el SRI: ${entornos[Number(entorno)].texto}`"
+                                                                ></v-switch>
                                                             </v-col>
                                                         </v-row>
                                                         <v-row>
@@ -244,7 +274,7 @@
                                                                                     x-small
                                                                                     @click="addNumeroEsp('pe')"
                                                                             >
-                                                                                <v-icon>mdi-plus-circle-outline</v-icon>
+                                                                                <v-icon>mdi-plus</v-icon>
                                                                             </v-btn>
                                                                         </div>
                                                                     </v-row>
@@ -265,7 +295,7 @@
                                                                                 type="number"
                                                                                 required
                                                                                 append-icon="mdi-delete-forever"
-                                                                                @click:append="removeInput(`pto_${x}`)"
+                                                                                @click:append="removeInput(pe)"
                                                                         />
                                                                     </v-col>
                                                                 </v-row>
@@ -287,7 +317,7 @@
                                                                                     x-small
                                                                                     @click="addNumeroEsp('fact')"
                                                                             >
-                                                                                <v-icon>mdi-plus-circle-outline</v-icon>
+                                                                                <v-icon>mdi-plus</v-icon>
                                                                             </v-btn>
                                                                         </div>
                                                                     </v-row>
@@ -308,7 +338,7 @@
                                                                                 type="number"
                                                                                 required
                                                                                 append-icon="mdi-delete-forever"
-                                                                                @click:append="removeInput(`fac_${y}`)"
+                                                                                @click:append="removeInput(fac)"
                                                                         />
                                                                     </v-col>
                                                                 </v-row>
@@ -323,8 +353,8 @@
                                                         <v-btn
                                                                 color="primary"
                                                                 class="ma-2"
-                                                                @click="updateInfoAdicional"
-                                                                :loading=loadingBtn3
+                                                                @click="storeInfoAdicional"
+                                                                storeIn=loadingBtn3
                                                         >
                                                             <v-icon>mdi-content-save</v-icon> Actualizar
                                                         </v-btn>
@@ -347,7 +377,6 @@
                     </v-form>
                 </base-material-card>
             </v-col>
-
             <v-col
                     cols="12"
                     md="4"
@@ -483,10 +512,13 @@
                 n_factura:'',
                 n_guia_remison:'',
                 n_nota_debito:'',
-                n_nota_credito:''
+                n_nota_credito:'',
+                n_retencion:''
             },
             ptoEmision:[{numero:''}],
             facturero:[{numero:''}],
+            entornos:[{texto:'Pruebas (Los comprobantes generados no tendrán validez)'},{texto:'Producción'}],
+            entorno:false,
             contriEsp: '',
             oblContablidad : ['SI','NO'],
             obligadoContabilidad:'',
@@ -518,7 +550,7 @@
             ],
             rucRules:[
                 v => !!v || 'El ruc es obligatorio ',
-                v => (v && v.length === 13) || 'El ruc debe ser de 13 digitos',
+                v => (v && v.length === 13) || 'El ruc debe ser de 13 dígitos',
             ],
             usuarioRules:[
                 v => (v && v.length >= 6) || 'Debe escribir por lo menos 6 caracteres'
@@ -535,8 +567,7 @@
                 v => !!v || 'Defina si es obligado a llevar contabilidad',
             ],
             requiredRule:[
-                v => !!v || 'Campo obligatorio',
-                v => (!v || v.length == 3) || 'El número debe ser igual a 3 digitos',
+                v => !!v && v.length == 3 || 'Hasta 3 dígitos',
                 v => /^\d*$/.test(v) || 'El número no puede tener caracteres especiales',
             ],
             firmElectRules:[
@@ -552,24 +583,30 @@
                 facturacion:false,
                 notaDebito:false,
                 notaCredito: false,
-                guiaRemision:false
+                guiaRemision:false,
+                retencion:false
             },
             correoRules:[
                 v => !!v || 'Debe escribir un correo electrónico personal',
                 v => /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe escribir un correo válido'
             ],
             tlfRules:[
-                v => (!v || v.length <= 10) || 'El teléfono debe ser menor o igual a 10 digitos ',
+                v => (!v || v.length <= 10) || 'El teléfono debe ser menor o igual a 10 dígitos ',
                 v => /^\d*$/.test(v) || 'El número no puede tener caracteres especiales',
+            ],
+            secuencialRule:[
+                v => /^\d*$/.test(v) || 'Sin caracteres especiales',
+                v => (!v || v.length <= 9) || 'Hasta 9 dígitos'
             ]
         }),
         computed:{
-            ...mapState(['loadingBtn2'])
+            ...mapState(['loadingBtn2']),
+
         },
         methods:{
             ...mapMutations(['setLoadingBtn2','setLoadingBtn']),
 
-            ...mapActions(['alertNotification','errorRequest']),
+            ...mapActions(['alertNotification','errorRequest','httpRequest']),
 
             addNumeroEsp(tipo){
 
@@ -581,8 +618,19 @@
                 console.log(tipo,this.ptoEmision,this.facturero)
             },
 
-            removeInput(id){
-                $("div#"+id).remove();
+            removeInput(item){
+
+                var index = this.facturero.indexOf(item)
+
+                if(index > -1){
+                    if(this.facturero.length>1)
+                        this.facturero.splice(index,1)
+                }else{
+                    index = this.ptoEmision.indexOf(item)
+                    if(this.ptoEmision.length>1)
+                        this.ptoEmision.splice(index,1)
+                }
+
             },
 
             getImagen(event){
@@ -634,16 +682,20 @@
                 ).then(response => {
 
                     this.setLoadingBtn()
+
                     this.alertNotification({
                         param:{
                             html: response.data.msg
                         }
                     });
+
                     this.fileP12Save = true
                     this.perfil.empresa_firma = response.data.empresaFirma
                     this.perfil.nombre_firma = response.data.nombreFirma
                     this.perfil.firma_desde = response.data.firmaDesde
                     this.perfil.firma_hasta = response.data.firmaHasta
+
+                    console.log(this.existPerfil)
 
                 }).catch(error => {
 
@@ -730,14 +782,50 @@
                 });
             },
 
-            updateInfoAdicional(){
+            storeInfoAdicional(){
 
+                if(!this.$refs.form_datos_adicionales.validate())
+                    return
+
+                let infoAdicional={
+                    id_usuario : this.usuario.id_usuario,
+                    entorno: this.entorno
+                }
+
+                if(this.secuencial.n_factura.length>0)
+                    infoAdicional.n_factura = this.secuencial.n_factura
+                if(this.secuencial.n_guia_remision.length>0)
+                    infoAdicional.n_guia_remision = this.secuencial.n_guia_remision
+                if(this.secuencial.n_nota_credito.length>0)
+                    infoAdicional.n_nota_credito = this.secuencial.n_nota_credito
+                if(this.secuencial.n_nota_debito.length>0)
+                    infoAdicional.n_nota_debito = this.secuencial.n_nota_debito
+                if(this.secuencial.n_retencion.length>0)
+                    infoAdicional.n_retencion = this.secuencial.n_retencion
+
+                infoAdicional.factureros = this.facturero
+                infoAdicional.ptoEmision = this.ptoEmision
+
+                this.httpRequest({
+
+                    method:'post',
+                    url:'perfil/store_info_adicional',
+                    data:infoAdicional
+
+                }).then((res)=>{
+
+                    this.usuario.perfil = res.data.perfil
+
+                    this.dialogInfoAdicional=false
+
+                })
 
             }
         },
         mounted() {
 
             this.user= this.usuario.nombre
+
             this.avatar=this.storage+'/icono_usuario.png'
             if(typeof this.perfil.razon_social !=="undefined")
                 this.razonSocial = this.perfil.razon_social
@@ -765,11 +853,30 @@
                 this.avatar = this.storage+'/'+this.usuario.imagen
 
             for(let modulo of this.usuario.modulos){
-                this.modulos.facturacion = (this.modulos.facturacion || modulo.id_modulo === 1)
-                this.modulos.guiaRemision = (this.modulos.guiaRemision || modulo.id_modulo === 2)
-                this.modulos.notaDebito = (this.modulos.notaDebito || modulo.id_modulo === 3)
-                this.modulos.notaCredito = (this.modulos.notaCredito || modulo.id_modulo === 4)
+                this.modulos.facturacion = this.modulos.facturacion || modulo.id_modulo === 1
+                this.modulos.guiaRemision = this.modulos.guiaRemision || modulo.id_modulo === 2
+                this.modulos.notaDebito = this.modulos.notaDebito || modulo.id_modulo === 3
+                this.modulos.notaCredito = this.modulos.notaCredito || modulo.id_modulo === 4
+                this.modulos.retencion = this.modulos.retencion || modulo.id_modulo === 5
             }
+
+            this.secuencial.n_factura = this.usuario.perfil.n_factura
+            this.secuencial.n_guia_remision = this.usuario.perfil.n_guia_remision
+            this.secuencial.n_nota_credito = this.usuario.perfil.n_nota_credito
+            this.secuencial.n_nota_debito = this.usuario.perfil.n_nota_debito
+            this.secuencial.n_retencion = this.usuario.perfil.n_retencion
+            this.entorno= this.usuario.perfil.entorno === 2
+
+            if(this.usuario.factureros.length>0)
+                this.facturero = this.usuario.factureros
+
+            if(this.usuario.pto_emision.length>0)
+                this.ptoEmision = this.usuario.pto_emision
+
+            if(!!this.usuario.perfil)
+                this.existPerfil = true
+
+            console.log(this.usuario.pto_emision[0].numero)
         }
 
     }

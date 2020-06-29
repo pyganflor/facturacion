@@ -15,6 +15,7 @@ Route::group(['middleware' => 'auth'],function () {
     include_once 'usuarios/clientes/rutas.php';
     include_once 'usuarios/inventario/rutas.php';
     include_once 'usuarios/proveedores/rutas.php';
+    include_once 'usuarios/comprobantes/factura.php';
 
     Route::group(['middleware'=>'Permiso'],function (){
 

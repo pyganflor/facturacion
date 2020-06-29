@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\{RequestUpdateAccesos,RequestUpdatePerfil};
-use App\Model\{UsuarioPerfil,Usuario};
+use App\Http\Requests\{RequestStoreInfoAdicional, RequestUpdateAccesos, RequestUpdatePerfil};
+use App\Model\{UsuarioFacturero, UsuarioPerfil, Usuario, UsuarioPtoEmision};
 use Illuminate\Support\Facades\{Auth,Hash,Storage};
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -13,7 +13,8 @@ class PerfilController extends Controller
 {
     public function inicio(){
         return view('perfil.inicio',[
-            'usuario'=> Usuario::where('id_usuario',Auth::user()->id_usuario)->with('modulos')->first(),
+            'usuario'=> Usuario::where('id_usuario',Auth::user()->id_usuario)
+                                ->with('perfil')->with('modulos')->with('ptoEmision')->with('factureros')->first(),
             'storage' => Storage::url('img_user')
         ]);
     }
@@ -125,6 +126,57 @@ class PerfilController extends Controller
         }catch (\Exception $e){
             return HomeController::catch($e);
         }
+
+    }
+
+    public function storeInfoAdicional(RequestStoreInfoAdicional $request){
+
+        try{
+
+            $perfil = UsuarioPerfil::updateOrCreate(
+                ['id_usuario'=>$request->id_usuario],
+                [
+                    'n_factura' => str_pad($request->n_factura, 9, '0', STR_PAD_LEFT),
+                    'n_guia_remision' => str_pad($request->n_guia_remision, 9, '0', STR_PAD_LEFT),
+                    'n_retencion' => str_pad($request->n_retencion, 9, '0', STR_PAD_LEFT),
+                    'n_nota_debito' => str_pad($request->n_nota_debito, 9, '0', STR_PAD_LEFT),
+                    'n_nota_credito' => str_pad($request->n_nota_credito, 9, '0', STR_PAD_LEFT),
+                    "entorno" => $request->entorno == "true" ? 2 : 1
+                ]
+            );
+
+
+            $oldFactureros = UsuarioFacturero::where('id_usuario',$request->id_usuario)->pluck('id_usuario_facturero')->toArray();
+            $oldptosEmision = UsuarioPtoEmision::where('id_usuario',$request->id_usuario)->pluck('id_usuario_pto_emision')->toArray();
+
+            foreach ($request->factureros as $facturero) {
+                $f = json_decode($facturero);
+                UsuarioFacturero::create([
+                    'id_usuario' => $request->id_usuario,
+                   'numero' => str_pad($f->numero, 3, '0', STR_PAD_LEFT)
+                ]);
+            }
+
+            foreach ($request->ptoEmision as $ptoEmision) {
+                $p = json_decode($ptoEmision);
+                UsuarioPtoEmision::create([
+                    'id_usuario' => $request->id_usuario,
+                    'numero' => str_pad($p->numero, 3, '0', STR_PAD_LEFT)
+                ]);
+            }
+
+            UsuarioFacturero::destroy($oldFactureros);
+            UsuarioPtoEmision::destroy($oldptosEmision);
+
+            return response()->json([
+                'msg' => 'Se han guardado los datos adicionales',
+                'perfil' => $perfil
+            ]);
+
+        }catch (\Exception $e){
+            return HomeController::catch($e);
+        }
+
 
     }
 }

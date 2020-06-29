@@ -32,13 +32,13 @@ class UsuarioPerfil extends Model
         'entorno',
         'n_factura',
         'n_guia_remision',
+        'n_nota_debito',
+        'n_nota_credito',
         'n_retencion',
-        'pto_emision',
-        'n_establecimiento',
         'fecha_registro'
     ];
 
     protected $hidden = [
-        'pass_firma_elec','empresa_firma','firma_desde','firma_hasta','firma_elec'
+        'empresa_firma','firma_desde','firma_hasta','firma_elec'
     ];
 }

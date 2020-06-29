@@ -2666,6 +2666,25 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=script&lang=js&":
+/*!****************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=script&lang=js& ***!
+  \****************************************************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+/* harmony default export */ __webpack_exports__["default"] = ({
+  name: "FacturaComponent"
+});
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/dashboard/AdministradorComponent.vue?vue&type=script&lang=js&":
 /*!*******************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib??ref--4-0!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/dashboard/AdministradorComponent.vue?vue&type=script&lang=js& ***!
@@ -4546,6 +4565,35 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: {
@@ -4572,7 +4620,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         n_factura: '',
         n_guia_remison: '',
         n_nota_debito: '',
-        n_nota_credito: ''
+        n_nota_credito: '',
+        n_retencion: ''
       },
       ptoEmision: [{
         numero: ''
@@ -4580,6 +4629,12 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       facturero: [{
         numero: ''
       }],
+      entornos: [{
+        texto: 'Pruebas (Los comprobantes generados no tendrán validez)'
+      }, {
+        texto: 'Producción'
+      }],
+      entorno: false,
       contriEsp: '',
       oblContablidad: ['SI', 'NO'],
       obligadoContabilidad: '',
@@ -4614,7 +4669,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
       rucRules: [function (v) {
         return !!v || 'El ruc es obligatorio ';
       }, function (v) {
-        return v && v.length === 13 || 'El ruc debe ser de 13 digitos';
+        return v && v.length === 13 || 'El ruc debe ser de 13 dígitos';
       }],
       usuarioRules: [function (v) {
         return v && v.length >= 6 || 'Debe escribir por lo menos 6 caracteres';
@@ -4633,9 +4688,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         return !!v || 'Defina si es obligado a llevar contabilidad';
       }],
       requiredRule: [function (v) {
-        return !!v || 'Campo obligatorio';
-      }, function (v) {
-        return !v || v.length == 3 || 'El número debe ser igual a 3 digitos';
+        return !!v && v.length == 3 || 'Hasta 3 dígitos';
       }, function (v) {
         return /^\d*$/.test(v) || 'El número no puede tener caracteres especiales';
       }],
@@ -4652,7 +4705,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         facturacion: false,
         notaDebito: false,
         notaCredito: false,
-        guiaRemision: false
+        guiaRemision: false,
+        retencion: false
       },
       correoRules: [function (v) {
         return !!v || 'Debe escribir un correo electrónico personal';
@@ -4660,14 +4714,19 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         return /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe escribir un correo válido';
       }],
       tlfRules: [function (v) {
-        return !v || v.length <= 10 || 'El teléfono debe ser menor o igual a 10 digitos ';
+        return !v || v.length <= 10 || 'El teléfono debe ser menor o igual a 10 dígitos ';
       }, function (v) {
         return /^\d*$/.test(v) || 'El número no puede tener caracteres especiales';
+      }],
+      secuencialRule: [function (v) {
+        return /^\d*$/.test(v) || 'Sin caracteres especiales';
+      }, function (v) {
+        return !v || v.length <= 9 || 'Hasta 9 dígitos';
       }]
     };
   },
   computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_0__["mapState"])(['loadingBtn2'])),
-  methods: _objectSpread(_objectSpread(_objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_0__["mapMutations"])(['setLoadingBtn2', 'setLoadingBtn'])), Object(vuex__WEBPACK_IMPORTED_MODULE_0__["mapActions"])(['alertNotification', 'errorRequest'])), {}, {
+  methods: _objectSpread(_objectSpread(_objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_0__["mapMutations"])(['setLoadingBtn2', 'setLoadingBtn'])), Object(vuex__WEBPACK_IMPORTED_MODULE_0__["mapActions"])(['alertNotification', 'errorRequest', 'httpRequest'])), {}, {
     addNumeroEsp: function addNumeroEsp(tipo) {
       if (tipo === 'pe') {
         this.ptoEmision.push({
@@ -4681,8 +4740,15 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
       console.log(tipo, this.ptoEmision, this.facturero);
     },
-    removeInput: function removeInput(id) {
-      $("div#" + id).remove();
+    removeInput: function removeInput(item) {
+      var index = this.facturero.indexOf(item);
+
+      if (index > -1) {
+        if (this.facturero.length > 1) this.facturero.splice(index, 1);
+      } else {
+        index = this.ptoEmision.indexOf(item);
+        if (this.ptoEmision.length > 1) this.ptoEmision.splice(index, 1);
+      }
     },
     getImagen: function getImagen(event) {
       if (typeof event != "undefined") {
@@ -4735,6 +4801,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         _this.perfil.nombre_firma = response.data.nombreFirma;
         _this.perfil.firma_desde = response.data.firmaDesde;
         _this.perfil.firma_hasta = response.data.firmaHasta;
+        console.log(_this.existPerfil);
       })["catch"](function (error) {
         var response = error.response;
 
@@ -4796,7 +4863,30 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         closeButtonHtml: '<span class="mdi mdi-close"></span>'
       });
     },
-    updateInfoAdicional: function updateInfoAdicional() {}
+    storeInfoAdicional: function storeInfoAdicional() {
+      var _this3 = this;
+
+      if (!this.$refs.form_datos_adicionales.validate()) return;
+      var infoAdicional = {
+        id_usuario: this.usuario.id_usuario,
+        entorno: this.entorno
+      };
+      if (this.secuencial.n_factura.length > 0) infoAdicional.n_factura = this.secuencial.n_factura;
+      if (this.secuencial.n_guia_remision.length > 0) infoAdicional.n_guia_remision = this.secuencial.n_guia_remision;
+      if (this.secuencial.n_nota_credito.length > 0) infoAdicional.n_nota_credito = this.secuencial.n_nota_credito;
+      if (this.secuencial.n_nota_debito.length > 0) infoAdicional.n_nota_debito = this.secuencial.n_nota_debito;
+      if (this.secuencial.n_retencion.length > 0) infoAdicional.n_retencion = this.secuencial.n_retencion;
+      infoAdicional.factureros = this.facturero;
+      infoAdicional.ptoEmision = this.ptoEmision;
+      this.httpRequest({
+        method: 'post',
+        url: 'perfil/store_info_adicional',
+        data: infoAdicional
+      }).then(function (res) {
+        _this3.usuario.perfil = res.data.perfil;
+        _this3.dialogInfoAdicional = false;
+      });
+    }
   }),
   mounted: function mounted() {
     this.user = this.usuario.nombre;
@@ -4824,12 +4914,24 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
         this.modulos.guiaRemision = this.modulos.guiaRemision || modulo.id_modulo === 2;
         this.modulos.notaDebito = this.modulos.notaDebito || modulo.id_modulo === 3;
         this.modulos.notaCredito = this.modulos.notaCredito || modulo.id_modulo === 4;
+        this.modulos.retencion = this.modulos.retencion || modulo.id_modulo === 5;
       }
     } catch (err) {
       _iterator.e(err);
     } finally {
       _iterator.f();
     }
+
+    this.secuencial.n_factura = this.usuario.perfil.n_factura;
+    this.secuencial.n_guia_remision = this.usuario.perfil.n_guia_remision;
+    this.secuencial.n_nota_credito = this.usuario.perfil.n_nota_credito;
+    this.secuencial.n_nota_debito = this.usuario.perfil.n_nota_debito;
+    this.secuencial.n_retencion = this.usuario.perfil.n_retencion;
+    this.entorno = this.usuario.perfil.entorno === 2;
+    if (this.usuario.factureros.length > 0) this.facturero = this.usuario.factureros;
+    if (this.usuario.pto_emision.length > 0) this.ptoEmision = this.usuario.pto_emision;
+    if (!!this.usuario.perfil) this.existPerfil = true;
+    console.log(this.usuario.pto_emision[0].numero);
   }
 });
 
@@ -46132,6 +46234,30 @@ render._withStripped = true
 
 /***/ }),
 
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=template&id=1509059a&scoped=true&":
+/*!********************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=template&id=1509059a&scoped=true& ***!
+  \********************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", [_vm._v("Facturas")])
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
 /***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/dashboard/AdministradorComponent.vue?vue&type=template&id=1ebffb86&":
 /*!***********************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/components/dashboard/AdministradorComponent.vue?vue&type=template&id=1ebffb86& ***!
@@ -48453,603 +48579,737 @@ var render = function() {
                                     1
                                   ),
                                   _vm._v(" "),
-                                  _c(
-                                    "v-dialog",
-                                    {
-                                      attrs: {
-                                        persistent: "",
-                                        "max-width": "800px"
-                                      },
-                                      scopedSlots: _vm._u([
+                                  _vm.fileP12Save
+                                    ? _c(
+                                        "v-dialog",
                                         {
-                                          key: "activator",
-                                          fn: function(ref) {
-                                            var on = ref.on
-                                            var attrs = ref.attrs
-                                            return [
-                                              _c(
-                                                "v-btn",
-                                                _vm._g(
-                                                  _vm._b(
-                                                    {
-                                                      attrs: {
-                                                        color: "primary",
-                                                        dark: ""
-                                                      }
-                                                    },
-                                                    "v-btn",
-                                                    attrs,
-                                                    false
-                                                  ),
-                                                  on
-                                                ),
-                                                [
-                                                  _c("v-icon", [
-                                                    _vm._v(
-                                                      "mdi-information-outline"
+                                          attrs: {
+                                            persistent: "",
+                                            "max-width": "900px"
+                                          },
+                                          scopedSlots: _vm._u(
+                                            [
+                                              {
+                                                key: "activator",
+                                                fn: function(ref) {
+                                                  var on = ref.on
+                                                  var attrs = ref.attrs
+                                                  return [
+                                                    _c(
+                                                      "v-btn",
+                                                      _vm._g(
+                                                        _vm._b(
+                                                          {
+                                                            attrs: {
+                                                              color: "primary",
+                                                              dark: ""
+                                                            }
+                                                          },
+                                                          "v-btn",
+                                                          attrs,
+                                                          false
+                                                        ),
+                                                        on
+                                                      ),
+                                                      [
+                                                        _c("v-icon", [
+                                                          _vm._v(
+                                                            "mdi-information-outline"
+                                                          )
+                                                        ]),
+                                                        _vm._v(
+                                                          " Info adicional\n                                        "
+                                                        )
+                                                      ],
+                                                      1
                                                     )
-                                                  ]),
-                                                  _vm._v(
-                                                    " Info adicional\n                                        "
-                                                  )
-                                                ],
-                                                1
-                                              )
-                                            ]
+                                                  ]
+                                                }
+                                              }
+                                            ],
+                                            null,
+                                            false,
+                                            3123344710
+                                          ),
+                                          model: {
+                                            value: _vm.dialogInfoAdicional,
+                                            callback: function($$v) {
+                                              _vm.dialogInfoAdicional = $$v
+                                            },
+                                            expression: "dialogInfoAdicional"
                                           }
-                                        }
-                                      ]),
-                                      model: {
-                                        value: _vm.dialogInfoAdicional,
-                                        callback: function($$v) {
-                                          _vm.dialogInfoAdicional = $$v
                                         },
-                                        expression: "dialogInfoAdicional"
-                                      }
-                                    },
-                                    [
-                                      _vm._v(" "),
-                                      _c(
-                                        "v-card",
                                         [
-                                          _c("v-card-title", [
-                                            _c(
-                                              "span",
-                                              { staticClass: "headline" },
-                                              [
-                                                _vm._v(
-                                                  "Datos adicionales para la facturación"
-                                                )
-                                              ]
-                                            )
-                                          ]),
                                           _vm._v(" "),
                                           _c(
-                                            "v-container",
-                                            { staticClass: "py-0" },
+                                            "v-card",
                                             [
+                                              _c("v-card-title", [
+                                                _c(
+                                                  "span",
+                                                  { staticClass: "headline" },
+                                                  [
+                                                    _vm._v(
+                                                      "Datos adicionales para la facturación"
+                                                    )
+                                                  ]
+                                                )
+                                              ]),
+                                              _vm._v(" "),
                                               _c(
-                                                "v-col",
+                                                "v-container",
                                                 { staticClass: "py-0" },
                                                 [
                                                   _c(
-                                                    "v-form",
-                                                    {
-                                                      ref:
-                                                        "form_dataos_adicionales"
-                                                    },
+                                                    "v-col",
+                                                    { staticClass: "py-0" },
                                                     [
                                                       _c(
-                                                        "v-row",
-                                                        [
-                                                          _vm.modulos
-                                                            .facturacion
-                                                            ? _c(
-                                                                "v-col",
-                                                                {
-                                                                  staticClass:
-                                                                    "12",
-                                                                  attrs: {
-                                                                    md: "3"
-                                                                  }
-                                                                },
-                                                                [
-                                                                  _c(
-                                                                    "v-text-field",
-                                                                    {
-                                                                      attrs: {
-                                                                        label:
-                                                                          "Nº de factura",
-                                                                        required:
-                                                                          "",
-                                                                        type:
-                                                                          "number",
-                                                                        min: "0"
-                                                                      },
-                                                                      model: {
-                                                                        value:
-                                                                          _vm
-                                                                            .secuencial
-                                                                            .n_factura,
-                                                                        callback: function(
-                                                                          $$v
-                                                                        ) {
-                                                                          _vm.$set(
-                                                                            _vm.secuencial,
-                                                                            "n_factura",
-                                                                            $$v
-                                                                          )
-                                                                        },
-                                                                        expression:
-                                                                          "secuencial.n_factura"
-                                                                      }
-                                                                    }
-                                                                  )
-                                                                ],
-                                                                1
-                                                              )
-                                                            : _vm._e(),
-                                                          _vm._v(" "),
-                                                          _vm.modulos
-                                                            .guiaRemision
-                                                            ? _c(
-                                                                "v-col",
-                                                                {
-                                                                  attrs: {
-                                                                    md: "3"
-                                                                  }
-                                                                },
-                                                                [
-                                                                  _c(
-                                                                    "v-text-field",
-                                                                    {
-                                                                      attrs: {
-                                                                        label:
-                                                                          "Nº de guía",
-                                                                        required:
-                                                                          "",
-                                                                        type:
-                                                                          "number",
-                                                                        min: "0"
-                                                                      },
-                                                                      model: {
-                                                                        value:
-                                                                          _vm
-                                                                            .secuencial
-                                                                            .n_guia_remison,
-                                                                        callback: function(
-                                                                          $$v
-                                                                        ) {
-                                                                          _vm.$set(
-                                                                            _vm.secuencial,
-                                                                            "n_guia_remison",
-                                                                            $$v
-                                                                          )
-                                                                        },
-                                                                        expression:
-                                                                          "secuencial.n_guia_remison"
-                                                                      }
-                                                                    }
-                                                                  )
-                                                                ],
-                                                                1
-                                                              )
-                                                            : _vm._e(),
-                                                          _vm._v(" "),
-                                                          _vm.modulos.notaDebito
-                                                            ? _c(
-                                                                "v-col",
-                                                                {
-                                                                  staticClass:
-                                                                    "12",
-                                                                  attrs: {
-                                                                    md: "3"
-                                                                  }
-                                                                },
-                                                                [
-                                                                  _c(
-                                                                    "v-text-field",
-                                                                    {
-                                                                      attrs: {
-                                                                        label:
-                                                                          "Nº de nota de débito",
-                                                                        required:
-                                                                          "",
-                                                                        type:
-                                                                          "number",
-                                                                        min: "0"
-                                                                      },
-                                                                      model: {
-                                                                        value:
-                                                                          _vm
-                                                                            .secuencial
-                                                                            .n_nota_debito,
-                                                                        callback: function(
-                                                                          $$v
-                                                                        ) {
-                                                                          _vm.$set(
-                                                                            _vm.secuencial,
-                                                                            "n_nota_debito",
-                                                                            $$v
-                                                                          )
-                                                                        },
-                                                                        expression:
-                                                                          "secuencial.n_nota_debito"
-                                                                      }
-                                                                    }
-                                                                  )
-                                                                ],
-                                                                1
-                                                              )
-                                                            : _vm._e(),
-                                                          _vm._v(" "),
-                                                          _vm.modulos
-                                                            .notaCredito
-                                                            ? _c(
-                                                                "v-col",
-                                                                {
-                                                                  staticClass:
-                                                                    "12",
-                                                                  attrs: {
-                                                                    md: "3"
-                                                                  }
-                                                                },
-                                                                [
-                                                                  _c(
-                                                                    "v-text-field",
-                                                                    {
-                                                                      attrs: {
-                                                                        label:
-                                                                          "Nº de nota de crédito",
-                                                                        required:
-                                                                          "",
-                                                                        type:
-                                                                          "number",
-                                                                        min: "0"
-                                                                      },
-                                                                      model: {
-                                                                        value:
-                                                                          _vm
-                                                                            .secuencial
-                                                                            .n_nota_credito,
-                                                                        callback: function(
-                                                                          $$v
-                                                                        ) {
-                                                                          _vm.$set(
-                                                                            _vm.secuencial,
-                                                                            "n_nota_credito",
-                                                                            $$v
-                                                                          )
-                                                                        },
-                                                                        expression:
-                                                                          "secuencial.n_nota_credito"
-                                                                      }
-                                                                    }
-                                                                  )
-                                                                ],
-                                                                1
-                                                              )
-                                                            : _vm._e()
-                                                        ],
-                                                        1
-                                                      ),
-                                                      _vm._v(" "),
-                                                      _c(
-                                                        "v-row",
+                                                        "v-form",
+                                                        {
+                                                          ref:
+                                                            "form_datos_adicionales"
+                                                        },
                                                         [
                                                           _c(
-                                                            "v-col",
-                                                            {
-                                                              attrs: {
-                                                                cols: "12",
-                                                                sm: "6"
-                                                              }
-                                                            },
+                                                            "v-row",
+                                                            [
+                                                              _vm.modulos
+                                                                .facturacion
+                                                                ? _c(
+                                                                    "v-col",
+                                                                    {
+                                                                      staticClass:
+                                                                        "12",
+                                                                      attrs: {
+                                                                        md: "2"
+                                                                      }
+                                                                    },
+                                                                    [
+                                                                      _c(
+                                                                        "v-text-field",
+                                                                        {
+                                                                          attrs: {
+                                                                            label:
+                                                                              "Nº de factura",
+                                                                            required:
+                                                                              "",
+                                                                            rules:
+                                                                              _vm.secuencialRule,
+                                                                            type:
+                                                                              "number",
+                                                                            min:
+                                                                              "0"
+                                                                          },
+                                                                          model: {
+                                                                            value:
+                                                                              _vm
+                                                                                .secuencial
+                                                                                .n_factura,
+                                                                            callback: function(
+                                                                              $$v
+                                                                            ) {
+                                                                              _vm.$set(
+                                                                                _vm.secuencial,
+                                                                                "n_factura",
+                                                                                $$v
+                                                                              )
+                                                                            },
+                                                                            expression:
+                                                                              "secuencial.n_factura"
+                                                                          }
+                                                                        }
+                                                                      )
+                                                                    ],
+                                                                    1
+                                                                  )
+                                                                : _vm._e(),
+                                                              _vm._v(" "),
+                                                              _vm.modulos
+                                                                .guiaRemision
+                                                                ? _c(
+                                                                    "v-col",
+                                                                    {
+                                                                      attrs: {
+                                                                        md: "2"
+                                                                      }
+                                                                    },
+                                                                    [
+                                                                      _c(
+                                                                        "v-text-field",
+                                                                        {
+                                                                          attrs: {
+                                                                            label:
+                                                                              "Nº de guía",
+                                                                            required:
+                                                                              "",
+                                                                            type:
+                                                                              "number",
+                                                                            min:
+                                                                              "0",
+                                                                            rules:
+                                                                              _vm.secuencialRule
+                                                                          },
+                                                                          model: {
+                                                                            value:
+                                                                              _vm
+                                                                                .secuencial
+                                                                                .n_guia_remision,
+                                                                            callback: function(
+                                                                              $$v
+                                                                            ) {
+                                                                              _vm.$set(
+                                                                                _vm.secuencial,
+                                                                                "n_guia_remision",
+                                                                                $$v
+                                                                              )
+                                                                            },
+                                                                            expression:
+                                                                              "secuencial.n_guia_remision"
+                                                                          }
+                                                                        }
+                                                                      )
+                                                                    ],
+                                                                    1
+                                                                  )
+                                                                : _vm._e(),
+                                                              _vm._v(" "),
+                                                              _vm.modulos
+                                                                .notaDebito
+                                                                ? _c(
+                                                                    "v-col",
+                                                                    {
+                                                                      staticClass:
+                                                                        "12",
+                                                                      attrs: {
+                                                                        md: "3"
+                                                                      }
+                                                                    },
+                                                                    [
+                                                                      _c(
+                                                                        "v-text-field",
+                                                                        {
+                                                                          attrs: {
+                                                                            label:
+                                                                              "Nº de nota de débito",
+                                                                            required:
+                                                                              "",
+                                                                            type:
+                                                                              "number",
+                                                                            rules:
+                                                                              _vm.secuencialRule,
+                                                                            min:
+                                                                              "0"
+                                                                          },
+                                                                          model: {
+                                                                            value:
+                                                                              _vm
+                                                                                .secuencial
+                                                                                .n_nota_debito,
+                                                                            callback: function(
+                                                                              $$v
+                                                                            ) {
+                                                                              _vm.$set(
+                                                                                _vm.secuencial,
+                                                                                "n_nota_debito",
+                                                                                $$v
+                                                                              )
+                                                                            },
+                                                                            expression:
+                                                                              "secuencial.n_nota_debito"
+                                                                          }
+                                                                        }
+                                                                      )
+                                                                    ],
+                                                                    1
+                                                                  )
+                                                                : _vm._e(),
+                                                              _vm._v(" "),
+                                                              _vm.modulos
+                                                                .notaCredito
+                                                                ? _c(
+                                                                    "v-col",
+                                                                    {
+                                                                      staticClass:
+                                                                        "12",
+                                                                      attrs: {
+                                                                        md: "3"
+                                                                      }
+                                                                    },
+                                                                    [
+                                                                      _c(
+                                                                        "v-text-field",
+                                                                        {
+                                                                          attrs: {
+                                                                            label:
+                                                                              "Nº de nota de crédito",
+                                                                            required:
+                                                                              "",
+                                                                            type:
+                                                                              "number",
+                                                                            rules:
+                                                                              _vm.secuencialRule,
+                                                                            min:
+                                                                              "0"
+                                                                          },
+                                                                          model: {
+                                                                            value:
+                                                                              _vm
+                                                                                .secuencial
+                                                                                .n_nota_credito,
+                                                                            callback: function(
+                                                                              $$v
+                                                                            ) {
+                                                                              _vm.$set(
+                                                                                _vm.secuencial,
+                                                                                "n_nota_credito",
+                                                                                $$v
+                                                                              )
+                                                                            },
+                                                                            expression:
+                                                                              "secuencial.n_nota_credito"
+                                                                          }
+                                                                        }
+                                                                      )
+                                                                    ],
+                                                                    1
+                                                                  )
+                                                                : _vm._e(),
+                                                              _vm._v(" "),
+                                                              _vm.modulos
+                                                                .retencion
+                                                                ? _c(
+                                                                    "v-col",
+                                                                    {
+                                                                      staticClass:
+                                                                        "12",
+                                                                      attrs: {
+                                                                        md: "2"
+                                                                      }
+                                                                    },
+                                                                    [
+                                                                      _c(
+                                                                        "v-text-field",
+                                                                        {
+                                                                          attrs: {
+                                                                            label:
+                                                                              "Nº de retención",
+                                                                            required:
+                                                                              "",
+                                                                            type:
+                                                                              "number",
+                                                                            min:
+                                                                              "0",
+                                                                            rules:
+                                                                              _vm.secuencialRule
+                                                                          },
+                                                                          model: {
+                                                                            value:
+                                                                              _vm
+                                                                                .secuencial
+                                                                                .n_retencion,
+                                                                            callback: function(
+                                                                              $$v
+                                                                            ) {
+                                                                              _vm.$set(
+                                                                                _vm.secuencial,
+                                                                                "n_retencion",
+                                                                                $$v
+                                                                              )
+                                                                            },
+                                                                            expression:
+                                                                              "secuencial.n_retencion"
+                                                                          }
+                                                                        }
+                                                                      )
+                                                                    ],
+                                                                    1
+                                                                  )
+                                                                : _vm._e()
+                                                            ],
+                                                            1
+                                                          ),
+                                                          _vm._v(" "),
+                                                          _c(
+                                                            "v-row",
                                                             [
                                                               _c(
                                                                 "v-col",
                                                                 {
+                                                                  staticClass:
+                                                                    "py-0",
                                                                   attrs: {
                                                                     cols: "12"
                                                                   }
                                                                 },
                                                                 [
-                                                                  _c("v-row", [
-                                                                    _c(
-                                                                      "div",
-                                                                      {
-                                                                        staticClass:
-                                                                          "headline col-sm-9 col-md-10"
-                                                                      },
-                                                                      [
-                                                                        _vm._v(
-                                                                          "Puntos de emisión"
-                                                                        )
-                                                                      ]
-                                                                    ),
-                                                                    _vm._v(" "),
-                                                                    _c(
-                                                                      "div",
-                                                                      {
-                                                                        staticClass:
-                                                                          "col-sm-3 col-md-2"
-                                                                      },
-                                                                      [
-                                                                        _c(
-                                                                          "v-btn",
-                                                                          {
-                                                                            attrs: {
-                                                                              color:
-                                                                                "primary",
-                                                                              fab:
-                                                                                "",
-                                                                              "x-small":
-                                                                                ""
-                                                                            },
-                                                                            on: {
-                                                                              click: function(
-                                                                                $event
-                                                                              ) {
-                                                                                return _vm.addNumeroEsp(
-                                                                                  "pe"
-                                                                                )
-                                                                              }
-                                                                            }
-                                                                          },
-                                                                          [
-                                                                            _c(
-                                                                              "v-icon",
-                                                                              [
-                                                                                _vm._v(
-                                                                                  "mdi-plus-circle-outline"
-                                                                                )
-                                                                              ]
+                                                                  _c(
+                                                                    "v-switch",
+                                                                    {
+                                                                      staticClass:
+                                                                        "py-0",
+                                                                      attrs: {
+                                                                        inset:
+                                                                          "",
+                                                                        label:
+                                                                          "Entorno para autorizaciones con el SRI: " +
+                                                                          _vm
+                                                                            .entornos[
+                                                                            Number(
+                                                                              _vm.entorno
                                                                             )
-                                                                          ],
-                                                                          1
-                                                                        )
-                                                                      ],
-                                                                      1
-                                                                    )
-                                                                  ])
-                                                                ],
-                                                                1
-                                                              ),
-                                                              _vm._v(" "),
-                                                              _c(
-                                                                "v-row",
-                                                                _vm._l(
-                                                                  _vm.ptoEmision,
-                                                                  function(
-                                                                    pe,
-                                                                    x
-                                                                  ) {
-                                                                    return _c(
-                                                                      "v-col",
-                                                                      {
-                                                                        key:
-                                                                          "pto_" +
-                                                                          x,
-                                                                        attrs: {
-                                                                          cols:
-                                                                            "12",
-                                                                          md:
-                                                                            "4",
-                                                                          sm:
-                                                                            "6",
-                                                                          id:
-                                                                            "pto_" +
-                                                                            x
-                                                                        }
+                                                                          ]
+                                                                            .texto
                                                                       },
-                                                                      [
-                                                                        _c(
-                                                                          "v-text-field",
-                                                                          {
-                                                                            attrs: {
-                                                                              label:
-                                                                                "Número",
-                                                                              rules:
-                                                                                _vm.requiredRule,
-                                                                              type:
-                                                                                "number",
-                                                                              required:
-                                                                                "",
-                                                                              "append-icon":
-                                                                                "mdi-delete-forever"
-                                                                            },
-                                                                            on: {
-                                                                              "click:append": function(
-                                                                                $event
-                                                                              ) {
-                                                                                return _vm.removeInput(
-                                                                                  "pto_" +
-                                                                                    x
-                                                                                )
-                                                                              }
-                                                                            },
-                                                                            model: {
-                                                                              value:
-                                                                                pe.numero,
-                                                                              callback: function(
-                                                                                $$v
-                                                                              ) {
-                                                                                _vm.$set(
-                                                                                  pe,
-                                                                                  "numero",
-                                                                                  $$v
-                                                                                )
-                                                                              },
-                                                                              expression:
-                                                                                "pe.numero"
-                                                                            }
-                                                                          }
-                                                                        )
-                                                                      ],
-                                                                      1
-                                                                    )
-                                                                  }
-                                                                ),
+                                                                      model: {
+                                                                        value:
+                                                                          _vm.entorno,
+                                                                        callback: function(
+                                                                          $$v
+                                                                        ) {
+                                                                          _vm.entorno = $$v
+                                                                        },
+                                                                        expression:
+                                                                          "entorno"
+                                                                      }
+                                                                    }
+                                                                  )
+                                                                ],
                                                                 1
                                                               )
                                                             ],
                                                             1
                                                           ),
                                                           _vm._v(" "),
-                                                          _c("v-divider", {
-                                                            attrs: {
-                                                              inset: "",
-                                                              vertical: ""
-                                                            }
-                                                          }),
-                                                          _vm._v(" "),
                                                           _c(
-                                                            "v-col",
+                                                            "v-row",
                                                             [
                                                               _c(
                                                                 "v-col",
                                                                 {
                                                                   attrs: {
-                                                                    cols: "12"
+                                                                    cols: "12",
+                                                                    sm: "6"
                                                                   }
                                                                 },
                                                                 [
-                                                                  _c("v-row", [
-                                                                    _c(
-                                                                      "div",
-                                                                      {
-                                                                        staticClass:
-                                                                          "headline col-sm-9 col-md-10"
-                                                                      },
-                                                                      [
-                                                                        _vm._v(
-                                                                          "Números de factureros"
-                                                                        )
-                                                                      ]
-                                                                    ),
-                                                                    _vm._v(" "),
-                                                                    _c(
-                                                                      "div",
-                                                                      {
-                                                                        staticClass:
-                                                                          "col-sm-3 col-md-2"
-                                                                      },
-                                                                      [
-                                                                        _c(
-                                                                          "v-btn",
-                                                                          {
-                                                                            attrs: {
-                                                                              color:
-                                                                                "primary",
-                                                                              fab:
-                                                                                "",
-                                                                              "x-small":
-                                                                                ""
+                                                                  _c(
+                                                                    "v-col",
+                                                                    {
+                                                                      attrs: {
+                                                                        cols:
+                                                                          "12"
+                                                                      }
+                                                                    },
+                                                                    [
+                                                                      _c(
+                                                                        "v-row",
+                                                                        [
+                                                                          _c(
+                                                                            "div",
+                                                                            {
+                                                                              staticClass:
+                                                                                "headline col-sm-9 col-md-10"
                                                                             },
-                                                                            on: {
-                                                                              click: function(
-                                                                                $event
-                                                                              ) {
-                                                                                return _vm.addNumeroEsp(
-                                                                                  "fact"
-                                                                                )
-                                                                              }
+                                                                            [
+                                                                              _vm._v(
+                                                                                "Puntos de emisión"
+                                                                              )
+                                                                            ]
+                                                                          ),
+                                                                          _vm._v(
+                                                                            " "
+                                                                          ),
+                                                                          _c(
+                                                                            "div",
+                                                                            {
+                                                                              staticClass:
+                                                                                "col-sm-3 col-md-2"
+                                                                            },
+                                                                            [
+                                                                              _c(
+                                                                                "v-btn",
+                                                                                {
+                                                                                  attrs: {
+                                                                                    color:
+                                                                                      "primary",
+                                                                                    fab:
+                                                                                      "",
+                                                                                    "x-small":
+                                                                                      ""
+                                                                                  },
+                                                                                  on: {
+                                                                                    click: function(
+                                                                                      $event
+                                                                                    ) {
+                                                                                      return _vm.addNumeroEsp(
+                                                                                        "pe"
+                                                                                      )
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                [
+                                                                                  _c(
+                                                                                    "v-icon",
+                                                                                    [
+                                                                                      _vm._v(
+                                                                                        "mdi-plus"
+                                                                                      )
+                                                                                    ]
+                                                                                  )
+                                                                                ],
+                                                                                1
+                                                                              )
+                                                                            ],
+                                                                            1
+                                                                          )
+                                                                        ]
+                                                                      )
+                                                                    ],
+                                                                    1
+                                                                  ),
+                                                                  _vm._v(" "),
+                                                                  _c(
+                                                                    "v-row",
+                                                                    _vm._l(
+                                                                      _vm.ptoEmision,
+                                                                      function(
+                                                                        pe,
+                                                                        x
+                                                                      ) {
+                                                                        return _c(
+                                                                          "v-col",
+                                                                          {
+                                                                            key:
+                                                                              "pto_" +
+                                                                              x,
+                                                                            attrs: {
+                                                                              cols:
+                                                                                "12",
+                                                                              md:
+                                                                                "4",
+                                                                              sm:
+                                                                                "6",
+                                                                              id:
+                                                                                "pto_" +
+                                                                                x
                                                                             }
                                                                           },
                                                                           [
                                                                             _c(
-                                                                              "v-icon",
-                                                                              [
-                                                                                _vm._v(
-                                                                                  "mdi-plus-circle-outline"
-                                                                                )
-                                                                              ]
+                                                                              "v-text-field",
+                                                                              {
+                                                                                attrs: {
+                                                                                  label:
+                                                                                    "Número",
+                                                                                  rules:
+                                                                                    _vm.requiredRule,
+                                                                                  type:
+                                                                                    "number",
+                                                                                  required:
+                                                                                    "",
+                                                                                  "append-icon":
+                                                                                    "mdi-delete-forever"
+                                                                                },
+                                                                                on: {
+                                                                                  "click:append": function(
+                                                                                    $event
+                                                                                  ) {
+                                                                                    return _vm.removeInput(
+                                                                                      pe
+                                                                                    )
+                                                                                  }
+                                                                                },
+                                                                                model: {
+                                                                                  value:
+                                                                                    pe.numero,
+                                                                                  callback: function(
+                                                                                    $$v
+                                                                                  ) {
+                                                                                    _vm.$set(
+                                                                                      pe,
+                                                                                      "numero",
+                                                                                      $$v
+                                                                                    )
+                                                                                  },
+                                                                                  expression:
+                                                                                    "pe.numero"
+                                                                                }
+                                                                              }
                                                                             )
                                                                           ],
                                                                           1
                                                                         )
-                                                                      ],
-                                                                      1
-                                                                    )
-                                                                  ])
+                                                                      }
+                                                                    ),
+                                                                    1
+                                                                  )
                                                                 ],
                                                                 1
                                                               ),
                                                               _vm._v(" "),
+                                                              _c("v-divider", {
+                                                                attrs: {
+                                                                  inset: "",
+                                                                  vertical: ""
+                                                                }
+                                                              }),
+                                                              _vm._v(" "),
                                                               _c(
-                                                                "v-row",
-                                                                _vm._l(
-                                                                  _vm.facturero,
-                                                                  function(
-                                                                    fac,
-                                                                    y
-                                                                  ) {
-                                                                    return _c(
-                                                                      "v-col",
-                                                                      {
-                                                                        key:
-                                                                          "fac_" +
-                                                                          y,
-                                                                        attrs: {
-                                                                          cols:
-                                                                            "12",
-                                                                          md:
-                                                                            "4",
-                                                                          sm:
-                                                                            "6",
-                                                                          id:
-                                                                            "fac_" +
-                                                                            y
-                                                                        }
-                                                                      },
-                                                                      [
-                                                                        _c(
-                                                                          "v-text-field",
+                                                                "v-col",
+                                                                [
+                                                                  _c(
+                                                                    "v-col",
+                                                                    {
+                                                                      attrs: {
+                                                                        cols:
+                                                                          "12"
+                                                                      }
+                                                                    },
+                                                                    [
+                                                                      _c(
+                                                                        "v-row",
+                                                                        [
+                                                                          _c(
+                                                                            "div",
+                                                                            {
+                                                                              staticClass:
+                                                                                "headline col-sm-9 col-md-10"
+                                                                            },
+                                                                            [
+                                                                              _vm._v(
+                                                                                "Números de factureros"
+                                                                              )
+                                                                            ]
+                                                                          ),
+                                                                          _vm._v(
+                                                                            " "
+                                                                          ),
+                                                                          _c(
+                                                                            "div",
+                                                                            {
+                                                                              staticClass:
+                                                                                "col-sm-3 col-md-2"
+                                                                            },
+                                                                            [
+                                                                              _c(
+                                                                                "v-btn",
+                                                                                {
+                                                                                  attrs: {
+                                                                                    color:
+                                                                                      "primary",
+                                                                                    fab:
+                                                                                      "",
+                                                                                    "x-small":
+                                                                                      ""
+                                                                                  },
+                                                                                  on: {
+                                                                                    click: function(
+                                                                                      $event
+                                                                                    ) {
+                                                                                      return _vm.addNumeroEsp(
+                                                                                        "fact"
+                                                                                      )
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                [
+                                                                                  _c(
+                                                                                    "v-icon",
+                                                                                    [
+                                                                                      _vm._v(
+                                                                                        "mdi-plus"
+                                                                                      )
+                                                                                    ]
+                                                                                  )
+                                                                                ],
+                                                                                1
+                                                                              )
+                                                                            ],
+                                                                            1
+                                                                          )
+                                                                        ]
+                                                                      )
+                                                                    ],
+                                                                    1
+                                                                  ),
+                                                                  _vm._v(" "),
+                                                                  _c(
+                                                                    "v-row",
+                                                                    _vm._l(
+                                                                      _vm.facturero,
+                                                                      function(
+                                                                        fac,
+                                                                        y
+                                                                      ) {
+                                                                        return _c(
+                                                                          "v-col",
                                                                           {
+                                                                            key:
+                                                                              "fac_" +
+                                                                              y,
                                                                             attrs: {
-                                                                              label:
-                                                                                "Número",
-                                                                              rules:
-                                                                                _vm.requiredRule,
-                                                                              type:
-                                                                                "number",
-                                                                              required:
-                                                                                "",
-                                                                              "append-icon":
-                                                                                "mdi-delete-forever"
-                                                                            },
-                                                                            on: {
-                                                                              "click:append": function(
-                                                                                $event
-                                                                              ) {
-                                                                                return _vm.removeInput(
-                                                                                  "fac_" +
-                                                                                    y
-                                                                                )
-                                                                              }
-                                                                            },
-                                                                            model: {
-                                                                              value:
-                                                                                fac.numero,
-                                                                              callback: function(
-                                                                                $$v
-                                                                              ) {
-                                                                                _vm.$set(
-                                                                                  fac,
-                                                                                  "numero",
-                                                                                  $$v
-                                                                                )
-                                                                              },
-                                                                              expression:
-                                                                                "fac.numero"
+                                                                              cols:
+                                                                                "12",
+                                                                              md:
+                                                                                "4",
+                                                                              sm:
+                                                                                "6",
+                                                                              id:
+                                                                                "fac_" +
+                                                                                y
                                                                             }
-                                                                          }
+                                                                          },
+                                                                          [
+                                                                            _c(
+                                                                              "v-text-field",
+                                                                              {
+                                                                                attrs: {
+                                                                                  label:
+                                                                                    "Número",
+                                                                                  rules:
+                                                                                    _vm.requiredRule,
+                                                                                  type:
+                                                                                    "number",
+                                                                                  required:
+                                                                                    "",
+                                                                                  "append-icon":
+                                                                                    "mdi-delete-forever"
+                                                                                },
+                                                                                on: {
+                                                                                  "click:append": function(
+                                                                                    $event
+                                                                                  ) {
+                                                                                    return _vm.removeInput(
+                                                                                      fac
+                                                                                    )
+                                                                                  }
+                                                                                },
+                                                                                model: {
+                                                                                  value:
+                                                                                    fac.numero,
+                                                                                  callback: function(
+                                                                                    $$v
+                                                                                  ) {
+                                                                                    _vm.$set(
+                                                                                      fac,
+                                                                                      "numero",
+                                                                                      $$v
+                                                                                    )
+                                                                                  },
+                                                                                  expression:
+                                                                                    "fac.numero"
+                                                                                }
+                                                                              }
+                                                                            )
+                                                                          ],
+                                                                          1
                                                                         )
-                                                                      ],
-                                                                      1
-                                                                    )
-                                                                  }
-                                                                ),
+                                                                      }
+                                                                    ),
+                                                                    1
+                                                                  )
+                                                                ],
                                                                 1
                                                               )
                                                             ],
@@ -49063,72 +49323,82 @@ var render = function() {
                                                   )
                                                 ],
                                                 1
-                                              )
-                                            ],
-                                            1
-                                          ),
-                                          _vm._v(" "),
-                                          _c(
-                                            "v-card-actions",
-                                            [
+                                              ),
+                                              _vm._v(" "),
                                               _c(
-                                                "v-row",
-                                                { staticClass: "text-center" },
+                                                "v-card-actions",
                                                 [
                                                   _c(
-                                                    "v-col",
-                                                    { attrs: { cols: "12" } },
+                                                    "v-row",
+                                                    {
+                                                      staticClass: "text-center"
+                                                    },
                                                     [
                                                       _c(
-                                                        "v-btn",
+                                                        "v-col",
                                                         {
-                                                          staticClass: "ma-2",
-                                                          attrs: {
-                                                            color: "primary",
-                                                            loading:
-                                                              _vm.loadingBtn3
-                                                          },
-                                                          on: {
-                                                            click:
-                                                              _vm.updateInfoAdicional
-                                                          }
+                                                          attrs: { cols: "12" }
                                                         },
                                                         [
-                                                          _c("v-icon", [
-                                                            _vm._v(
-                                                              "mdi-content-save"
-                                                            )
-                                                          ]),
-                                                          _vm._v(
-                                                            " Actualizar\n                                                    "
-                                                          )
-                                                        ],
-                                                        1
-                                                      ),
-                                                      _vm._v(" "),
-                                                      _c(
-                                                        "v-btn",
-                                                        {
-                                                          staticClass: "ma-2",
-                                                          attrs: {
-                                                            color: "secondary",
-                                                            loading:
-                                                              _vm.loadingBtn3
-                                                          },
-                                                          on: {
-                                                            click: function(
-                                                              $event
-                                                            ) {
-                                                              _vm.dialogInfoAdicional = !_vm.dialogInfoAdicional
-                                                            }
-                                                          }
-                                                        },
-                                                        [
-                                                          _c("v-icon", [
-                                                            _vm._v("mdi-cancel")
-                                                          ]),
-                                                          _vm._v(
-                                                            " Cancelar\n                                                    "
+                                                          _c(
+                                                            "v-btn",
+                                                            {
+                                                              staticClass:
+                                                                "ma-2",
+                                                              attrs: {
+                                                                color:
+                                                                  "primary",
+                                                                storeIn:
+                                                                  "loadingBtn3"
+                                                              },
+                                                              on: {
+                                                                click:
+                                                                  _vm.storeInfoAdicional
+                                                              }
+                                                            },
+                                                            [
+                                                              _c("v-icon", [
+                                                                _vm._v(
+                                                                  "mdi-content-save"
+                                                                )
+                                                              ]),
+                                                              _vm._v(
+                                                                " Actualizar\n                                                    "
+                                                              )
+                                                            ],
+                                                            1
+                                                          ),
+                                                          _vm._v(" "),
+                                                          _c(
+                                                            "v-btn",
+                                                            {
+                                                              staticClass:
+                                                                "ma-2",
+                                                              attrs: {
+                                                                color:
+                                                                  "secondary",
+                                                                loading:
+                                                                  _vm.loadingBtn3
+                                                              },
+                                                              on: {
+                                                                click: function(
+                                                                  $event
+                                                                ) {
+                                                                  _vm.dialogInfoAdicional = !_vm.dialogInfoAdicional
+                                                                }
+                                                              }
+                                                            },
+                                                            [
+                                                              _c("v-icon", [
+                                                                _vm._v(
+                                                                  "mdi-cancel"
+                                                                )
+                                                              ]),
+                                                              _vm._v(
+                                                                " Cancelar\n                                                    "
+                                                              )
+                                                            ],
+                                                            1
                                                           )
                                                         ],
                                                         1
@@ -49145,9 +49415,7 @@ var render = function() {
                                         ],
                                         1
                                       )
-                                    ],
-                                    1
-                                  )
+                                    : _vm._e()
                                 ],
                                 1
                               )
@@ -106216,6 +106484,75 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/components/comprobantes/FacturaComponent.vue":
+/*!*******************************************************************!*\
+  !*** ./resources/js/components/comprobantes/FacturaComponent.vue ***!
+  \*******************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _FacturaComponent_vue_vue_type_template_id_1509059a_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FacturaComponent.vue?vue&type=template&id=1509059a&scoped=true& */ "./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=template&id=1509059a&scoped=true&");
+/* harmony import */ var _FacturaComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FacturaComponent.vue?vue&type=script&lang=js& */ "./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _FacturaComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _FacturaComponent_vue_vue_type_template_id_1509059a_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _FacturaComponent_vue_vue_type_template_id_1509059a_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  "1509059a",
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/components/comprobantes/FacturaComponent.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=script&lang=js&":
+/*!********************************************************************************************!*\
+  !*** ./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=script&lang=js& ***!
+  \********************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_FacturaComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib??ref--4-0!../../../../node_modules/vue-loader/lib??vue-loader-options!./FacturaComponent.vue?vue&type=script&lang=js& */ "./node_modules/babel-loader/lib/index.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_node_modules_babel_loader_lib_index_js_ref_4_0_node_modules_vue_loader_lib_index_js_vue_loader_options_FacturaComponent_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=template&id=1509059a&scoped=true&":
+/*!**************************************************************************************************************!*\
+  !*** ./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=template&id=1509059a&scoped=true& ***!
+  \**************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_FacturaComponent_vue_vue_type_template_id_1509059a_scoped_true___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../../../node_modules/vue-loader/lib??vue-loader-options!./FacturaComponent.vue?vue&type=template&id=1509059a&scoped=true& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/components/comprobantes/FacturaComponent.vue?vue&type=template&id=1509059a&scoped=true&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_FacturaComponent_vue_vue_type_template_id_1509059a_scoped_true___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _node_modules_vue_loader_lib_loaders_templateLoader_js_vue_loader_options_node_modules_vue_loader_lib_index_js_vue_loader_options_FacturaComponent_vue_vue_type_template_id_1509059a_scoped_true___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
 /***/ "./resources/js/components/dashboard/AdministradorComponent.vue":
 /*!**********************************************************************!*\
   !*** ./resources/js/components/dashboard/AdministradorComponent.vue ***!
@@ -106799,7 +107136,10 @@ vue__WEBPACK_IMPORTED_MODULE_0__["component"]('gestion-inventario', __webpack_re
 
 vue__WEBPACK_IMPORTED_MODULE_0__["component"]('gestion-modulos', __webpack_require__(/*! ./components/modulos/ModuloComponent.vue */ "./resources/js/components/modulos/ModuloComponent.vue")["default"]); //PROVEEDORES
 
-vue__WEBPACK_IMPORTED_MODULE_0__["component"]('gestion-proveedores', __webpack_require__(/*! ./components/proveedores/ProveedoresComponent.vue */ "./resources/js/components/proveedores/ProveedoresComponent.vue")["default"]); //COMPONENTES TEMPLATE BASE
+vue__WEBPACK_IMPORTED_MODULE_0__["component"]('gestion-proveedores', __webpack_require__(/*! ./components/proveedores/ProveedoresComponent.vue */ "./resources/js/components/proveedores/ProveedoresComponent.vue")["default"]); //COMPROBANTES
+//FACTURAS
+
+vue__WEBPACK_IMPORTED_MODULE_0__["component"]('gestion-factura', __webpack_require__(/*! ./components/comprobantes/FacturaComponent.vue */ "./resources/js/components/comprobantes/FacturaComponent.vue")["default"]); //COMPONENTES TEMPLATE BASE
 
 vue__WEBPACK_IMPORTED_MODULE_0__["component"]('base-material-card', __webpack_require__(/*! ./components/base/MaterialCard.vue */ "./resources/js/components/base/MaterialCard.vue")["default"]);
 vue__WEBPACK_IMPORTED_MODULE_0__["component"]('base-breadcumbs', __webpack_require__(/*! ./components/base/BreadCumbsComponent.vue */ "./resources/js/components/base/BreadCumbsComponent.vue")["default"]);
