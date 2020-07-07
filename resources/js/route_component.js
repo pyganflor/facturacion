@@ -33,8 +33,7 @@ Vue.component('gestion-proveedores', require('./components/proveedores/Proveedor
 
 
 //COMPROBANTES
-        //FACTURAS
-Vue.component('gestion-factura', require('./components/comprobantes/FacturaComponent.vue').default);
+Vue.component('gestion-factura', require('./components/comprobantes/FacturaComponent').default);
 
 
 

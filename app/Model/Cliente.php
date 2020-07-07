@@ -28,17 +28,10 @@ class Cliente extends Model
         'fecha_registro'
     ];
 
-    public function impuesto(){
-        return $this->belongsTo('App\Model\Impuesto','id_impuesto');
-    }
-
-    public function detalle_impuesto(){
-        return $this->belongsTo('App\Model\TipoImpuesto','id_detalle_impuesto');
-    }
-
     public function tipo_identificacion(){
         return $this->belongsTo('App\Model\TipoIdentificacion','id_tipo_identificacion');
     }
+
 
 
 }

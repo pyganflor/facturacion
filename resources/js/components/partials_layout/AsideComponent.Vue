@@ -74,6 +74,7 @@
                         prepend-icon="mdi-vector-circle"
                         class="ml-n5"
                         dense
+                        v-if=""
 
                 >
                     <template  v-slot:activator >
@@ -94,6 +95,36 @@
                         </v-list-item-icon>
                         <v-list-item-title
                                 v-text="ic.title"
+                                dense
+                        ></v-list-item-title>
+                    </v-list-item>
+                </v-list-group>
+
+                <v-list-group
+                        sub-group
+                        prepend-icon="mdi-cash-usd"
+                        class="ml-n5"
+                        dense
+                        v-if="modulos.length>0"
+                >
+                    <template  v-slot:activator >
+                        <v-list-item-content >
+                            <v-list-item-title
+                                    style="font-size: .8125rem;font-weight: 500;line-height: 1rem;"
+                                    class="ml-3">Módulo ventas</v-list-item-title>
+                        </v-list-item-content>
+                    </template>
+                    <v-list-item
+                            v-for="(venta, x) in modulos"
+                            :key="x"
+                            dense
+                            :href=venta.modulo.url
+                    >
+                        <v-list-item-icon>
+                            <v-icon v-text="venta.modulo.icon"></v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title
+                                v-text="venta.modulo.nombre"
                                 dense
                         ></v-list-item-title>
                     </v-list-item>
@@ -134,9 +165,12 @@
                 required : true
             },
             roles:{
-                required : true,
                 type: Array,
                 default: [2]
+            },
+            modulos:{
+                type: Array,
+                default: []
             },
             storage:{
                 required:true,
@@ -192,11 +226,6 @@
             ],
             menuUsuario:[
                 {
-                    title: 'Facturar',
-                    icon: 'mdi-cash-multiple',
-                    url:'factura'
-                },
-                {
                     title: 'Documentos',
                     icon: 'mdi-file-pdf',
                     url:'documento'
@@ -206,7 +235,7 @@
                     icon: 'mdi-file-document',
                     url:'formulario'
                 }
-            ]
+            ],
         }),
         computed: {
             ...mapState(['barColor', 'barImage']),
@@ -235,6 +264,8 @@
                             this.itemsUser.push(mu)
                 }
 
+                console.log(this.modulos)
+                this.menuVentas = this.modulos
             }
         },
         created(){

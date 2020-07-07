@@ -1,0 +1,14 @@
+@extends('layouts.app')
+@section('title')
+    Facturas
+@endsection
+@section('content')
+    <gestion-factura
+            :clientes="{{$clientes}}"
+            :factureros="{{$factureros}}"
+            :sustento_tributario="{{$sustentoTributario}}"
+            :punto_emision="{{$puntoEmision}}"
+            :tipos_pago="{{$tiposPago}}"
+            :inventario="{{$inventario}}"
+    ></gestion-factura>
+@endsection

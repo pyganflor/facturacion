@@ -4,19 +4,17 @@ namespace App\Model;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Modulo extends Model
+class SustentoTributario extends Model
 {
-    protected $table= "modulo";
+    protected $table= "sustento_tributario";
 
-    protected $primaryKey = "id_modulo";
+    protected $primaryKey = "id_sustento_tributario";
     public $incrementing = false;
     public $timestamps = false;
 
     protected $fillable = [
         'nombre',
-        'url',
-        'icon',
-        'estado',
+        'codigo',
         'fecha_registro'
     ];
 }

@@ -30,6 +30,7 @@
                         :usuario="{{Auth::user()}}"
                         :roles="{{Auth::user()->roles->pluck('id_rol')}}"
                         :storage="'{{\Illuminate\Support\Facades\Storage::url('img_user')}}'"
+                        :modulos="{{Auth::user()->modulos}}"
                 ></aside-component>
             @endif
             <v-content>

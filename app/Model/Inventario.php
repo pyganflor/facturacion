@@ -22,5 +22,8 @@ class Inventario extends Model
         return $this->hasMany('App\Model\CategoriaInventario','id_inventario')->with('articulos');
     }
 
-
+    public function categoriasActivadas(){
+        return $this->hasMany('App\Model\CategoriaInventario','id_inventario')
+                    ->where('estado',true)->with('articulos');
+    }
 }

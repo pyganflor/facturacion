@@ -61,5 +61,9 @@ class Usuario extends Authenticatable
     public function factureros(){
         return $this->hasMany('App\Model\UsuarioFacturero','id_usuario');
     }
+
+    public function clientes(){
+        return $this->hasMany('App\Model\Cliente','id_usuario');
+    }
 }
 
