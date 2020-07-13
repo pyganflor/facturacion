@@ -149,15 +149,15 @@ class PerfilController extends Controller
             $oldFactureros = UsuarioFacturero::where('id_usuario',$request->id_usuario)->pluck('id_usuario_facturero')->toArray();
             $oldptosEmision = UsuarioPtoEmision::where('id_usuario',$request->id_usuario)->pluck('id_usuario_pto_emision')->toArray();
 
-            foreach ($request->factureros as $facturero) {
+            foreach ($request->factureros as $x=> $facturero) {
                 $f = json_decode($facturero);
                 UsuarioFacturero::create([
                     'id_usuario' => $request->id_usuario,
-                   'numero' => str_pad($f->numero, 3, '0', STR_PAD_LEFT)
+                    'numero' => str_pad($f->numero, 3, '0', STR_PAD_LEFT)
                 ]);
             }
 
-            foreach ($request->ptoEmision as $ptoEmision) {
+            foreach ($request->ptoEmision as $y => $ptoEmision) {
                 $p = json_decode($ptoEmision);
                 UsuarioPtoEmision::create([
                     'id_usuario' => $request->id_usuario,
@@ -165,8 +165,10 @@ class PerfilController extends Controller
                 ]);
             }
 
-            UsuarioFacturero::destroy($oldFactureros);
-            UsuarioPtoEmision::destroy($oldptosEmision);
+            if(($x+1) === count($request->factureros))
+                UsuarioFacturero::destroy($oldFactureros);
+            if(($y+1) === count($request->ptoEmision))
+                UsuarioPtoEmision::destroy($oldptosEmision);
 
             return response()->json([
                 'msg' => 'Se han guardado los datos adicionales',

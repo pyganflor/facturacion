@@ -11,6 +11,14 @@ export default new Vuex.Store({
         drawer: true,
         loadingBtn : false,
         loadingBtn2 : false,
+        paramsAlertQuestion:{
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#00b388',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Aceptar',
+            cancelButtonText: 'Cancelar'
+        },
         sweetAlert:{
             title:'Éxito',
             html:'',

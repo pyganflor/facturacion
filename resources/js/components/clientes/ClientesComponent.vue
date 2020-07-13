@@ -226,6 +226,9 @@
 </template>
 
 <script>
+
+    import {mapState} from 'vuex'
+
     export default {
         props:{
             clientes:{
@@ -300,6 +303,8 @@
             formTitle () {
                 return this.editedIndex === -1 ? 'Nuevo cliente' : 'Editar cliente '+this.editedItem.nombre
             },
+
+            ...mapState(['paramsAlertQuestion'])
         },
         watch: {
             dialog (val) {
@@ -337,12 +342,7 @@
             estadoItem (item) {
                 Vue.swal({
                     text: "¿Esta seguro de "+(item.estado ? 'desactivar': 'activar')+" al cliente "+item.nombre.toUpperCase()+".?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#00b388',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar',
-                    cancelButtonText: 'Cancelar'
+                    ...this.paramsAlertQuestion
                 }).then((result) => {
                     if (result.value) {
                         axios.post('/cliente/estado',{

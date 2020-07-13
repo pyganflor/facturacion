@@ -150,6 +150,26 @@
                                                         ></v-select>
                                                     </v-col>
                                                     <v-col cols="12" class="pb-0" sm="6" md="3">
+                                                        <!--<v-menu
+                                                                v-model="menu2"
+                                                                :close-on-content-click="false"
+                                                                :nudge-right="40"
+                                                                transition="scale-transition"
+                                                                offset-y
+                                                                min-width="290px"
+                                                        >
+                                                            <template v-slot:activator="{ on, attrs }">
+                                                                <v-text-field
+                                                                        v-model="date"
+                                                                        label="Picker without buttons"
+                                                                        prepend-icon="event"
+                                                                        readonly
+                                                                        v-bind="attrs"
+                                                                        v-on="on"
+                                                                ></v-text-field>
+                                                            </template>
+                                                            <v-date-picker v-model="date" @input="menu2 = false"></v-date-picker>
+                                                        </v-menu>-->
                                                         <v-menu>
                                                             <template v-slot:activator="{ on, attrs }">
                                                                 <v-text-field
@@ -165,8 +185,7 @@
                                                                 ></v-text-field>
                                                             </template>
                                                             <v-date-picker
-                                                                    range
-                                                                    v-model="dates"
+                                                                    v-model="fechaDocumento"
                                                                     no-title
                                                                     @input="menu = false"
                                                             ></v-date-picker>
@@ -188,8 +207,7 @@
                                                                 ></v-text-field>
                                                             </template>
                                                             <v-date-picker
-                                                                    range
-                                                                    v-model="dates"
+                                                                    v-model="fechaVencimiento"
                                                                     no-title
                                                                     @input="menu3 = false"
                                                             ></v-date-picker>
@@ -233,6 +251,7 @@
                                                             cols="12"
                                                             class="pb-0"
                                                             sm="6"
+                                                            :md="`${idFormaPago === 1 ? 5 : 6 }`"
                                                     >
                                                         <v-select
                                                                 class="mt-5"
@@ -248,11 +267,29 @@
                                                     </v-col>
                                                     <v-col
                                                             cols="12"
-                                                            class="pb-0"
-                                                            sm="6"
+                                                            sm="12"
+                                                            :md="`${idFormaPago === 1 ? 3 : 6 }`"
                                                     >
                                                         <v-select
                                                                 class="mt-5"
+                                                                :items="formaPago"
+                                                                label="Formas de pago"
+                                                                :rules="requiredRule"
+                                                                item-text="nombre"
+                                                                item-value="id_forma_pago"
+                                                                v-model="idFormaPago"
+                                                                dense
+                                                        ></v-select>
+                                                    </v-col>
+                                                    <v-col
+                                                            class="mt-4"
+                                                            cols="12"
+                                                            sm="12"
+                                                            :md="`${idFormaPago === 1 ? '4' : '' }`"
+                                                            :class="`${idFormaPago === 2 ? 'd-none' : '' }`"
+                                                    >
+                                                        <v-select
+
                                                                 :items="tipos_pago"
                                                                 label="Tipo de pago"
                                                                 :rules="requiredRule"
@@ -262,6 +299,7 @@
                                                                 dense
                                                         ></v-select>
                                                     </v-col>
+
                                                     <v-col
                                                             cols="12"
                                                             class="pb-0"
@@ -269,6 +307,7 @@
 
                                                     >
                                                         <v-text-field
+                                                                class="pb-0"
                                                                 style="margin-top: -2px"
                                                                 v-model="correos"
                                                                 :rules="requiredRule"
@@ -288,6 +327,7 @@
                                                                     class="py-0"
                                                             >
                                                                 <v-text-field
+                                                                        class="pb-0"
                                                                         style="padding-top: 6px;"
                                                                         v-model="plazo"
                                                                         label="Tiempo pago plazo"
@@ -356,7 +396,7 @@
                                                             <th class="white--text" >Cantidad</th>
                                                             <th class="white--text" >Precio U.</th>
                                                             <th class="white--text" >Descuento.</th>
-                                                            <th class="white--text" >Precio T.</th>
+                                                            <th class="white--text text-center" >Precio T.</th>
                                                             <th class="text-center white--text" style="width: 50px;">Acción</th>
                                                         </tr>
                                                         </thead>
@@ -430,15 +470,16 @@
                                                                         @click="setTotal(art)"
                                                                 ></v-text-field>
                                                             </td>
-                                                            <td style="width: 100px;">
-                                                                <v-text-field
+                                                            <td class="text-center" style="width: 100px;">
+                                                                <h3 class="mb-2">${{art.total}}</h3>
+                                                                <!--<v-text-field
                                                                         class="py-0"
                                                                         v-model="art.total"
                                                                         type="number"
                                                                         :rules="requiredRule"
                                                                         min="0"
                                                                         :readonly=true
-                                                                ></v-text-field>
+                                                                ></v-text-field>-->
                                                             </td>
                                                             <td class="text-center" style="width: 100px;">
                                                                 <v-btn
@@ -537,6 +578,9 @@
 </template>
 
 <script>
+
+    import {mapActions,mapMutations,mapState} from 'vuex'
+
     export default {
         props:{
             clientes:{
@@ -569,22 +613,14 @@
                 new Date().toISOString().substr(0, 10),
                 new Date().toISOString().substr(0, 10)
             ],
-            menu3:true,
             menu: true,
             menu2: true,
+            menu3:true,
             factura:false,
             comentario:'',
             correos:'',
-            tlfs:[],
-            g_remision:false,
-            retencion:false,
-            n_debito:false,
-            n_credito:false,
             puntoEmision:'',
             facturero:'',
-            f_documento:'',
-            f_vencimiento:'',
-            idComprobante:1,
             dialog: false,
             fechaDocumento:new Date().toISOString().substr(0, 10),
             fechaVencimiento:new Date().toISOString().substr(0, 10),
@@ -606,6 +642,7 @@
             descuento:0,
             total:0,
             undTiempo: ['Dias','Semanas','Meses'],
+            formaPago:[{id_forma_pago:1,nombre:'Contado'},{id_forma_pago:2,nombre:'Crédito'}],
             headers: [
                 {
                     text: 'Dessert (100g serving)',
@@ -624,6 +661,10 @@
             articulos:[],
             categorias:[],
             idCategoria:'',
+            idFormaPago:1,
+            firmar:1,
+            autorizar:1,
+            correo_cliente:1,
             articulosFactura:[
                 {
                     articulos:[],
@@ -635,20 +676,6 @@
                     total:0
                 }
             ],
-            editedItem: {
-                name: '',
-                calories: 0,
-                fat: 0,
-                carbs: 0,
-                protein: 0,
-            },
-            defaultItem: {
-                name: '',
-                calories: 0,
-                fat: 0,
-                carbs: 0,
-                protein: 0,
-            },
             requiredRule:[
                 v => !!v || 'Campo obligatorio'
             ]
@@ -658,6 +685,8 @@
             dateRangeText () {
                 return this.dates.join(' ~ ')
             },
+
+            ...mapState(['loadingBtn','paramsAlertQuestion']),
         },
 
         watch: {
@@ -667,6 +696,10 @@
         },
 
         methods: {
+
+            ...mapActions(['httpRequest']),
+
+            ...mapMutations(['setLoadingBtn']),
 
             editItem (item) {
                 this.editedIndex = this.desserts.indexOf(item)
@@ -698,9 +731,7 @@
 
             setInfo(){
                 this.correos=''
-                this.tlfs=[]
                 let cliente =this.clientes.find(ele => ele.id_cliente === this.idCliente)
-                this.tlfs.push({tlf: cliente.tlf})
                 this.idTipoPago = cliente.id_tipo_pago
                 this.correos=cliente.correo+' , '
             },
@@ -810,6 +841,113 @@
                 if(!this.$refs.form_factura.validate())
                     return
 
+                let html='<div class="text-left">'
+                    html+= '<p><input type="checkbox" checked id="firmar" name="firmar"> <label for="firmar">Firmar documento electrónico</label></p>'
+                    html+= '<p><input type="checkbox" checked id="autorizar" name="autorizar"> <label for="autorizar">Autorizar documento electrónico</label></p>'
+                    html+= '<p><input type="checkbox" checked id="correo" name="correo"> <label for="correo">Envío de correo electrónico</label></p>'
+                    html+= '</div>'
+
+                Vue.swal({
+                    title: "Acciones a realizar",
+                    html:html,
+                    ...this.paramsAlertQuestion
+                }).then((result) => {
+                    if (result.value) {
+
+                        let articulos = []
+
+                        for (let articulosCatg of this.articulosFactura) {
+
+                            let articulo = articulosCatg.articulos.find(ele => ele.id_articulo_categoria_inventario === articulosCatg.id_articulo)
+
+                            if (typeof articulo != "undefined") {
+
+                                let impuestos = []
+                                let valorConImpuesto=0
+
+                                for (let impuesto of articulo.impuestos) {
+                                    let valorImpuesto=0
+
+                                    if(impuesto.tipo_impuesto.tipo_tarifa === "%"){
+                                        console.log(articulosCatg.total,impuesto.tipo_impuesto.tarifa)
+                                        valorImpuesto= parseFloat((articulosCatg.total * (impuesto.tipo_impuesto.tarifa/100)))
+                                        valorConImpuesto = parseFloat(articulo.neto)+valorImpuesto
+
+                                    }else if(impuesto.tipo_impuesto.tipo_tarifa === "t"){
+
+                                    }else if(impuesto.tipo_impuesto.tipo_tarifa === "n"){
+
+                                    }
+
+                                    impuestos.push({
+                                        id_impuesto: impuesto.id_impuesto,
+                                        nombre_imp: impuesto.nombre,
+                                        id_tipo_impuesto: impuesto.id_tipo_impuesto,
+                                        tarifa: impuesto.tipo_impuesto.tarifa,
+                                        base_imponible : articulo.neto,
+                                        valor_imp : valorImpuesto,
+                                        total  : valorConImpuesto,
+                                        codigo_imp: impuesto.impuesto.codigo,
+                                        codigo_tipo_imp: impuesto.tipo_impuesto.codigo,
+                                        nombre_tipo_impuesto: impuesto.tipo_impuesto.descripcion
+                                    })
+                                }
+                                articulos.push({
+                                    id_articulo: articulo.id_articulo_categoria_inventario,
+                                    nombre: articulo.articulo,
+                                    neto: articulo.neto,
+                                    stock: articulo.stock,
+                                    codigo_p: articulo.codigo_p,
+                                    codigo_a: articulo.codigo_a,
+                                    cantidad: articulosCatg.cantidad,
+                                    descuento: articulosCatg.descuento,
+                                    total : articulosCatg.total,
+                                    impuestos: impuestos
+                                });
+                            }
+
+                        }
+
+                        let data = {
+                            ptoEmision: this.puntoEmision,
+                            facturero: this.facturero,
+                            fechaDoc: this.fechaDocumento,
+                            fechaVenc: this.fechaVencimiento,
+                            sustTributario: this.idSustentoTributario,
+                            comentario: this.comentario,
+                            idCliente: this.idCliente,
+                            formaPago: this.idFormaPago,
+                            idTipoPago: this.idTipoPago,
+                            correos: this.correos,
+                            subTotal : this.subTotal,
+                            descuento : this.descuento,
+                            total: this.total,
+                            plazo: this.plazo,
+                            undTiempoPlazo: this.undTiempoPlazo,
+                            articulos: articulos
+                        }
+
+                        this.httpRequest({
+                            method: 'post',
+                            url: 'factura/store',
+                            data: data
+                        }).then((res) => {
+
+                            console.log(res.data)
+
+                            /* let indexSelect = this.catgArticulos.indexOf(item)
+                    let indexTable = this.dataTableCatg.indexOf(item)
+
+                    if(item.estado){
+                        this.catgArticulos.splice(indexSelect, 1)
+                    }else{
+                        this.catgArticulos.push(res.data.categoria)
+                    }
+                    Object.assign(this.dataTableCatg[indexTable],res.data.categoria)*/
+                        })
+
+                    }
+                });
             }
 
 

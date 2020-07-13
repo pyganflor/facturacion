@@ -62,6 +62,20 @@ return [
             'visibility' => 'public',
         ],
 
+        'xml_generado' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/xml/facturas/generado'),
+            'url' => env('APP_URL').'/storage/xml/facturas/generado',
+            'visibility' => 'public',
+        ],
+
+        'xml_firmado' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/xml/facturas/firmado'),
+            'url' => env('APP_URL').'/storage/xml/facturas/firmado',
+            'visibility' => 'public',
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
