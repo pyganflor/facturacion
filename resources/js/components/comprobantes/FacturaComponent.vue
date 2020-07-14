@@ -870,7 +870,7 @@
 
                                     if(impuesto.tipo_impuesto.tipo_tarifa === "%"){
                                         console.log(articulosCatg.total,impuesto.tipo_impuesto.tarifa)
-                                        valorImpuesto= parseFloat((articulosCatg.total * (impuesto.tipo_impuesto.tarifa/100)))
+                                        valorImpuesto= parseFloat((articulo.neto * (impuesto.tipo_impuesto.tarifa/100)))
                                         valorConImpuesto = parseFloat(articulo.neto)+valorImpuesto
 
                                     }else if(impuesto.tipo_impuesto.tipo_tarifa === "t"){
@@ -934,6 +934,8 @@
                         }).then((res) => {
 
                             console.log(res.data)
+
+
 
                             /* let indexSelect = this.catgArticulos.indexOf(item)
                     let indexTable = this.dataTableCatg.indexOf(item)
