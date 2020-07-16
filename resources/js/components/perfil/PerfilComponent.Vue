@@ -695,8 +695,6 @@
                     this.perfil.firma_desde = response.data.firmaDesde
                     this.perfil.firma_hasta = response.data.firmaHasta
 
-                    console.log(this.existPerfil)
-
                 }).catch(error => {
 
                     let response = error.response;
@@ -827,6 +825,7 @@
             this.user= this.usuario.nombre
 
             this.avatar=this.storage+'/icono_usuario.png'
+
             if(typeof this.perfil.razon_social !=="undefined")
                 this.razonSocial = this.perfil.razon_social
             if(typeof this.perfil.nombre_comercial !=="undefined")
@@ -875,8 +874,6 @@
 
             if(!!this.usuario.perfil)
                 this.existPerfil = true
-
-            console.log(this.usuario.pto_emision[0].numero)
         }
 
     }

@@ -55,12 +55,10 @@ class Controller extends BaseController
             . $data['nombreArchivoFirmaDigital'] . " ",
             $salida, $var);
 
-
         if ($var == 0)
             return $salida[0];
         if ($var != 0)
             return false;
-
 
     }
 
@@ -89,7 +87,7 @@ class Controller extends BaseController
     function mensajeFirmaXml($indice, $archivo)
     {
         $mensaje = [
-            0 => "No se ha obtenido el archivo de la firma digital correctamente, verifique que el archivo deste debidamente cargado en el sistema, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
+            0 => "No se ha obtenido el archivo de la firma digital correctamente, verifique que el archivo este debidamente cargado en el sistema, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
             1 => "Verificar lo explicado en el Índice 0 de este apartado y a su vez verificar que exista el certificado como archivo físico, una vez corregido el error puede filtrar por 'NO FIRMADOS' y proceder a realizar la firma del mismo",
             2 => "No se pudo acceder al contenido del archivo del certificado electrónico, verifique los indicies 0 y 1 de este apartado  y a su vez que el String pasado en la variable 'CONTRASENA_FIRMA_DIGITAL' en el archivo .env coincida con la propocionada por el ente certificador, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
             3 => "Se produjo un error al momento de generar la firma electrónica del xml " . $archivo . ", por favor comunicarse con el deparatmento de tecnología, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
@@ -103,9 +101,13 @@ class Controller extends BaseController
     {
         $mensaje = [
             0 => "El comprobante fue enviado pero rechazado por el SRI, Intente nuevamente",
-            1 => "Se ha generado con éxito la factura y enviado el  mail correspondiente",
+            1 => "Se ha autorizado con éxito la factura por el sri",
             2 => "Fallo en la conexión con el web service del SRI, intente nuevamente",
         ];
         return $mensaje[$indice];
+    }
+
+    function envioCorreo($data){
+
     }
 }

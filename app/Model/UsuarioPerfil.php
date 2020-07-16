@@ -39,6 +39,6 @@ class UsuarioPerfil extends Model
     ];
 
     protected $hidden = [
-        'empresa_firma','firma_desde','firma_hasta','firma_elec'
+        //'empresa_firma','firma_desde','firma_hasta','firma_elec'
     ];
 }

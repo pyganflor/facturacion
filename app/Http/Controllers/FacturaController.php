@@ -4,16 +4,20 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Model\{
+use App\Model\{ArticuloFactura,
     Cliente,
+    DetalleFactura,
+    ImpuestoArticuloFactura,
+    ImpuestoDetalleFactura,
     SustentoTributario,
     tipoPago,
-    Inventario
+    Inventario,
+    Factura
 };
-use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\RequestStoreFacura;
 use DomDocument;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Storage,Auth};
+
 
 class FacturaController extends Controller
 {
@@ -36,9 +40,30 @@ class FacturaController extends Controller
 
     }
 
-    public function store(RequestStoreFacura $request){
+    public function list(Request $request){
+        return Factura::where('factura.estado',$request->estado)
+            ->join('cliente as c','factura.id_cliente','c.id_cliente')
+            ->select(
+                'factura.id_factura',
+                'factura.secuencial',
+                'factura.clave_acceso',
+                'factura.total',
+                'factura.estado',
+                'c.nombre as cliente',
+                'factura.fecha_doc',
+                'factura.fecha_aut',
+                'factura.entorno'
+            )->where(function($q) use ($request) {
+                if(isset($request->id_cliente))
+                    $q->where('c.id_cliente',$request->id_cliente);
+            })->get();
+    }
 
-        //dd($request->all());
+    /**
+     * @param RequestStoreFacura $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(RequestStoreFacura $request){
 
         try{
 
@@ -66,6 +91,11 @@ class FacturaController extends Controller
             $factura->appendChild($infoTributaria);
             $claveAcceso = $cadena . $digitoVerificador;
 
+            if(Factura::where('clave_acceso',$claveAcceso)->exists())
+                return response()->json([
+                    'errors'=>['Mensaje:'=> 'La clave de acceso ya está registrada']
+                ],500);
+
             $informacionTributaria = [
                 'ambiente' => $usuario->perfil->entorno,
                 'tipoEmision' => 1,
@@ -79,6 +109,8 @@ class FacturaController extends Controller
                 'secuencial' => $usuario->perfil->n_factura,
                 'dirMatriz' => $usuario->perfil->direc_matriz
             ];
+
+            $request->request->add($informacionTributaria);
 
             foreach ($informacionTributaria as $key => $it) {
                 $nodo = $xml->createElement($key, $it);
@@ -98,6 +130,8 @@ class FacturaController extends Controller
                 'totalDescuento' => number_format($request->descuento, 2, ".", ""),
             ];
 
+            $request->request->add($informacionFactura);
+
             foreach ($informacionFactura as $key => $if) {
                 $nodo = $xml->createElement($key, $if);
                 $infoFactura->appendChild($nodo);
@@ -106,8 +140,10 @@ class FacturaController extends Controller
             $totalConImpuestos = $xml->createElement('totalConImpuestos');
             $infoFactura->appendChild($totalConImpuestos);
 
+            $arrArticulo =[];
             foreach ($request->articulos as $articulo) {
                 $articulo = json_decode($articulo);
+
                 foreach ($articulo->impuestos as $impuesto) {
 
                     $informacionImpuestos = [
@@ -116,6 +152,9 @@ class FacturaController extends Controller
                         'baseImponible' => number_format($impuesto->base_imponible, 2, ".", ""),
                         'valor' => number_format($impuesto->valor_imp, 2, ".", "")
                     ];
+
+                    $arrArticulo['impuesto'][] = $informacionImpuestos;
+
                     $totalImpuesto = $xml->createElement('totalImpuesto');
                     $totalConImpuestos->appendChild($totalImpuesto);
                     foreach ($informacionImpuestos as $key => $iI) {
@@ -125,10 +164,15 @@ class FacturaController extends Controller
                 }
             }
 
+            $request->request->add($arrArticulo);
+
             $propina = $xml->createElement('propina', '0.00');
             $infoFactura->appendChild($propina);
 
             $importeTotal = $xml->createElement('importeTotal', number_format($request->total, 2, ".", ""));
+
+            $request->request->add(['importeTotal'=>number_format($request->total, 2, ".", "")]);
+
             $infoFactura->appendChild($importeTotal);
 
             $moneda = $xml->createElement('moneda', 'DOLAR');
@@ -161,6 +205,8 @@ class FacturaController extends Controller
                 'unidadTiempo' => $plazo
             ];
 
+            $request->request->add($infoPagos);
+
             foreach ($infoPagos as $key => $ip) {
                 $nodo = $xml->createElement($key, $ip);
                 $pago->appendChild($nodo);
@@ -168,6 +214,8 @@ class FacturaController extends Controller
 
             $detalles = $xml->createElement('detalles');
             $factura->appendChild($detalles);
+
+            $articulos = [];
             foreach ($request->articulos as $x => $articulo) {
 
                 $articulo = json_decode($articulo);
@@ -182,6 +230,9 @@ class FacturaController extends Controller
                     'descuento' => number_format($articulo->descuento, 2, ".", ""),
                     'precioTotalSinImpuesto' => number_format($articulo->total, 2, ".", "")
                 ];
+
+                $articulos['articulo'][] = $informacionDetalle;
+
                 foreach ($informacionDetalle as $key => $iD) {
                     $nodo = $xml->createElement($key, $iD);
                     $detalle->appendChild($nodo);
@@ -191,6 +242,7 @@ class FacturaController extends Controller
                 $detalle->appendChild($impuestos);
 
                 foreach ($articulo->impuestos as $imp) {
+
                     $impuesto = $xml->createElement('impuesto');
                     $impuestos->appendChild($impuesto);
                     $informacionImpuesto = [
@@ -200,6 +252,9 @@ class FacturaController extends Controller
                         'baseImponible' => number_format($articulo->total, 2, ".", ""),
                         'valor' => number_format($imp->valor_imp, 2, ".", "")
                     ];
+
+                    $articulos['articulo'][$x]['impuestoArticulo'][] = $informacionImpuesto;
+
                     foreach ($informacionImpuesto as $key => $iIp) {
                         $nodo = $xml->createElement($key, $iIp);
                         $impuesto->appendChild($nodo);
@@ -208,6 +263,8 @@ class FacturaController extends Controller
 
             }
 
+            $request->request->add($articulos);
+
             $informacionAdicional = $xml->createElement('infoAdicional');
             $factura->appendChild($informacionAdicional);
 
@@ -215,6 +272,8 @@ class FacturaController extends Controller
                 'Dirección'=> $usuario->perfil->direc_establecimiento,
                 'Email'    => $usuario->correo
             ];
+
+            $request->request->add($campos_adicionales);
 
             foreach ($campos_adicionales as $key => $ca) {
                 $campoAdicional = $xml->createElement('campoAdicional', $ca);
@@ -229,102 +288,264 @@ class FacturaController extends Controller
             $pathFacturas = storage_path('app/public/xml/facturas/');
             $carpetaPersonal = $usuario->id_usuario.'/'.Carbon::now()->format('Y_m');
 
-            $save = Storage::disk('xml_generado')->put($carpetaPersonal.'/'.$xml, $stringXml);
-            $pathFirmados = $pathFacturas.'firmado'.'/'.$carpetaPersonal.'/';
-            $pathEnviados = $pathFacturas.'enviado'.'/'.$carpetaPersonal.'/';
-            $pathAutorizados = $pathFacturas.'autorizado'.'/'.$carpetaPersonal.'/';
-            $pathRechazados = $pathFacturas.'rechazado'.'/'.$carpetaPersonal.'/';
-            $pathGenerados = $pathFacturas.'generado'.'/'.$carpetaPersonal.'/';
-            $pathNoAutorizados = $pathFacturas.'no_autorizado'.'/'.$carpetaPersonal.'/';
+            // GUARDAR DATOS DE LA FACTURA
+            $storeFactura = $this->storeFactura($request->all(),true);
 
-            $wsdlRecepcion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_RECEPCION') : env('WSDL_PRODUCCION_RECEPCION');
-            $wsdlAutorizacion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
+            $msg.= $storeFactura['msg'].'<br />';
 
-            if(!file_exists($pathFirmados)) {
-                if (
-                    !mkdir($pathFirmados, 0775, true) ||
-                    !mkdir($pathEnviados, 0775, true) ||
-                    !mkdir($pathAutorizados, 0775, true) ||
-                    !mkdir($pathRechazados, 0775, true) ||
-                    !mkdir($pathNoAutorizados, 0775, true)
-                )
-                    return response()->json([
-                        'errors' => ['Mensaje:' => 'No se pudo crear el directorio para guardar el xml firmado, intente nuevamente, si el problema persiste contacte al área de sistemas']
-                    ], 500);
-            }
+            if($storeFactura['success']){
 
-            $data =[
-                'carpetaGenerados' => $pathGenerados,
-                'xml' => $xml,
-                'carpetaFirmardos' => $pathFirmados,
-                'contrasena' => $usuario->perfil->pass_firma_elec,
-                'archivoFirmaDigital' => storage_path('app/public/filesp12'),
-                'nombreArchivoFirmaDigital' =>$usuario->perfil->firma_elec
-            ];
+                // GUARDAR EL XML
+                $save = Storage::disk('xml_generado')->put($carpetaPersonal.'/'.$xml, $stringXml);
+                $pathFirmados = $pathFacturas.'firmado'.'/'.$carpetaPersonal.'/';
+                $pathEnviados = $pathFacturas.'enviado'.'/'.$carpetaPersonal.'/';
+                $pathAutorizados = $pathFacturas.'autorizado'.'/'.$carpetaPersonal.'/';
+                $pathRechazados = $pathFacturas.'rechazado'.'/'.$carpetaPersonal.'/';
+                $pathGenerados = $pathFacturas.'generado'.'/'.$carpetaPersonal.'/';
+                $pathNoAutorizados = $pathFacturas.'no_autorizado'.'/'.$carpetaPersonal.'/';
 
-            if ($save) {
-                $resultado = $this->firmarXml($data);
-                $msg .= $this->mensajeFirmaXml($resultado,$data['xml']).'<br />';
-                if ($resultado) {
+                $wsdlRecepcion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_RECEPCION') : env('WSDL_PRODUCCION_RECEPCION');
+                $wsdlAutorizacion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
 
-                    $data=[
-                        'xml' => $xml,
-                        'carpetaFirmardos' => $pathFirmados,
-                        'carpetaEnviados' => $pathEnviados,
-                        'carpetaRechazados' => $pathRechazados,
-                        'carpetaAutorizados' =>$pathAutorizados,
-                        'carpetaNoAutorizados' =>$pathNoAutorizados,
-                        'wsdlRecepcion' =>$wsdlRecepcion,
-                        'wsdlAutorizacion' => $wsdlAutorizacion,
-                        'claveAcceso' => $claveAcceso
-                    ];
-
-                    $resultado= $this->enviarXml($data);
-
-                    if($resultado){
-                        switch($resultado[0]){
-                            case '0':
-                                //ENVIADO PERO RECHAZADO, BUSCAR ARCHIVO EN LA CARPETA RECHAZADOS CORRESPONDIENTE
-
-                                break;
-                            case '1':
-                                $class = "success";
-                                //ENVIADO PERO RECHAZADO, Y AUTORIZADO
-                                break;
-                            case '2':
-                                $class = "danger";
-                                //FALLA DE CONEXIÓN CON WL WEB SERVICE
-                                break;
-                        }
-                        $msg .= $this->mensajeEnvioXml($resultado[0]);
-                    }else{
+                if(!file_exists($pathFirmados)) {
+                    if (
+                        !mkdir($pathFirmados, 0775, true) ||
+                        !mkdir($pathEnviados, 0775, true) ||
+                        !mkdir($pathAutorizados, 0775, true) ||
+                        !mkdir($pathRechazados, 0775, true) ||
+                        !mkdir($pathNoAutorizados, 0775, true)
+                    )
                         return response()->json([
-                            'errors'=>['Mensaje:'=> 'No se pudo enviar el xml generado al sri, busque el registro en la vista de facturas e intente enviarlo nuevamente, si el problema persiste contacte al área de sistemas']
-                        ],500);
+                            'errors' => ['Mensaje:' => 'No se pudo crear el directorio para guardar el xml firmado, intente nuevamente, si el problema persiste contacte al área de sistemas']
+                        ], 500);
+                }
+
+                $data =[
+                    'carpetaGenerados' => $pathGenerados,
+                    'xml' => $xml,
+                    'carpetaFirmardos' => $pathFirmados,
+                    'contrasena' => $usuario->perfil->pass_firma_elec,
+                    'archivoFirmaDigital' => storage_path('app/public/filesp12'),
+                    'nombreArchivoFirmaDigital' =>$usuario->perfil->firma_elec
+                ];
+
+                if ($save) {
+
+                    if($request->firmar =="true"){
+
+                        $resultado = $this->firmarXml($data);
+                        $msg .= $this->mensajeFirmaXml($resultado,$data['xml']).'<br />';
+
+                        if ($resultado) {
+
+                            if($request->autorizar == "true"){
+
+                                $data=[
+                                    'xml' => $xml,
+                                    'carpetaFirmardos' => $pathFirmados,
+                                    'carpetaEnviados' => $pathEnviados,
+                                    'carpetaRechazados' => $pathRechazados,
+                                    'carpetaAutorizados' =>$pathAutorizados,
+                                    'carpetaNoAutorizados' =>$pathNoAutorizados,
+                                    'wsdlRecepcion' =>$wsdlRecepcion,
+                                    'wsdlAutorizacion' => $wsdlAutorizacion,
+                                    'claveAcceso' => $claveAcceso
+                                ];
+
+                                $resultado = $this->enviarXml($data);
+                                $factura = Factura::find($storeFactura['id_factura']);
+
+                                if($resultado){
+
+                                    switch($resultado[0]){
+                                        case '0':
+                                            //ENVIADO PERO RECHAZADO, BUSCAR ARCHIVO EN LA CARPETA RECHAZADOS CORRESPONDIENTE
+                                            $factura->update(['estado'=>0]);
+                                            break;
+                                        case '1':
+                                            //ENVIADO Y AUTORIZADO
+                                            $factura->update(['estado'=>1]);
+                                            break;
+                                        default:
+                                            //FALLA DE CONEXIÓN CON WSDL WEB SERVICE O NO ENVIADO
+                                            $factura->update(['estado'=>2]);
+                                            break;
+                                    }
+
+                                    $msg .= $this->mensajeEnvioXml($resultado[0]).'<br />';
+
+                                    if($request->correo == "true"){
+
+                                        // FUNCIÓN ENVÍO DE CORREO
+
+                                    }
+                                }else{
+                                    return response()->json([
+                                        'errors'=>['Mensaje:'=> 'No se pudo enviar el xml generado al sri, busque el registro en la vista de facturas e intente enviarlo nuevamente, si el problema persiste contacte al área de sistemas'],
+                                    ],500);
+                                }
+                            }
+
+                        }else{
+
+                            return response()->json([
+                                'errors'=>[
+                                    'Mensaje:'=> 'El sistema informa de los siguientes mensajes <br />'. $msg,
+                                ]
+                            ],500);
+
+                        }
+
                     }
 
                 }else{
+
                     return response()->json([
-                        'errors'=>[
-                            'Mensaje:'=> 'El sistema informa de los siguientes mensajes <br />', $msg,
-                        ]
+                        'errors'=>['Mensaje:'=> 'No se pudo guardar el xml generado, intente nuevamente, si el problema persiste contacte al área de sistemas'],
                     ],500);
+
                 }
-            }else{
-                return response()->json([
-                    'errors'=>['Mensaje:'=> 'No se pudo guardar el xml generado, intente nuevamente, si el problema persiste contacte al área de sistemas']
-                ],500);
+
             }
 
             return response()->json([
-                'msg' => $msg
+                'msg' => $msg,
+                'success' => $storeFactura['success']
             ],200);
 
         }catch(\Exception $e){
-
             return HomeController::catch($e);
         }
     }
 
+    public function storeFactura($request,$new=false){
+
+        try{
+            $fecha = explode('/',$request['fechaEmision']);
+            $factura = Factura::updateOrCreate(
+                ['id_factura'=> isset($request['id_factura']) ? $request['id_factura'] : 0],
+                [
+                    'secuencial' => $request['estab'].$request['ptoEmi'].$request['secuencial'],
+                    'clave_acceso' => $request['claveAcceso'],
+                    'fecha_doc' => $fecha[2].'/'.$fecha[1].'/'.$fecha[0],
+                    'entorno' => $request['ambiente'],
+                    'id_cliente' => $request['idCliente'],
+                    'id_usuario' => Auth::user()->id_usuario
+                ]
+            );
+
+            if(!isset($factura->id_factura))
+                $factura = Factura::all()->last();
+
+            $detalleFactura = DetalleFactura::updateOrCreate(
+                ['id_factura' => $factura->id_factura],
+                [
+                    'id_factura' => $factura->id_factura,
+                    'razon_social_emisor' => $request['razonSocial'],
+                    'direc_matriz_emisor' => $request['dirMatriz'],
+                    'direc_establecimiento_emisor' => $request['dirEstablecimiento'],
+                    'obligado_contabilidad' => $request['obligadoContabilidad'],
+                    'tipo_ident_comprador' => $request['tipoIdentificacionComprador'],
+                    'razon_social_comprador' => $request['razonSocialComprador'],
+                    'ident_comprador' => $request['identificacionComprador'],
+                    'total_sin_imp' => $request['totalSinImpuestos'],
+                    'total_desc' => $request['totalDescuento'],
+                    'importe_total' => $request['importeTotal']
+                    //'propina' => $request['propina'],
+                ]
+            );
+
+            if(!isset($detalleFactura->id_detalle_factura))
+                $detalleFactura = DetalleFactura::all()->last();
+
+            $oldImpuestoDetalleFactura = ImpuestoDetalleFactura::where('id_detalle_factura',$detalleFactura->id_detalle_factura)
+                                            ->pluck('id_impuesto_detalle_factura')->toArray();
+
+            $oldArticulosFactura = ArticuloFactura::where('id_factura',$factura->id_factura)
+                                            ->pluck('id_articulo_factura')->toArray();
+
+            foreach ($request['articulo'] as $x => $articulo) {
+
+                ArticuloFactura::create([
+                    'id_factura' =>  $factura->id_factura,
+                    'codigo_p' => $articulo['codigoPrincipal'],
+                    'codigo_a' =>  '',
+                    'cantidad' => $articulo['cantidad'],
+                    'precio_unitario' => $articulo['precioUnitario'],
+                    'descuento' => $articulo['descuento'],
+                    'precio_total_sin_imp' => $articulo['precioTotalSinImpuesto'],
+                    'descripcion' => $articulo['descripcion']
+                ]);
+
+                $art = ArticuloFactura::all()->last();
+
+                foreach($articulo['impuestoArticulo'] as $impuestoArticulo){
+
+                    ImpuestoArticuloFactura::create([
+                        'id_articulo_factura' => $art->id_articulo_factura,
+                        'codigo_impuesto' => $impuestoArticulo['codigo'],
+                        'codigo_porcentaje' => $impuestoArticulo['codigoPorcentaje'],
+                        'base_imponible' => $impuestoArticulo['baseImponible'],
+                        'valor' => $impuestoArticulo['valor']
+                    ]);
+
+                }
+
+            }
+
+            if(($x+1) == count($request['articulo'])){
+
+                foreach ($request['impuesto'] as $y => $impuesto) {
+
+                    ImpuestoDetalleFactura::create([
+                        'id_detalle_factura' => $detalleFactura->id_detalle_factura,
+                        'codigo_impuesto' => $impuesto['codigo'],
+                        'codigo_porcentaje' => $impuesto['codigoPorcentaje'],
+                        'base_imponible' => $impuesto['baseImponible'],
+                        'valor' => $impuesto['valor']
+                    ]);
+
+                }
+
+                if(($y+1) == count($request['impuesto']))
+                    ImpuestoDetalleFactura::destroy($oldImpuestoDetalleFactura);
+            }
+
+            if((($x+1) == count($request['articulo'])))
+                ArticuloFactura::destroy($oldArticulosFactura);
+
+            //ACTUALIZAR EL SECUENCIAL
+            if($new){
+                $usuario = Auth::user();
+                $usuario->perfil->update(['n_factura'=> str_pad($usuario->perfil->n_factura+1, 9, '0', STR_PAD_LEFT)]);
+            }
+
+            return [
+                'msg' => 'El xml de la factura se ha guardado y registrado éxitosamente con el número '.$factura->secuencial,
+                'success' => true,
+                'id_factura'=>$factura->id_factura
+            ];
+
+        }catch(\Exception $e){
+            if(isset($factura))
+                Factura::destroy($factura->id_factura);
+
+            return HomeController::catch($e);
+        }
+
+    }
+
+    public function pdfFactura($idFactura){
+
+        $data = Factura::where([
+            'id_usuario' => Auth::user()->id_usuario,
+            'id_factura' => $idFactura
+        ])->first();
+
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('comprobantes.factura.pdf', compact('data'));
+        return $pdf->stream('archivo.pdf');
+
+    }
 
 }

@@ -264,7 +264,6 @@
                             this.itemsUser.push(mu)
                 }
 
-                console.log(this.modulos)
                 this.menuVentas = this.modulos
             }
         },

@@ -1,9 +1,15 @@
 <template>
+    <div>
+        <v-overlay :value="overlay">
+            <v-progress-circular indeterminate size="64">Procesando factura</v-progress-circular>
+        </v-overlay>
+
     <v-data-table
             :headers="headers"
-            :items="desserts"
+            :items="dataTable"
             sort-by="calories"
             class="elevation-1"
+            :loading=loadingTable
             dense
     >
         <template v-slot:top>
@@ -41,7 +47,7 @@
                                 style="margin-top: 2.3px;"
                                 class="py-0"
                                 cols="12"
-                                md="4"
+                                md="3"
                                 sm="6">
                             <v-select
                                     class="mt-5"
@@ -49,16 +55,17 @@
                                     label="Clientes"
                                     item-text="nombre"
                                     item-value="id_cliente"
-                                    v-model="idCliente"
+                                    v-model="idClienteSearch"
                                     clearable
                                     dense
+                                    @change="getDataComponent()"
                             >
                             </v-select>
                         </v-col>
                         <v-col
                                 class="py-0"
                                 cols="12"
-                                md="4"
+                                md="3"
                                 sm="6">
                             <v-text-field
                                     v-model="search"
@@ -67,6 +74,23 @@
                                     single-line
                                     hide-details
                             ></v-text-field>
+                        </v-col>
+                        <v-col
+                                class="py-0"
+                                cols="12"
+                                md="2"
+                                sm="6">
+                            <v-select
+                                    class="mt-5"
+                                    :items="estados"
+                                    label="Estados"
+                                    item-text="nombre"
+                                    item-value="id"
+                                    v-model="estado"
+                                    dense
+                                    @change="getDataComponent()"
+                            >
+                            </v-select>
                         </v-col>
                         <v-col
                                 class="py-0 btn-comprobante text-md-center pt-md-3"
@@ -150,26 +174,6 @@
                                                         ></v-select>
                                                     </v-col>
                                                     <v-col cols="12" class="pb-0" sm="6" md="3">
-                                                        <!--<v-menu
-                                                                v-model="menu2"
-                                                                :close-on-content-click="false"
-                                                                :nudge-right="40"
-                                                                transition="scale-transition"
-                                                                offset-y
-                                                                min-width="290px"
-                                                        >
-                                                            <template v-slot:activator="{ on, attrs }">
-                                                                <v-text-field
-                                                                        v-model="date"
-                                                                        label="Picker without buttons"
-                                                                        prepend-icon="event"
-                                                                        readonly
-                                                                        v-bind="attrs"
-                                                                        v-on="on"
-                                                                ></v-text-field>
-                                                            </template>
-                                                            <v-date-picker v-model="date" @input="menu2 = false"></v-date-picker>
-                                                        </v-menu>-->
                                                         <v-menu>
                                                             <template v-slot:activator="{ on, attrs }">
                                                                 <v-text-field
@@ -559,22 +563,99 @@
                 </v-form>
             </v-col>
         </template>
+        <template v-slot:item.estado="{ item }">
+            {{item.estado === 0 ? 'Rechazado' : ''}}
+            {{item.estado === 1 ? 'Autorizado' : ''}}
+            {{item.estado === 2 ? 'No enviado' : ''}}
+        </template>
+        <template v-slot:item.entorno="{ item }">
+            {{item.entorno === 1 ? 'Pruebas' : 'Producción'}}
+        </template>
+        <template v-slot:item.clave_acceso="{ item }">
+            <v-tooltip top>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                            color="secondary"
+                            dark
+                            text
+                            x-small
+                            v-bind="attrs"
+                            v-on="on"
+                            @click="copyClaveAcceso(item.clave_acceso)"
+                    >
+                        <v-icon>mdi-eye</v-icon>
+                    </v-btn>
+                </template>
+                <span :id="`clave_acceso_${item.clave_acceso}`">{{item.clave_acceso}}</span>
+            </v-tooltip>
+        </template>
         <template v-slot:item.actions="{ item }">
-            <v-icon
-                    small
-                    class="mr-2"
-                    @click="editItem(item)"
+            <v-menu
+                    transition="slide-y-transition"
+                    bottom
             >
-                mdi-pencil
-            </v-icon>
-            <v-icon
-                    small
-                    @click="deleteItem(item)"
-            >
-                mdi-delete
-            </v-icon>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                            color="secondary"
+                            dark
+                            fab
+                            x-small
+                            v-bind="attrs"
+                            v-on="on"
+                    >
+                        <v-icon>mdi-menu</v-icon>
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item class="list-actions">
+                        <v-list-item-title>
+                            <v-btn text small >
+                                <a :href="`/factura/comprobante/${item.id_factura}`" target="_blank" class="link">
+                                    <v-icon color="success">mdi-file-pdf</v-icon> Visualizar
+                                </a>
+                            </v-btn>
+                        </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item class="list-actions">
+                        <v-list-item-title>
+                            <v-btn text small >
+                                <v-icon color="success">mdi-email-outline</v-icon> Enviar correo
+                            </v-btn>
+                        </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="item.estado===0 || item.estado===2" class="list-actions">
+                        <v-list-item-title>
+                            <v-btn text small >
+                                <v-icon color="success">mdi-auto-upload</v-icon> Reenviar al sri
+                            </v-btn>
+                        </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="item.estado===1" class="list-actions">
+                        <v-list-item-title>
+                            <v-btn text small >
+                                <v-icon color="red">mdi-cancel</v-icon> Anular factura
+                            </v-btn>
+                        </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="item.estado!=1" class="list-actions">
+                        <v-list-item-title>
+                            <v-btn text small >
+                                <v-icon color="warning">mdi-pencil</v-icon> Editar
+                            </v-btn>
+                        </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item v-if="item.estado!=1" class="list-actions">
+                        <v-list-item-title>
+                            <v-btn text small >
+                                <v-icon class="red--text">mdi-delete-sweep</v-icon> Borrar
+                            </v-btn>
+                        </v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
         </template>
     </v-data-table>
+    </div>
 </template>
 
 <script>
@@ -625,6 +706,7 @@
             fechaDocumento:new Date().toISOString().substr(0, 10),
             fechaVencimiento:new Date().toISOString().substr(0, 10),
             idCliente:'',
+            idClienteSearch:'',
             notifications:false,
             sound:false,
             widgets:false,
@@ -641,30 +723,36 @@
             excento:0,
             descuento:0,
             total:0,
+            overlay:false,
+            loadingTable:false,
             undTiempo: ['Dias','Semanas','Meses'],
-            formaPago:[{id_forma_pago:1,nombre:'Contado'},{id_forma_pago:2,nombre:'Crédito'}],
+            formaPago:[
+                {id_forma_pago:1,nombre:'Contado'},
+                {id_forma_pago:2,nombre:'Crédito'}
+            ],
             headers: [
-                {
-                    text: 'Dessert (100g serving)',
-                    align: 'start',
-                    sortable: false,
-                    value: 'name',
-                },
-                { text: 'Calories', value: 'calories' },
-                { text: 'Fat (g)', value: 'fat' },
-                { text: 'Carbs (g)', value: 'carbs' },
-                { text: 'Protein (g)', value: 'protein' },
+                { text: 'Secuencial', value: 'secuencial' },
+                { text: 'Clave acceso', value: 'clave_acceso', align: 'center' },
+                { text: 'Fecha documento', value: 'fecha_doc' },
+                { text: 'Fecha autorización', value: 'fecha_aut'},
+                { text: 'Cliente', value: 'cliente' },
+                { text: 'Total', value: 'total', align: 'center'  },
+                { text: 'Entorno', value: 'entorno', align: 'center'  },
+                { text: 'Estado', value: 'estado' },
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
-            desserts: [],
+            dataTable: [],
+            estados:[
+                {id: 1, nombre: 'Autorizados'},
+                {id: 0, nombre: 'Rechazados' },
+                {id: 2, nombre: 'No enviado'}
+            ],
+            estado:1,
             editedIndex: -1,
             articulos:[],
             categorias:[],
             idCategoria:'',
             idFormaPago:1,
-            firmar:1,
-            autorizar:1,
-            correo_cliente:1,
             articulosFactura:[
                 {
                     articulos:[],
@@ -697,19 +785,19 @@
 
         methods: {
 
-            ...mapActions(['httpRequest']),
+            ...mapActions(['httpRequest','alertNotification']),
 
             ...mapMutations(['setLoadingBtn']),
 
             editItem (item) {
-                this.editedIndex = this.desserts.indexOf(item)
+                this.editedIndex = this.dataTable.indexOf(item)
                 this.editedItem = Object.assign({}, item)
                 this.dialog = true
             },
 
             deleteItem (item) {
-                const index = this.desserts.indexOf(item)
-                confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
+                const index = this.dataTable.indexOf(item)
+                confirm('Are you sure you want to delete this item?') && this.dataTable.splice(index, 1)
             },
 
             close () {
@@ -722,11 +810,38 @@
 
             save () {
                 if (this.editedIndex > -1) {
-                    Object.assign(this.desserts[this.editedIndex], this.editedItem)
+                    Object.assign(this.dataTable[this.editedIndex], this.editedItem)
                 } else {
-                    this.desserts.push(this.editedItem)
+                    this.dataTable.push(this.editedItem)
                 }
                 this.close()
+            },
+
+            copyClaveAcceso(id){
+                var codigoACopiar = document.getElementById('clave_acceso_'+id);
+                var seleccion = document.createRange();
+                seleccion.selectNodeContents(codigoACopiar);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(seleccion);
+                let res = document.execCommand('copy');
+                window.getSelection().removeRange(seleccion);
+            },
+
+            getDataComponent(){
+                this.loadingTable = true
+                this.httpRequest({
+                    method: 'get',
+                    url: 'factura/list',
+                    data: {
+                        estado : this.estado,
+                        id_cliente : this.idClienteSearch
+                    }
+                }).then((res) => {
+
+                    this.dataTable=res.data
+                    this.loadingTable = false
+                })
+
             },
 
             setInfo(){
@@ -841,7 +956,10 @@
                 if(!this.$refs.form_factura.validate())
                     return
 
+                this.overlay=true
                 let html='<div class="text-left">'
+                    html+= '<p><input type="checkbox" checked id="genera_xml" name="genera_xml" disabled> <label for="genera_xml">Se generará el xml</label></p>'
+                    html+= '<p><input type="checkbox" checked id="guarda_factura" name="guarda_factura" disabled> <label for="guarda_factura">Se guardará el registro de la factura</label></p>'
                     html+= '<p><input type="checkbox" checked id="firmar" name="firmar"> <label for="firmar">Firmar documento electrónico</label></p>'
                     html+= '<p><input type="checkbox" checked id="autorizar" name="autorizar"> <label for="autorizar">Autorizar documento electrónico</label></p>'
                     html+= '<p><input type="checkbox" checked id="correo" name="correo"> <label for="correo">Envío de correo electrónico</label></p>'
@@ -924,7 +1042,11 @@
                             total: this.total,
                             plazo: this.plazo,
                             undTiempoPlazo: this.undTiempoPlazo,
-                            articulos: articulos
+                            articulos: articulos,
+                            firmar: $("#firmar").is(":checked"),
+                            autorizar: $("#autorizar").is(":checked"),
+                            correo: $("#correo").is(":checked"),
+
                         }
 
                         this.httpRequest({
@@ -932,29 +1054,38 @@
                             url: 'factura/store',
                             data: data
                         }).then((res) => {
+                            this.getDataComponent()
+                            this.overlay=false
+                            this.alertNotification({
+                                param:{
+                                    html: res.data.msg,
+                                    timer: 25000
+                                }
+                            })
 
-                            console.log(res.data)
-
-
+                            if(res.data.success){
+                                this.dialog=false
+                                Object.assign(data,'')
+                            }
 
                             /* let indexSelect = this.catgArticulos.indexOf(item)
-                    let indexTable = this.dataTableCatg.indexOf(item)
+                                let indexTable = this.dataTableCatg.indexOf(item)
 
-                    if(item.estado){
-                        this.catgArticulos.splice(indexSelect, 1)
-                    }else{
-                        this.catgArticulos.push(res.data.categoria)
-                    }
-                    Object.assign(this.dataTableCatg[indexTable],res.data.categoria)*/
+                                if(item.estado){
+                                    this.catgArticulos.splice(indexSelect, 1)
+                                }else{
+                                    this.catgArticulos.push(res.data.categoria)
+                                }
+                                Object.assign(this.dataTableCatg[indexTable],res.data.categoria)*/
                         })
 
                     }
                 });
             }
 
-
         },
         created () {
+            this.getDataComponent()
 
             for(let categoria of this.inventario.categorias_activadas){
                 this.categorias.push({
@@ -982,6 +1113,14 @@
             top: 3px;
             right: 3px;
         }
+    }
+
+    .list-actions{
+        min-height: 35px!important;
+    }
+
+    .link{
+        text-decoration:none!important
     }
 
 </style>

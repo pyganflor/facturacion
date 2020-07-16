@@ -1,5 +1,6 @@
 /node_modules
 /public/hot
+/app/Console/jars
 /public/storage
 /storage/*.key
 /vendor
