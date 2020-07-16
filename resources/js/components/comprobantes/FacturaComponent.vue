@@ -129,7 +129,7 @@
                                                     text
                                                     @click="generarComprobante"
                                             >
-                                                <v-icon>mdi-check-all</v-icon> Generar
+                                                <v-icon>mdi-check-all</v-icon> <span class="d-none d-md-block">Generar</span>
                                             </v-btn>
                                         </v-toolbar-items>
                                     </v-toolbar>
@@ -247,8 +247,19 @@
                                                                 colored-border
                                                                 icon="mdi-account-convert"
                                                                 dense
+                                                                class="py-1"
                                                         >
                                                             Datos del cliente
+                                                            <div class="float-right">
+                                                                <v-btn
+                                                                        fab
+                                                                        color="primary"
+                                                                        title="Crear nuevo cliente"
+                                                                        x-small
+                                                                >
+                                                                    <v-icon>mdi-account-multiple-plus</v-icon>
+                                                                </v-btn>
+                                                            </div>
                                                         </v-alert>
                                                     </v-col>
                                                     <v-col
@@ -303,7 +314,6 @@
                                                                 dense
                                                         ></v-select>
                                                     </v-col>
-
                                                     <v-col
                                                             cols="12"
                                                             class="pb-0"
