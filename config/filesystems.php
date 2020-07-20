@@ -76,6 +76,20 @@ return [
             'visibility' => 'public',
         ],
 
+        'xml_no_autorizado' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/xml/facturas/no_autorizado'),
+            'url' => env('APP_URL').'/storage/xml/facturas/no_autorizado',
+            'visibility' => 'public',
+        ],
+
+        'xml_autorizado' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/xml/facturas/autorizado'),
+            'url' => env('APP_URL').'/storage/xml/facturas/autorizado',
+            'visibility' => 'public',
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),

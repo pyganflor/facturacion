@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\xml\XmlRespuestaFactura;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Model\{ArticuloFactura,
@@ -16,6 +17,7 @@ use App\Model\{ArticuloFactura,
 };
 use App\Http\Requests\RequestStoreFacura;
 use DomDocument;
+use SoapClient;
 use Illuminate\Support\Facades\{Storage,Auth};
 
 
@@ -52,11 +54,12 @@ class FacturaController extends Controller
                 'c.nombre as cliente',
                 'factura.fecha_doc',
                 'factura.fecha_aut',
-                'factura.entorno'
+                'factura.entorno',
+                'factura.causa'
             )->where(function($q) use ($request) {
                 if(isset($request->id_cliente))
                     $q->where('c.id_cliente',$request->id_cliente);
-            })->get();
+            })->orderBy('secuencial','desc')->get();
     }
 
     /**
@@ -77,7 +80,7 @@ class FacturaController extends Controller
             $cadena = $fecha . '01' . $usuario->perfil->ruc . $usuario->perfil->entorno . $serie . $usuario->perfil->n_factura . $codigoNumerico . 1;
             $digitoVerificador = $this->digitoVerificador($cadena);
 
-            if(!$digitoVerificador)
+            if(!$digitoVerificador && $digitoVerificador!=0)
                 return response()->json([
                     'errors'=>['Mensaje:'=> ' La clave de acceso está mal formada, verifique que su información adicional este correctamente ingresada en la configuración de su perfil y vuelva a intentarlo']
                 ],500);
@@ -357,22 +360,35 @@ class FacturaController extends Controller
 
                                 if($resultado){
 
-                                    switch($resultado[0]){
-                                        case '0':
-                                            //ENVIADO PERO RECHAZADO, BUSCAR ARCHIVO EN LA CARPETA RECHAZADOS CORRESPONDIENTE
-                                            $factura->update(['estado'=>0]);
-                                            break;
-                                        case '1':
-                                            //ENVIADO Y AUTORIZADO
-                                            $factura->update(['estado'=>1]);
-                                            break;
-                                        default:
-                                            //FALLA DE CONEXIÓN CON WSDL WEB SERVICE O NO ENVIADO
-                                            $factura->update(['estado'=>2]);
-                                            break;
+                                    if($resultado[0] == 0){
+                                        //ENVIADO PERO RECHAZADO, BUSCAR ARCHIVO EN LA CARPETA RECHAZADOS CORRESPONDIENTE
+                                        $factura->update(['estado'=>0]);
+                                    }
+                                    if($resultado[0] == 1){
+                                        $wsdlAutorizacion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
+                                        $cliente = new SoapClient($wsdlAutorizacion);
+                                        $response = $cliente->autorizacionComprobante(["claveAccesoComprobante" => $claveAcceso]);
+                                        $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
+                                        $estado=1;
+                                        if($autorizacion->estado=="NO AUTORIZADO" || $autorizacion->estado=="RECHAZADA" || $autorizacion->estado=="DEVUELTA"){
+                                            $resultado[0]=1;
+                                            $estado=0;
+                                        }
+
+                                        $factura->update([
+                                            'estado'=>$estado,
+                                            'fecha_aut' =>(String)$autorizacion->fechaAutorizacion
+                                        ]);
+
+                                    }
+                                    if($resultado[0] == 2){
+                                        //FALLA DE CONEXIÓN CON WSDL WEB SERVICE O NO ENVIADO
+                                        $factura->update(['estado'=>2]);
                                     }
 
                                     $msg .= $this->mensajeEnvioXml($resultado[0]).'<br />';
+
+                                    XmlRespuestaFactura::dispatch($claveAcceso,$usuario->id_usuario)->onQueue('respuesta_sri_factura');
 
                                     if($request->correo == "true"){
 
@@ -410,7 +426,21 @@ class FacturaController extends Controller
 
             return response()->json([
                 'msg' => $msg,
-                'success' => $storeFactura['success']
+                'success' => $storeFactura['success'],
+                'factura' =>Factura::where('factura.id_factura',$storeFactura['id_factura'])
+                    ->join('cliente as c','factura.id_cliente','c.id_cliente')
+                    ->select(
+                        'factura.id_factura',
+                        'factura.secuencial',
+                        'factura.clave_acceso',
+                        'factura.total',
+                        'factura.estado',
+                        'c.nombre as cliente',
+                        'factura.fecha_doc',
+                        'factura.fecha_aut',
+                        'factura.entorno',
+                        'factura.causa'
+                    )->first()
             ],200);
 
         }catch(\Exception $e){
@@ -435,7 +465,7 @@ class FacturaController extends Controller
             );
 
             if(!isset($factura->id_factura))
-                $factura = Factura::all()->last();
+                $factura = Factura::orderBy('id_factura','desc')->first();
 
             $detalleFactura = DetalleFactura::updateOrCreate(
                 ['id_factura' => $factura->id_factura],
@@ -456,7 +486,7 @@ class FacturaController extends Controller
             );
 
             if(!isset($detalleFactura->id_detalle_factura))
-                $detalleFactura = DetalleFactura::all()->last();
+                $detalleFactura = DetalleFactura::orderBy('id_detalle_factura','desc')->first();
 
             $oldImpuestoDetalleFactura = ImpuestoDetalleFactura::where('id_detalle_factura',$detalleFactura->id_detalle_factura)
                                             ->pluck('id_impuesto_detalle_factura')->toArray();
@@ -541,6 +571,17 @@ class FacturaController extends Controller
             'id_usuario' => Auth::user()->id_usuario,
             'id_factura' => $idFactura
         ])->first();
+
+        $usuario =Auth::user();
+        $wsdlAutorizacion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
+        $cliente = new SoapClient($wsdlAutorizacion);
+        $response = $cliente->autorizacionComprobante(["claveAccesoComprobante" => $data->clave_acceso]);
+        $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
+
+        $fechaAutorizacion = (String)$autorizacion->fechaAutorizacion;
+        $ambiente = (String)$autorizacion->ambiente;
+        $dataXML = (String)$autorizacion->comprobante;
+        dd($response->RespuestaAutorizacionComprobante,$fechaAutorizacion,$ambiente,$dataXML);
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('comprobantes.factura.pdf', compact('data'));

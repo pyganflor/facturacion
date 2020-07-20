@@ -10,6 +10,7 @@
             sort-by="calories"
             class="elevation-1"
             :loading=loadingTable
+            loading-text="Buscando facturas"
             dense
     >
         <template v-slot:top>
@@ -33,6 +34,7 @@
                                             readonly
                                             v-bind="attrs"
                                             v-on="on"
+                                            @change="searchDataTable"
                                     ></v-text-field>
                                 </template>
                                 <v-date-picker
@@ -573,13 +575,34 @@
                 </v-form>
             </v-col>
         </template>
-        <template v-slot:item.estado="{ item }">
-            {{item.estado === 0 ? 'Rechazado' : ''}}
-            {{item.estado === 1 ? 'Autorizado' : ''}}
-            {{item.estado === 2 ? 'No enviado' : ''}}
+        <template v-slot:no-results="{ item }">
+            No se encontraron facturas
         </template>
+        <template v-slot:no-data>
+            Sin registros
+        </template>
+        <!--<template v-slot:item.estado="{ item }">
+            {{estados.find(e => e.id ===item.estado).nombre}}
+        </template>-->
         <template v-slot:item.entorno="{ item }">
             {{item.entorno === 1 ? 'Pruebas' : 'Producción'}}
+        </template>
+        <template v-slot:item.causa="{ item }">
+            <v-tooltip top>
+                <template v-slot:activator="{ on, attrs, item }">
+                    <v-btn
+                            color="secondary"
+                            dark
+                            text
+                            x-small
+                            v-bind="attrs"
+                            v-on="on"
+                    >
+                        <v-icon>mdi-message-text-outline</v-icon>
+                    </v-btn>
+                </template>
+                <div style="background: black">{{item.causa}}</div>
+            </v-tooltip>
         </template>
         <template v-slot:item.clave_acceso="{ item }">
             <v-tooltip top>
@@ -605,16 +628,13 @@
                     bottom
             >
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn
+                    <v-icon
                             color="secondary"
-                            dark
-                            fab
-                            x-small
                             v-bind="attrs"
                             v-on="on"
                     >
-                        <v-icon>mdi-menu</v-icon>
-                    </v-btn>
+                        mdi-menu
+                    </v-icon>
                 </template>
                 <v-list>
                     <v-list-item class="list-actions">
@@ -654,13 +674,13 @@
                             </v-btn>
                         </v-list-item-title>
                     </v-list-item>
-                    <v-list-item v-if="item.estado!=1" class="list-actions">
+                    <!--<v-list-item v-if="item.estado!=1" class="list-actions">
                         <v-list-item-title>
                             <v-btn text small >
-                                <v-icon class="red--text">mdi-delete-sweep</v-icon> Borrar
+                                <v-icon class="red&#45;&#45;text">mdi-delete-sweep</v-icon> Borrar
                             </v-btn>
                         </v-list-item-title>
-                    </v-list-item>
+                    </v-list-item>-->
                 </v-list>
             </v-menu>
         </template>
@@ -748,7 +768,8 @@
                 { text: 'Cliente', value: 'cliente' },
                 { text: 'Total', value: 'total', align: 'center'  },
                 { text: 'Entorno', value: 'entorno', align: 'center'  },
-                { text: 'Estado', value: 'estado' },
+                /*{ text: 'Estado', value: 'estado' }*/,
+                { text: 'Mensajes', value: 'causa' },
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
             dataTable: [],
@@ -839,6 +860,7 @@
 
             getDataComponent(){
                 this.loadingTable = true
+                this.dataTable=[]
                 this.httpRequest({
                     method: 'get',
                     url: 'factura/list',
@@ -1056,7 +1078,6 @@
                             firmar: $("#firmar").is(":checked"),
                             autorizar: $("#autorizar").is(":checked"),
                             correo: $("#correo").is(":checked"),
-
                         }
 
                         this.httpRequest({
@@ -1064,7 +1085,6 @@
                             url: 'factura/store',
                             data: data
                         }).then((res) => {
-                            this.getDataComponent()
                             this.overlay=false
                             this.alertNotification({
                                 param:{
@@ -1074,23 +1094,39 @@
                             })
 
                             if(res.data.success){
+                                this.dataTable.unshift(res.data.factura);
                                 this.dialog=false
-                                Object.assign(data,'')
+                                /*Object.assign(data,{
+                                    ptoEmision: '',
+                                    facturero: '',
+                                    fechaDoc: '',
+                                    fechaVenc: '',
+                                    sustTributario: '',
+                                    comentario: '',
+                                    idCliente: '',
+                                    formaPago: '',
+                                    idTipoPago: '',
+                                    correos: '',
+                                    subTotal : '',
+                                    descuento : '',
+                                    total: '',
+                                    plazo: '',
+                                    undTiempoPlazo: '',
+                                    articulos: articulos,
+                                    firmar: '',
+                                    autorizar: '',
+                                    correo: ''
+                                })*/
                             }
 
-                            /* let indexSelect = this.catgArticulos.indexOf(item)
-                                let indexTable = this.dataTableCatg.indexOf(item)
-
-                                if(item.estado){
-                                    this.catgArticulos.splice(indexSelect, 1)
-                                }else{
-                                    this.catgArticulos.push(res.data.categoria)
-                                }
-                                Object.assign(this.dataTableCatg[indexTable],res.data.categoria)*/
                         })
 
                     }
                 });
+            },
+
+            searchDataTable(){
+                console.log(this.dateRangeText)
             }
 
         },

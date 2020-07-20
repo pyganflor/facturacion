@@ -15,6 +15,7 @@ class Controller extends BaseController
     {
         $arrNum = str_split($cadena);
         $cantCadena = count($arrNum);
+
         $total = 0.00;
         if ($cantCadena === 48) {
             $x = 2;
@@ -31,10 +32,13 @@ class Controller extends BaseController
             $digitoVerificador = 11 - $resultado;
 
             if ((11 * (int)$cociente) + $resultado === $total) {
+
+
                 if ($digitoVerificador == 10)
                     $digitoVerificador = 1;
                 elseif ($digitoVerificador == 11)
                     $digitoVerificador = 0;
+
                 return $digitoVerificador;
             } else {
                 return false;
@@ -100,9 +104,9 @@ class Controller extends BaseController
     function mensajeEnvioXml($indice)
     {
         $mensaje = [
-            0 => "El comprobante fue enviado pero rechazado por el SRI, Intente nuevamente",
+            0 => "El comprobante fue enviado pero rechazado por el SRI, verfique en el campo causa el motivo",
             1 => "Se ha autorizado con éxito la factura por el sri",
-            2 => "Fallo en la conexión con el web service del SRI, intente nuevamente",
+            2 => "Fallo en la conexión con el web service del SRI, intente nuevamente"
         ];
         return $mensaje[$indice];
     }
