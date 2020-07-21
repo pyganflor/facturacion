@@ -74,58 +74,64 @@
             </table>
         </td>
     </tr>
-    <table>
-        <tr>
-            <td style="border:1px solid black;border-radius:5px;width:720px">
-                <table>
-                    <tr>
-                        <td style="font-size:15px;padding:5px">Razon social / Nombre y Apellidos: {{--{{(String)$data['obj_xml']->infoFactura->razonSocialComprador}}--}}</td>
-                    </tr>
-                    <tr>
-                        <td style="font-size:12;padding:5px">RUC / CI: {{--{{(String)$data['obj_xml']->infoFactura->identificacionComprador}}--}}</td>
-                    </tr>
-                    <tr>
-                        <td style="font-size:15px;padding:5px">Destinatario: {{--{{(String)$data['obj_xml']->infoFactura->razonSocialComprador}}--}}</td>
-                    </tr>
-                    <tr>
-                        <td style="font-size:15px;padding:5px">Carguera: {{--{{(String)$data['obj_xml']->infoAdicional->campoAdicional[3]}}--}}</td>
-                    </tr>
-                    <tr>
-                        <td style="font-size:15px;padding:5px">Fecha Emisión: {{--{{(String)$data['obj_xml']->infoFactura->fechaEmision}}--}}</td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        <tr>
+    <tr>
+        <td>
             <table>
-                <tr style="border:1px solid black;width: 750px">
-                    <td style="border:1px solid black;width: 105px;text-align: center;">Cod. Principal</td>
-                    <td style="border:1px solid black;width: 85px;text-align: center;">Cantidad</td>
-                    <td style="border:1px solid black;text-align: center;">Descripción</td>
-                    <td style="border:1px solid black;width: 100px;text-align: center;">Precio unitario</td>
-                    <td style="border:1px solid black;width: 95px;text-align: center;">Descuento</td>
-                    <td style="border:1px solid black;width: 95px;text-align: center;">Precio total</td>
+                <tr>
+                    <td style="border:1px solid black;border-radius:5px;width:720px">
+                        <table>
+                            <tr>
+                                <td style="font-size:15px;padding:5px">Razon social / Nombre y Apellidos: {{--{{(String)$data['obj_xml']->infoFactura->razonSocialComprador}}--}}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:12;padding:5px">RUC / CI: {{--{{(String)$data['obj_xml']->infoFactura->identificacionComprador}}--}}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:15px;padding:5px">Destinatario: {{--{{(String)$data['obj_xml']->infoFactura->razonSocialComprador}}--}}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:15px;padding:5px">Carguera: {{--{{(String)$data['obj_xml']->infoAdicional->campoAdicional[3]}}--}}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:15px;padding:5px">Fecha Emisión: {{--{{(String)$data['obj_xml']->infoFactura->fechaEmision}}--}}</td>
+                            </tr>
+                        </table>
+                    </td>
                 </tr>
-                {{--@php
-                    $a = (Array)$data['obj_xml']->detalles;
-                    $b = $a['detalle'];
-                    !is_array($b) ? $b = [$b] : "";
-                @endphp--}}
-                {{--@foreach($b as $key => $c)
-                    <tr style="width: 750px">
-                        <td style="font-size: 12px;;border:1px solid black;padding-left: 5px">{{(String)$c->codigoPrincipal}}</td>
-                        <td style="font-size: 12px;border:1px solid black;padding-left: 5px">
-                            {{(String)$c->cantidad}}
-                        </td>
-                        <td style="font-size: 12px;width: 205px;border:1px solid black;padding-left: 5px">{{(String)$c->descripcion}}</td>
-                        <td style="font-size: 12px;border:1px solid black;padding-left: 5px">{{(String)$c->precioUnitario}}</td>
-                        <td style="font-size: 12px;border:1px solid black;padding-left: 5px">{{(String)$c->descuento}}</td>
-                        <td style="font-size: 12px;border:1px solid black;padding-left: 5px">{{(String)$c->precioTotalSinImpuesto}}</td>
-                    </tr>
-                @endforeach--}}
+                <tr>
+                    <td>
+                        <table>
+                            <tr style="border:1px solid black;width: 750px">
+                                <td style="border:1px solid black;width: 105px;text-align: center;">Cod. Principal</td>
+                                <td style="border:1px solid black;width: 85px;text-align: center;">Cantidad</td>
+                                <td style="border:1px solid black;text-align: center;">Descripción</td>
+                                <td style="border:1px solid black;width: 100px;text-align: center;">Precio unitario</td>
+                                <td style="border:1px solid black;width: 95px;text-align: center;">Descuento</td>
+                                <td style="border:1px solid black;width: 95px;text-align: center;">Precio total</td>
+                            </tr>
+                            {{--@php
+                                $a = (Array)$data['obj_xml']->detalles;
+                                $b = $a['detalle'];
+                                !is_array($b) ? $b = [$b] : "";
+                            @endphp--}}
+                            {{--@foreach($b as $key => $c)
+                                <tr style="width: 750px">
+                                    <td style="font-size: 12px;;border:1px solid black;padding-left: 5px">{{(String)$c->codigoPrincipal}}</td>
+                                    <td style="font-size: 12px;border:1px solid black;padding-left: 5px">
+                                        {{(String)$c->cantidad}}
+                                    </td>
+                                    <td style="font-size: 12px;width: 205px;border:1px solid black;padding-left: 5px">{{(String)$c->descripcion}}</td>
+                                    <td style="font-size: 12px;border:1px solid black;padding-left: 5px">{{(String)$c->precioUnitario}}</td>
+                                    <td style="font-size: 12px;border:1px solid black;padding-left: 5px">{{(String)$c->descuento}}</td>
+                                    <td style="font-size: 12px;border:1px solid black;padding-left: 5px">{{(String)$c->precioTotalSinImpuesto}}</td>
+                                </tr>
+                            @endforeach--}}
+                        </table>
+                    </td>
+                </tr>
             </table>
-        </tr>
-    </table>
+        </td>
+    </tr>
 </table>
 <table>
     <tr>
@@ -144,34 +150,6 @@
                     <td style="font-size:13px;padding:5px">Correo: {{--{{(String)$data['obj_xml']->infoAdicional->campoAdicional[1]}}--}}</td>
                 </tr>
 
-                <tr>
-                    <td style="font-size:13px;padding:5px">TOTALES:
-                        {{--@php
-                            $piezas = 0;
-                               foreach(getPedido(getEnvio($data['detalles_envio'][0]->id_envio)->id_pedido)->detalles as $det_ped){
-                                   $piezas += $det_ped->cantidad;
-                               }
-                        @endphp
-                        {{$piezas." Piezas"}}--}}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="font-size:13px;padding:5px">TALLOS TOTALES:
-                        {{--@php
-                            $total_tallos = 0;
-                            foreach($data['detalles_envio'] as $det_env){
-                                $i = 0;
-                                foreach ($det_env->especificacion->especificacionesEmpaque as $esp_emp) {
-                                    foreach ($esp_emp->detalles as $det_esp_emp){
-                                        $total_tallos += ((int)$b[$i]->cantidad*$det_esp_emp->tallos_x_ramos);
-                                        $i++;
-                                    }
-                                }
-                            }
-                        @endphp
-                        {{$total_tallos}}--}}
-                    </td>
-                </tr>
             </table>
         </td>
         <td>

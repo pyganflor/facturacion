@@ -12,7 +12,6 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
 use SoapClient;
 use DOMDocument;
-use Illuminate\Support\Facades\Auth;
 
 
 class XmlRespuestaFactura implements ShouldQueue

@@ -1,7 +1,7 @@
 <template>
     <div>
         <v-overlay :value="overlay">
-            <v-progress-circular indeterminate size="64">Procesando factura</v-progress-circular>
+            <v-progress-circular indeterminate size="64"></v-progress-circular>
         </v-overlay>
 
     <v-data-table
@@ -10,6 +10,7 @@
             sort-by="calories"
             class="elevation-1"
             :loading=loadingTable
+            :search=search
             loading-text="Buscando facturas"
             dense
     >
@@ -488,14 +489,6 @@
                                                             </td>
                                                             <td class="text-center" style="width: 100px;">
                                                                 <h3 class="mb-2">${{art.total}}</h3>
-                                                                <!--<v-text-field
-                                                                        class="py-0"
-                                                                        v-model="art.total"
-                                                                        type="number"
-                                                                        :rules="requiredRule"
-                                                                        min="0"
-                                                                        :readonly=true
-                                                                ></v-text-field>-->
                                                             </td>
                                                             <td class="text-center" style="width: 100px;">
                                                                 <v-btn
@@ -808,45 +801,11 @@
             ...mapState(['loadingBtn','paramsAlertQuestion']),
         },
 
-        watch: {
-            dialog (val) {
-                val || this.close()
-            },
-        },
-
         methods: {
 
             ...mapActions(['httpRequest','alertNotification']),
 
             ...mapMutations(['setLoadingBtn']),
-
-            editItem (item) {
-                this.editedIndex = this.dataTable.indexOf(item)
-                this.editedItem = Object.assign({}, item)
-                this.dialog = true
-            },
-
-            deleteItem (item) {
-                const index = this.dataTable.indexOf(item)
-                confirm('Are you sure you want to delete this item?') && this.dataTable.splice(index, 1)
-            },
-
-            close () {
-                this.dialog = false
-                this.$nextTick(() => {
-                    this.editedItem = Object.assign({}, this.defaultItem)
-                    this.editedIndex = -1
-                })
-            },
-
-            save () {
-                if (this.editedIndex > -1) {
-                    Object.assign(this.dataTable[this.editedIndex], this.editedItem)
-                } else {
-                    this.dataTable.push(this.editedItem)
-                }
-                this.close()
-            },
 
             copyClaveAcceso(id){
                 var codigoACopiar = document.getElementById('clave_acceso_'+id);
@@ -988,7 +947,6 @@
                 if(!this.$refs.form_factura.validate())
                     return
 
-                this.overlay=true
                 let html='<div class="text-left">'
                     html+= '<p><input type="checkbox" checked id="genera_xml" name="genera_xml" disabled> <label for="genera_xml">Se generará el xml</label></p>'
                     html+= '<p><input type="checkbox" checked id="guarda_factura" name="guarda_factura" disabled> <label for="guarda_factura">Se guardará el registro de la factura</label></p>'
@@ -1004,6 +962,8 @@
                 }).then((result) => {
                     if (result.value) {
 
+                        this.overlay=true
+                        this.dialog=false
                         let articulos = []
 
                         for (let articulosCatg of this.articulosFactura) {
@@ -1022,7 +982,6 @@
                                         console.log(articulosCatg.total,impuesto.tipo_impuesto.tarifa)
                                         valorImpuesto= parseFloat((articulo.neto * (impuesto.tipo_impuesto.tarifa/100)))
                                         valorConImpuesto = parseFloat(articulo.neto)+valorImpuesto
-
                                     }else if(impuesto.tipo_impuesto.tipo_tarifa === "t"){
 
                                     }else if(impuesto.tipo_impuesto.tipo_tarifa === "n"){
@@ -1089,38 +1048,42 @@
                             this.alertNotification({
                                 param:{
                                     html: res.data.msg,
-                                    timer: 25000
+                                    toast:false,
+                                    grow:false,
+                                    timer: 45000
                                 }
                             })
-
                             if(res.data.success){
                                 this.dataTable.unshift(res.data.factura);
-                                this.dialog=false
-                                /*Object.assign(data,{
-                                    ptoEmision: '',
-                                    facturero: '',
-                                    fechaDoc: '',
-                                    fechaVenc: '',
-                                    sustTributario: '',
-                                    comentario: '',
-                                    idCliente: '',
-                                    formaPago: '',
-                                    idTipoPago: '',
-                                    correos: '',
-                                    subTotal : '',
-                                    descuento : '',
-                                    total: '',
-                                    plazo: '',
-                                    undTiempoPlazo: '',
-                                    articulos: articulos,
-                                    firmar: '',
-                                    autorizar: '',
-                                    correo: ''
-                                })*/
+                                this.puntoEmision =''
+                                this.facturero =''
+                                this.fechaDocumento =''
+                                this.fechaVencimiento =''
+                                this.idSustentoTributario =''
+                                this.comentario =''
+                                this.idCliente =''
+                                this.idFormaPago =''
+                                this.idTipoPago =''
+                                this.correos =''
+                                this.subTotal =''
+                                this.descuento =''
+                                this.total =''
+                                this.plazo =''
+                                this.undTiempoPlazo =''
+                                Object.assign(this.articulosFactura,{
+                                    id_categoria:'',
+                                    id_articulo:'',
+                                    cantidad:1,
+                                    descuento:0,
+                                    monto:'',
+                                    total:0
+                                })
+                                this.articulosFactura.articulos=[]
                             }
-
+                        }).catch((err)=>{
+                            this.overlay=false
+                            this.dialog=true
                         })
-
                     }
                 });
             },

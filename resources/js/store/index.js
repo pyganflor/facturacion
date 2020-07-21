@@ -25,6 +25,7 @@ export default new Vuex.Store({
             icon:'success',
             toast:true,
             timer:5000,
+            grow:'row',
             confirmButtonText :'<span class="mdi mdi-close-circle-outline"></span> Cerrar',
             timerProgressBar: true,
             position:'top',
@@ -57,6 +58,9 @@ export default new Vuex.Store({
 
             if(typeof payload.toast != "undefined")
                 state.sweetAlert.toast = payload.toast
+
+            if(typeof payload.grow != "undefined")
+                state.sweetAlert.grow = payload.grow
 
             if(typeof payload.confirmButtonColor != "undefined")
                 state.sweetAlert.confirmButtonColor = payload.confirmButtonColor
@@ -130,6 +134,7 @@ export default new Vuex.Store({
                 timer : payload.param.timer,
                 title : payload.param.title,
                 icon : payload.param.icon,
+                grow: payload.param.grow,
                 toast : payload.param.toast,
                 confirmButtonColor: payload.param.confirmButtonColor
             });
@@ -143,13 +148,14 @@ export default new Vuex.Store({
                 timer: state.sweetAlert.timer,
                 position: state.sweetAlert.position,
                 confirmButtonText : state.sweetAlert.confirmButtonText,
-                grow:'row',
+                grow : state.sweetAlert.grow,
                 confirmButtonColor: state.sweetAlert.confirmButtonColor,
             });
 
             commit('setSeewtAlert',{
                 title:'Éxito',
                 icon:'success',
+                grow:'row',
                 toast:true,
                 timer:5000,
                 confirmButtonColor: '#a5dc86',

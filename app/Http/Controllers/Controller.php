@@ -6,6 +6,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\EnvioComprobante;
 
 class Controller extends BaseController
 {
@@ -96,7 +98,7 @@ class Controller extends BaseController
             2 => "No se pudo acceder al contenido del archivo del certificado electrónico, verifique los indicies 0 y 1 de este apartado  y a su vez que el String pasado en la variable 'CONTRASENA_FIRMA_DIGITAL' en el archivo .env coincida con la propocionada por el ente certificador, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
             3 => "Se produjo un error al momento de generar la firma electrónica del xml " . $archivo . ", por favor comunicarse con el deparatmento de tecnología, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
             4 => "El archivo firmado xml N# " . $archivo . " no pudo ser guardado en su respectiva carpeta, verifique que el path propocionado en la variable de entorno 'PATH_XML_FIRMADOS' en el archivo .env coincida con la carpeta creada en esa ruta, una vez corregido el error puede filtrar por 'GENERADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
-            5 => "El comprobante N# " . $archivo . " se ha generado y firmado con éxito",
+            5 => "El comprobante N# " . $archivo . " se firmado con éxito",
         ];
         return $mensaje[$indice];
     }
@@ -104,7 +106,7 @@ class Controller extends BaseController
     function mensajeEnvioXml($indice)
     {
         $mensaje = [
-            0 => "El comprobante fue enviado pero rechazado por el SRI, verfique en el campo causa el motivo",
+            0 => "El comprobante fue enviado pero rechazado por el SRI, verfique en el estado rechazado, en la columna causa el motivo",
             1 => "Se ha autorizado con éxito la factura por el sri",
             2 => "Fallo en la conexión con el web service del SRI, intente nuevamente"
         ];
@@ -112,6 +114,53 @@ class Controller extends BaseController
     }
 
     function envioCorreo($data){
+
+        $correos = explode(',',$data['correos']);
+        $correosValidos = [];
+        $correosNoValidos=[];
+
+        foreach ($correos as $correo) {
+            if(trim($correo)!=""){
+                $valid = preg_match('/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/',trim($correo));
+                if($valid==0){
+                    $correosNoValidos[] = trim($correo);
+                }else{
+                    $correosValidos[] = trim($correo);
+                }
+            }
+        }
+
+        if(count($correosValidos)>0){
+
+            $message = (new EnvioComprobante($data['carpeta_personal'],$data['archivo'],$data['usuario']))
+                                ->onQueue('emails');
+
+            $msg='';
+            $mail = Mail::to($correosValidos[0]);
+
+            if(count($correosValidos)>=2)
+                $mail->cc(array_slice($correosValidos,1));
+
+
+            $mail->queue($message);
+
+            $enviado='';
+            foreach ($correosValidos as $correoValido)
+                $enviado.= '<br />'.$correoValido;
+
+            $noEnviado='';
+            foreach ($correosNoValidos as $correoNoValido)
+                $noEnviado.= '<br />'.$correoNoValido;
+
+            $msg.='Se envió el correo a los siguientes destinatarios:'.$enviado;
+
+            if(count($correosNoValidos)>0)
+                $msg.= '<br /> No se enviaron los correos a las siguientes direcciones ya que eran no válidas:'.$noEnviado;
+        }else{
+            $msg = 'No se envió el correo electrónico ya que no hubo destinatarios a los que envíar';
+        }
+
+        return $msg;
 
     }
 }

@@ -61,32 +61,41 @@ return [
             'url' => env('APP_URL').'/storage/logo_empresa',
             'visibility' => 'public',
         ],
-
         'xml_generado' => [
             'driver' => 'local',
             'root' => storage_path('app/public/xml/facturas/generado'),
             'url' => env('APP_URL').'/storage/xml/facturas/generado',
             'visibility' => 'public',
         ],
-
         'xml_firmado' => [
             'driver' => 'local',
             'root' => storage_path('app/public/xml/facturas/firmado'),
             'url' => env('APP_URL').'/storage/xml/facturas/firmado',
             'visibility' => 'public',
         ],
-
         'xml_no_autorizado' => [
             'driver' => 'local',
             'root' => storage_path('app/public/xml/facturas/no_autorizado'),
             'url' => env('APP_URL').'/storage/xml/facturas/no_autorizado',
             'visibility' => 'public',
         ],
-
         'xml_autorizado' => [
             'driver' => 'local',
             'root' => storage_path('app/public/xml/facturas/autorizado'),
             'url' => env('APP_URL').'/storage/xml/facturas/autorizado',
+            'visibility' => 'public',
+        ],
+        'pdf' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/pdf'),
+            'url' => env('APP_URL').'/storage/pdf',
+            'visibility' => 'public',
+        ],
+
+        'xml' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/xml'),
+            'url' => env('APP_URL').'/storage/xml',
             'visibility' => 'public',
         ],
 
