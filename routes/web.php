@@ -14,7 +14,7 @@ Route::get('pdf',function(){
     $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
 
     $carpetaPersonal ='1/2020_07';
-    \App\Jobs\pdf\PdfFactura::dispatch($carpetaPersonal,$autorizacion)->onQueue('pdf_factura');
+    \App\Jobs\pdf\PdfFactura::dispatch($carpetaPersonal,$autorizacion,1)->onQueue('pdf_factura');
 });
 
 //USUARIOS LOGUEADOS

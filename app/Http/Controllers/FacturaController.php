@@ -575,7 +575,7 @@ class FacturaController extends Controller
             'id_factura' => $idFactura
         ])->first();
 
-        /*$usuario =Auth::user();
+        $usuario =Auth::user();
         $wsdlAutorizacion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
         $clienteSoap = new SoapClient($wsdlAutorizacion);
         $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $data->clave_acceso]);
@@ -584,7 +584,7 @@ class FacturaController extends Controller
         $fechaAutorizacion = (String)$autorizacion->fechaAutorizacion;
         $ambiente = (String)$autorizacion->ambiente;
         $dataXML = (String)$autorizacion->comprobante;
-        dd($response->RespuestaAutorizacionComprobante,$fechaAutorizacion,$ambiente,$dataXML);*/
+        dd($response->RespuestaAutorizacionComprobante,$fechaAutorizacion,$ambiente,$dataXML);
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('comprobantes.factura.pdf', compact('data'));
