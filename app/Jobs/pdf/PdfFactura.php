@@ -110,7 +110,7 @@ class PdfFactura implements ShouldQueue
             'dir_establecimiento' => (String)$xml->infoFactura->dirEstablecimiento,
             'obligado_contabilidad' => (String)$xml->infoFactura->obligadoContabilidad,
             'ruc' => (String)$xml->infoTributaria->ruc,
-            'secuencial' => (String)$xml->infoTributaria->estab.(String)$xml->infoTributaria->codDoc.(String)$xml->infoTributaria->secuencial,
+            'secuencial' => (String)$xml->infoTributaria->estab.(String)$xml->infoTributaria->ptoEmi.(String)$xml->infoTributaria->secuencial,
             'clave_acceso' => (String)$xml->infoTributaria->claveAcceso,
             'ambiente' => (String)$xml->infoTributaria->ambiente == 1 ? 'PRUEBAS' : 'PRODUCCIÓN',
             'tipo_emision' => (String)$xml->infoTributaria->tipoEmision == 1 ? 'NORMAL' : 'CONTINGENCIA',

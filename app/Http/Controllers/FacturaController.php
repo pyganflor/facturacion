@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RequestReenvioCorreoComprobante;
 use App\Jobs\pdf\PdfFactura;
 use App\Jobs\xml\XmlRespuestaFactura;
 use Carbon\Carbon;
@@ -46,6 +47,7 @@ class FacturaController extends Controller
     public function list(Request $request){
         return Factura::where('factura.estado',$request->estado)
             ->join('cliente as c','factura.id_cliente','c.id_cliente')
+            ->join('detalle_factura as df','factura.id_factura','df.id_factura')
             ->select(
                 'factura.id_factura',
                 'factura.secuencial',
@@ -56,7 +58,8 @@ class FacturaController extends Controller
                 'factura.fecha_doc',
                 'factura.fecha_aut',
                 'factura.entorno',
-                'factura.causa'
+                'factura.causa',
+                'df.importe_total as total'
             )->where(function($q) use ($request) {
                 if(isset($request->id_cliente))
                     $q->where('c.id_cliente',$request->id_cliente);
@@ -287,6 +290,7 @@ class FacturaController extends Controller
             $xml = "fact_".$request->ptoEmision.$request->facturero.$usuario->perfil->n_factura.'.xml';
             $pathFacturas = storage_path('app/public/xml/facturas/');
             $carpetaPersonal = $usuario->id_usuario.'/'.Carbon::now()->format('Y_m');
+            $request->request->add(['carpeta' => $carpetaPersonal]);
 
             // GUARDAR DATOS DE LA FACTURA
             $storeFactura = $this->storeFactura($request->all(),true);
@@ -465,6 +469,7 @@ class FacturaController extends Controller
                     'fecha_doc' => $fecha[2].'/'.$fecha[1].'/'.$fecha[0],
                     'entorno' => $request['ambiente'],
                     'id_cliente' => $request['idCliente'],
+                    'carpeta' => $request['carpeta'],
                     'id_usuario' => Auth::user()->id_usuario
                 ]
             );
@@ -483,9 +488,9 @@ class FacturaController extends Controller
                     'tipo_ident_comprador' => $request['tipoIdentificacionComprador'],
                     'razon_social_comprador' => $request['razonSocialComprador'],
                     'ident_comprador' => $request['identificacionComprador'],
-                    'total_sin_imp' => $request['totalSinImpuestos'],
-                    'total_desc' => $request['totalDescuento'],
-                    'importe_total' => $request['importeTotal']
+                    'total_sin_imp' => number_format($request['totalSinImpuestos'],2,".",","),
+                    'total_desc' => number_format($request['totalDescuento'],2,".",","),
+                    'importe_total' => number_format($request['importeTotal'],2,".",",")
                     //'propina' => $request['propina'],
                 ]
             );
@@ -570,26 +575,65 @@ class FacturaController extends Controller
 
     public function pdfFactura($idFactura){
 
-        $data = Factura::where([
+        $factura = Factura::where([
             'id_usuario' => Auth::user()->id_usuario,
             'id_factura' => $idFactura
         ])->first();
 
-        $usuario =Auth::user();
-        $wsdlAutorizacion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
-        $clienteSoap = new SoapClient($wsdlAutorizacion);
-        $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => '2107202001179244632500110010010000000641234567811']);
-        dd($response);
-        $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
+        $pdf = storage_path('app/public/pdf/facturas/'.$factura->carpeta.'/'.'fact_'.$factura->secuencial.'.pdf');
 
-        $fechaAutorizacion = (String)$autorizacion->fechaAutorizacion;
-        $ambiente = (String)$autorizacion->ambiente;
-        $dataXML = (String)$autorizacion->comprobante;
-        dd($response->RespuestaAutorizacionComprobante,$fechaAutorizacion,$ambiente,$dataXML);
+        if(!file_exists($pdf)){
+            $wsdlAutorizacion = $factura->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
+            $clienteSoap = new SoapClient($wsdlAutorizacion);
+            $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $factura->clave_acceso]);
+            $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
+            PdfFactura::dispatchNow($factura->carpeta,$autorizacion,$factura->id_usuario);
+        }
 
-        $pdf = app('dompdf.wrapper');
-        $pdf->loadView('comprobantes.factura.pdf', compact('data'));
-        return $pdf->stream('archivo.pdf');
+        return response()->file($pdf);
+    }
+
+    public function anular(Request $request){
+
+        try{
+            $factura = Factura::find($request->id_factura);
+            $factura->update([
+                'estado' => 3,
+                'causa' => 'Factura anulada manualmente'
+            ]);
+
+            return response()->json([
+                'msg' => 'Se ha anulado la factura',
+                'estado' => $factura->estado
+            ]);
+        }catch (\Exception $e){
+            return HomeController::catch($e);
+        }
+
+    }
+
+    public function reenviarCorreo(RequestReenvioCorreoComprobante $request){
+
+        try{
+
+            $factura = Factura::find($request->id_factura);
+            $correos = $factura->cliente->correo;
+
+            if(isset($request->correos))
+                $correos.= ', '.$request->correos;
+
+            $data=[
+                'carpeta_personal' => $factura->carpeta,
+                'correos' => $correos,
+                'archivo' =>'fact_'.$factura->secuencial,
+                'usuario' => $factura->usuario->perfil->razon_social
+            ];
+
+            $this->envioCorreo($data);
+
+        }catch(\Execption $e){
+            return HomeController::catch($e);
+        }
 
     }
 

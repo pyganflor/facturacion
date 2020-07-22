@@ -84,4 +84,28 @@ class RequestStoreFacura extends FormRequest
             }
         ];
     }
+
+    public function messages()
+    {
+        return [
+            'ptoEmision.required' => 'El punto de emisión es requerido',
+            'ptoEmision.between' => 'El punto de emision debe estar entre 001 y 999',
+            'ptoEmision.numeric' => 'El punto de emisión debe ser númerico',
+            'facturero.required' => 'El facturero es requerido',
+            'facturero.between' => 'El facturero debe estar entre 001 y 999',
+            'facturero.numeric' => 'El facturero debe ser númerico',
+            'fechaDoc' => 'La fecha de la factura es requerido',
+            'fechaDoc.date' => 'La fecha de la factura debe ser un formato válido',
+            'sustTributario.required'=> 'El sustento tributario es requerido',
+            'sustTributario.exists' => 'El sutento tributario no existe',
+            'idCliente.required'=> 'El cliente es requerido',
+            'idCliente.exists' => 'El cliente no existe',
+            'formaPago.required' => 'La forma de pago es requerida',
+            'formaPago.numeric' => 'La forma de pago debe ser un número',
+            'idTipoPago.required' => 'El tipo de pago es requerido',
+            'idTipoPago.numeric' => 'El tipo de pago debe ser un número',
+            'plazo.required_if' => 'El plazo de pago es obligatorio cuando la forma de pago es crédito',
+            'undTiempoPlazo' => 'La unidad de tiempo de la forma de pago es obligatoria cuando la forma de pago es crédito'
+        ];
+    }
 }

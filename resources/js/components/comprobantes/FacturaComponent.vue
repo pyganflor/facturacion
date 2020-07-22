@@ -1,9 +1,9 @@
 <template>
     <div>
-        <v-overlay :value="overlay">
+      <!--  <v-overlay :value="overlay">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
         </v-overlay>
-
+-->
     <v-data-table
             :headers="headers"
             :items="dataTable"
@@ -574,6 +574,9 @@
         <template v-slot:no-data>
             Sin registros
         </template>
+        <template v-slot:item.total="{ item }">
+            ${{parseFloat(item.total).toFixed(2)}}
+        </template>
         <!--<template v-slot:item.estado="{ item }">
             {{estados.find(e => e.id ===item.estado).nombre}}
         </template>-->
@@ -594,7 +597,7 @@
                         <v-icon>mdi-message-text-outline</v-icon>
                     </v-btn>
                 </template>
-                <div style="background: black">{{item.causa}}</div>
+                <div style="background: black" class="px-2">{{item.causa}}</div>
             </v-tooltip>
         </template>
         <template v-slot:item.clave_acceso="{ item }">
@@ -630,7 +633,7 @@
                     </v-icon>
                 </template>
                 <v-list>
-                    <v-list-item class="list-actions">
+                    <v-list-item class="list-actions" v-if="item.estado === 1">
                         <v-list-item-title>
                             <v-btn text small >
                                 <a :href="`/factura/comprobante/${item.id_factura}`" target="_blank" class="link">
@@ -639,9 +642,9 @@
                             </v-btn>
                         </v-list-item-title>
                     </v-list-item>
-                    <v-list-item class="list-actions">
-                        <v-list-item-title>
-                            <v-btn text small >
+                    <v-list-item class="list-actions" v-if="item.estado === 1">
+                        <v-list-item-title >
+                            <v-btn text small @click="reenviarCorreo(item.id_factura)">
                                 <v-icon color="success">mdi-email-outline</v-icon> Enviar correo
                             </v-btn>
                         </v-list-item-title>
@@ -655,12 +658,12 @@
                     </v-list-item>
                     <v-list-item v-if="item.estado===1" class="list-actions">
                         <v-list-item-title>
-                            <v-btn text small >
+                            <v-btn text small @click="anularFactura(item.id_factura)">
                                 <v-icon color="red">mdi-cancel</v-icon> Anular factura
                             </v-btn>
                         </v-list-item-title>
                     </v-list-item>
-                    <v-list-item v-if="item.estado!=1" class="list-actions">
+                    <v-list-item v-if="item.estado!=1 && item.estado!=3" class="list-actions">
                         <v-list-item-title>
                             <v-btn text small >
                                 <v-icon color="warning">mdi-pencil</v-icon> Editar
@@ -761,7 +764,6 @@
                 { text: 'Cliente', value: 'cliente' },
                 { text: 'Total', value: 'total', align: 'center'  },
                 { text: 'Entorno', value: 'entorno', align: 'center'  },
-                /*{ text: 'Estado', value: 'estado' }*/,
                 { text: 'Mensajes', value: 'causa' },
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
@@ -769,7 +771,8 @@
             estados:[
                 {id: 1, nombre: 'Autorizados'},
                 {id: 0, nombre: 'Rechazados' },
-                {id: 2, nombre: 'No enviado'}
+                {id: 2, nombre: 'No enviado'},
+                {id: 3, nombre: 'Anulado'}
             ],
             estado:1,
             editedIndex: -1,
@@ -1088,13 +1091,110 @@
                 });
             },
 
+            anularFactura(idFactura){
+
+                Vue.swal({
+                    text: "Esta seguro de anular esta factura?",
+                    ...this.paramsAlertQuestion,
+                    timerProgressBar:false,
+                    icon:'question'
+                }).then((result) => {
+                    if (result.value) {
+                        this.httpRequest({
+                            method: 'post',
+                            url: 'factura/anular',
+                            data: {
+                                id_factura : idFactura
+                            }
+                        }).then((res) => {
+
+                            let obj = this.dataTable.find(e => e.id_factura === idFactura)
+                            let index = this.dataTable.indexOf(obj)
+                            this.dataTable.splice(index,1)
+
+                            Vue.swal({
+                                title: 'Recordatorio',
+                                icon: 'info',
+                                timerProgressBar:false,
+                                html: res.data.msg+', recuerde que debe ingresar al portal del SRI <a target="_blank" href="https://srienlinea.sri.gob.ec/sri-en-linea/inicio/NAT">https://srienlinea.sri.gob.ec</a> para realizar las acciones pertinentes y anular la factura ',
+                                ...this.paramsAlertQuestion
+                            })
+
+                        })
+
+                    }
+                })
+
+            },
+
+            reenviarCorreo(idFactura){
+
+                Vue.swal({
+                    ...this.paramsAlertQuestion,
+                    timerProgressBar:false,
+                    icon:'question',
+                    iconHtml: '<span class="mdi mdi-email-outline"></span>',
+                    html: '<div>' +
+                                '<div style="margin-bottom: 15px">Para agregar un correo adicional ingreselo separado por coma (,)?</div>'+
+                                '<input type="text" style="border: 1px solid gainsboro;padding: 5px;width: 95%;margin: 0 auto;border-radius: 3px" id="correos" placeholder="Correos extra">' +
+                                '<div style="color:red" id="error"></div>'+
+                          '</div>',
+                    preConfirm:()=>{
+
+                        let correos = $("#correos").val().split(',')
+
+                        if(correos.length===0){
+                            $("#error").html('');
+                            return true
+                        }else{
+                            let i=false
+                            let correoInvalido = ''
+                            for(let correo of correos){
+                                if(correo.trim() !== ""){
+                                    let test = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(correo.trim())
+                                    if(!test){
+                                        i=true;
+                                        correoInvalido=correo
+                                        break
+                                    }
+                                }
+                            }
+
+                            if(i){
+                                $("#error").html('El correo '+correoInvalido+' es inválido');
+                                return false
+                            }else{
+                                $("#error").html('');
+                                return true
+                            }
+                        }
+                    },
+                }).then((result) => {
+                    if (result.value) {
+                        this.httpRequest({
+                            method: 'post',
+                            url: 'factura/reenviar_correo',
+                            data: {
+                                id_factura : idFactura,
+                                correos : $("#correos").val()
+                            }
+                        }).then((res) => {
+
+
+
+
+                        })
+
+                    }
+                })
+            },
+
             searchDataTable(){
                 console.log(this.dateRangeText)
             }
 
         },
         created () {
-            console.log(new Date(),new Date().toISOString())
             this.getDataComponent()
 
             for(let categoria of this.inventario.categorias_activadas){
@@ -1131,6 +1231,14 @@
 
     .link{
         text-decoration:none!important
+    }
+
+    .form-control{
+        border: 1px solid gainsboro!important;
+        padding: 5px!important;
+        width: 95%!important;
+        margin: 0 auto!important;
+        border-radius: 3px!important;
     }
 
 </style>

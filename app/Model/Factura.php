@@ -23,9 +23,13 @@ class Factura extends Model
         'causa',
         'rehusar',
         'total',
+        'carpeta',
         'estado'
     ];
 
+    public function usuario(){
+        return $this->belongsTo('App\Model\Usuario','id_usuario');
+    }
 
     public function cliente(){
         return $this->belongsTo('App\Model\Cliente','id_cliente');

@@ -94,11 +94,11 @@ class Controller extends BaseController
     {
         $mensaje = [
             0 => "No se ha obtenido el archivo de la firma digital correctamente, verifique que el archivo este debidamente cargado en el sistema, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
-            1 => "Verificar lo explicado en el Índice 0 de este apartado y a su vez verificar que exista el certificado como archivo físico, una vez corregido el error puede filtrar por 'NO FIRMADOS' y proceder a realizar la firma del mismo",
-            2 => "No se pudo acceder al contenido del archivo del certificado electrónico, verifique los indicies 0 y 1 de este apartado  y a su vez que el String pasado en la variable 'CONTRASENA_FIRMA_DIGITAL' en el archivo .env coincida con la propocionada por el ente certificador, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
-            3 => "Se produjo un error al momento de generar la firma electrónica del xml " . $archivo . ", por favor comunicarse con el deparatmento de tecnología, una vez corregido el error puede filtrar por 'NO FIRMADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
-            4 => "El archivo firmado xml N# " . $archivo . " no pudo ser guardado en su respectiva carpeta, verifique que el path propocionado en la variable de entorno 'PATH_XML_FIRMADOS' en el archivo .env coincida con la carpeta creada en esa ruta, una vez corregido el error puede filtrar por 'GENERADOS' en la vista de comprobantes y proceder a realizar la firma del mismo",
-            5 => "El comprobante N# " . $archivo . " se firmado con éxito",
+            1 => "No se pudo firma el archivo, verifique que halla cargado su firma electrónica en sus configuraciones de perfil",
+            2 => "No se pudo acceder al contenido del archivo del archivo de certificado electrónico,verifique que la contraseña ingresada en su configuraciones de perfil sea la correcta",
+            3 => "Se produjo un error al momento de generar la firma electrónica del xml " . $archivo . ", por favor comunicarse con el administrador del sistema",
+            4 => "El archivo firmado xml N# " . $archivo . " no pudo ser guardado en su respectiva carpeta",
+            5 => "El comprobante N# " . $archivo . " se firmó con éxito",
         ];
         return $mensaje[$indice];
     }
@@ -132,8 +132,7 @@ class Controller extends BaseController
 
         if(count($correosValidos)>0){
 
-            $message = (new EnvioComprobante($data['carpeta_personal'],$data['archivo'],$data['usuario']))
-                                ->onQueue('emails');
+            $message = (new EnvioComprobante($data['carpeta_personal'],$data['archivo'],$data['usuario']))->onQueue('emails');
 
             $msg='';
             $mail = Mail::to($correosValidos[0]);
