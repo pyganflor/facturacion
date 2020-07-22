@@ -372,7 +372,7 @@ class FacturaController extends Controller
                                             $resultado[0]=1;
                                             $estado=0;
                                         }else{
-                                            PdfFactura::dispatch($response)->onQueue('pdf_factura');
+                                            PdfFactura::dispatch($carpetaPersonal,$autorizacion,$usuario->id_usuario)->onQueue('pdf_factura');
                                         }
 
                                         $factura->update([
@@ -578,7 +578,8 @@ class FacturaController extends Controller
         $usuario =Auth::user();
         $wsdlAutorizacion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
         $clienteSoap = new SoapClient($wsdlAutorizacion);
-        $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $data->clave_acceso]);
+        $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => '2107202001179244632500110010010000000641234567811']);
+        dd($response);
         $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
 
         $fechaAutorizacion = (String)$autorizacion->fechaAutorizacion;

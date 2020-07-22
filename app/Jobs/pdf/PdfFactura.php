@@ -23,16 +23,15 @@ class PdfFactura implements ShouldQueue
      * @return void
      */
 
+    public $carpeta;
     public $response;
-    public $capertaPersonal;
     public $idUsuario;
 
-    public function __construct($capertaPersonal,$response,$idUsuario)
+    public function __construct($carpeta,$response,$idUsuario)
     {
-        $this->carpeta = $capertaPersonal;
         $this->response = $response;
         $this->idUsuario = $idUsuario;
-
+        $this->carpeta = $carpeta;
     }
 
     /**
@@ -44,109 +43,110 @@ class PdfFactura implements ShouldQueue
     {
         $barcode = new BarcodeGenerator();
         $usuario= Usuario::find($this->idUsuario);
-        if($this->response && isset($this->response->comprobante)){
 
-            $xml = new SimpleXMLElement((String)$this->response->comprobante);
-            $articulos= [];
-            $subtotal12=0;
-            $subtotal14=0;
-            $subtotal0=0;
-            $excento =0;
-            $noObjeto =0;
-            $iva12 = 0;
-            $iva14=0;
+        $xml = new SimpleXMLElement((String)$this->response->comprobante);
+        $articulos= [];
+        $subtotal12=0;
+        $subtotal14=0;
+        $subtotal0=0;
+        $excento =0;
+        $noObjeto =0;
+        $iva12 = 0;
+        $iva14=0;
 
-            $barcode->setText((String)$this->response->numeroAutorizacion);
-            $barcode->setType(BarcodeGenerator::Code128);
-            foreach ($xml->detalles as $detalle) {
-                $articulos[]=[
-                    'cod_p' => (String)$detalle->detalle->codigoPrincipal,
-                    'descripcion' =>(String)$detalle->detalle->descripcion,
-                    'cantidad' =>(String)$detalle->detalle->cantidad,
-                    'p_unitario' => (String)$detalle->detalle->precioUnitario,
-                    'descuento' => (String)$detalle->detalle->descuento,
-                    'total' => (String)$detalle->detalle->precioTotalSinImpuesto
-                ];
+        $barcode->setText((String)$this->response->numeroAutorizacion);
+        $barcode->setType(BarcodeGenerator::Code128);
 
-                foreach ($detalle->detalle->impuestos as $impuesto) {
-
-                    if((String)$impuesto->impuesto->codigoPorcentaje==2){
-
-                        $subtotal12+=(float)$impuesto->impuesto->baseImponible;
-                        $iva12+= (float)$impuesto->impuesto->valor;
-
-                    }else if((String)$impuesto->impuesto->codigoPorcentaje==3){
-
-                        $subtotal14+=(float)$impuesto->impuesto->baseImponible;
-                        $iva14 += (float)$impuesto->impuesto->valor;
-
-                    }else if((String)$impuesto->impuesto->codigoPorcentaje==0){
-
-                        $subtotal0+=(float)$impuesto->impuesto->baseImponible;
-
-                    }else if((String)$impuesto->impuesto->codigoPorcentaje==7){
-
-                        $excento+=(float)$impuesto->impuesto->baseImponible;
-
-                    }else if((String)$impuesto->impuesto->codigoPorcentaje==6){
-
-                        $noObjeto+=(float)$impuesto->impuesto->baseImponible;
-                    }
-                }
-
-            }
-
-            $pagos=[];
-            foreach ($xml->infoFactura->pagos as $pago) {
-                $pagos[]=[
-                    'tipo_pago' => TipoPago::where('codigo',(String)$pago->pago->formaPago)->first()->nombre,
-                    'total' => (String)$pago->pago->total,
-                    'tiempo' => (String)$pago->pago->plazo.' '.(String)$pago->pago->unidadTiempo
-                ];
-            }
-
-            $data=[
-                'nombre_comercial' => (String)$xml->infoTributaria->nombreComercial,
-                'dir_matriz' => (String)$xml->infoTributaria->dirMatriz,
-                'dir_establecimiento' => (String)$xml->infoFactura->dirEstablecimiento,
-                'obligado_contabilidad' => (String)$xml->infoFactura->obligadoContabilidad,
-                'ruc' => (String)$xml->infoTributaria->ruc,
-                'secuencial' => (String)$xml->infoTributaria->estab.(String)$xml->infoTributaria->codDoc.(String)$xml->infoTributaria->secuencial,
-                'clave_acceso' => (String)$xml->infoTributaria->claveAcceso,
-                'ambiente' => (String)$xml->infoTributaria->ambiente == 1 ? 'PRUEBAS' : 'PRODUCCIÓN',
-                'tipo_emision' => (String)$xml->infoTributaria->tipoEmision == 1 ? 'NORMAL' : 'CONTINGENCIA',
-                'razon_social_comprador' => (String)$xml->infoFactura->razonSocialComprador,
-                'identificacion_comprador' => (String)$xml->infoFactura->identificacionComprador,
-                'fecha_emision' => (String)$xml->infoFactura->fechaEmision,
-                'fecha_autorizacion' => Carbon::parse((String)$this->response->fechaAutorizacion)->format('d/m/Y H:m:i'),
-                'total_descuento' => number_format((float)$xml->infoFactura->totalDescuento,2,".",","),
-                'artiuclos' => $articulos,
-                'pagos' => $pagos,
-                'direccion' => (String)$xml->infoAdicional->campoAdicional[0],
-                'correo' => (String)$xml->infoAdicional->campoAdicional[1],
-                'telefono' => '',
-                'subtotal_12' => number_format($subtotal12,2,".",","),
-                'subtotal_14' => number_format($subtotal14,2,".",","),
-                'subtotal_0' => number_format($subtotal0,2,".",","),
-                'subtotal_no_objeto' => number_format($noObjeto,2,".",","),
-                'subtotal_sin_imp' =>'0.00',
-                'subtotal_exento' =>number_format($excento,2,".",","),
-                'ice' =>'0.00',
-                'iva_12' =>number_format($iva12,2,".",","),
-                'iva_14' =>number_format($iva14,2,".",","),
-                'IRBPNR' => '0.00',
-                'propina' =>'0.00',
-                'total' => number_format((String)$xml->infoFactura->importeTotal,2,".",","),
-                'bar_code' => $barcode->generate(),
-                'img_usuario' => $usuario->perfil->logo_empresa
+        foreach ($xml->detalles as $detalle) {
+            $articulos[]=[
+                'cod_p' => (String)$detalle->detalle->codigoPrincipal,
+                'descripcion' =>(String)$detalle->detalle->descripcion,
+                'cantidad' =>(String)$detalle->detalle->cantidad,
+                'p_unitario' => (String)$detalle->detalle->precioUnitario,
+                'descuento' => (String)$detalle->detalle->descuento,
+                'total' => (String)$detalle->detalle->precioTotalSinImpuesto
             ];
 
-        }else{
+            foreach ($detalle->detalle->impuestos as $impuesto) {
+
+                if((String)$impuesto->impuesto->codigoPorcentaje==2){
+
+                    $subtotal12+=(float)$impuesto->impuesto->baseImponible;
+                    $iva12+= (float)$impuesto->impuesto->valor;
+
+                }else if((String)$impuesto->impuesto->codigoPorcentaje==3){
+
+                    $subtotal14+=(float)$impuesto->impuesto->baseImponible;
+                    $iva14 += (float)$impuesto->impuesto->valor;
+
+                }else if((String)$impuesto->impuesto->codigoPorcentaje==0){
+
+                    $subtotal0+=(float)$impuesto->impuesto->baseImponible;
+
+                }else if((String)$impuesto->impuesto->codigoPorcentaje==7){
+
+                    $excento+=(float)$impuesto->impuesto->baseImponible;
+
+                }else if((String)$impuesto->impuesto->codigoPorcentaje==6){
+
+                    $noObjeto+=(float)$impuesto->impuesto->baseImponible;
+                }
+            }
 
         }
 
+        $pagos=[];
+        foreach ($xml->infoFactura->pagos as $pago) {
+            $pagos[]=[
+                'tipo_pago' => TipoPago::where('codigo',(String)$pago->pago->formaPago)->first()->nombre,
+                'total' => (String)$pago->pago->total,
+                'tiempo' => (String)$pago->pago->plazo.' '.(String)$pago->pago->unidadTiempo
+            ];
+        }
+
+        $data=[
+            'nombre_comercial' => (String)$xml->infoTributaria->nombreComercial,
+            'dir_matriz' => (String)$xml->infoTributaria->dirMatriz,
+            'dir_establecimiento' => (String)$xml->infoFactura->dirEstablecimiento,
+            'obligado_contabilidad' => (String)$xml->infoFactura->obligadoContabilidad,
+            'ruc' => (String)$xml->infoTributaria->ruc,
+            'secuencial' => (String)$xml->infoTributaria->estab.(String)$xml->infoTributaria->codDoc.(String)$xml->infoTributaria->secuencial,
+            'clave_acceso' => (String)$xml->infoTributaria->claveAcceso,
+            'ambiente' => (String)$xml->infoTributaria->ambiente == 1 ? 'PRUEBAS' : 'PRODUCCIÓN',
+            'tipo_emision' => (String)$xml->infoTributaria->tipoEmision == 1 ? 'NORMAL' : 'CONTINGENCIA',
+            'razon_social_comprador' => (String)$xml->infoFactura->razonSocialComprador,
+            'identificacion_comprador' => (String)$xml->infoFactura->identificacionComprador,
+            'fecha_emision' => (String)$xml->infoFactura->fechaEmision,
+            'fecha_autorizacion' => Carbon::parse((String)$this->response->fechaAutorizacion)->format('d/m/Y H:m:i'),
+            'total_descuento' => number_format((float)$xml->infoFactura->totalDescuento,2,".",","),
+            'artiuclos' => $articulos,
+            'pagos' => $pagos,
+            'direccion' => (String)$xml->infoAdicional->campoAdicional[0],
+            'correo' => (String)$xml->infoAdicional->campoAdicional[1],
+            'telefono' => '',
+            'subtotal_12' => number_format($subtotal12,2,".",","),
+            'subtotal_14' => number_format($subtotal14,2,".",","),
+            'subtotal_0' => number_format($subtotal0,2,".",","),
+            'subtotal_no_objeto' => number_format($noObjeto,2,".",","),
+            'subtotal_sin_imp' =>'0.00',
+            'subtotal_exento' =>number_format($excento,2,".",","),
+            'ice' =>'0.00',
+            'iva_12' =>number_format($iva12,2,".",","),
+            'iva_14' =>number_format($iva14,2,".",","),
+            'IRBPNR' => '0.00',
+            'propina' =>'0.00',
+            'total' => number_format((String)$xml->infoFactura->importeTotal,2,".",","),
+            'bar_code' => $barcode->generate(),
+            'img_usuario' => $usuario->perfil->logo_empresa
+        ];
+
+        $ruta= storage_path('app/public/pdf/facturas/').$this->carpeta;
+
+        if(!file_exists($ruta))
+            mkdir($ruta, 0775, true);
+
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('comprobantes.factura.pdf', compact('data'));
-        $pdf->save(storage_path('app/public/pdf/facturas/'). 'fact_'.$data['secuencial'].'.pdf');
+        $pdf->save($ruta.'/fact_'.$data['secuencial'].'.pdf');
     }
 }

@@ -1094,6 +1094,7 @@
 
         },
         created () {
+            console.log(new Date(),new Date().toISOString())
             this.getDataComponent()
 
             for(let categoria of this.inventario.categorias_activadas){

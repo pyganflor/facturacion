@@ -141,7 +141,6 @@ class Controller extends BaseController
             if(count($correosValidos)>=2)
                 $mail->cc(array_slice($correosValidos,1));
 
-
             $mail->queue($message);
 
             $enviado='';
