@@ -57,39 +57,40 @@ class PdfFactura implements ShouldQueue
         $barcode->setText((String)$this->response->numeroAutorizacion);
         $barcode->setType(BarcodeGenerator::Code128);
 
-        foreach ($xml->detalles as $detalle) {
+        foreach ($xml->detalles->detalle as $detalle) {
+
             $articulos[]=[
-                'cod_p' => (String)$detalle->detalle->codigoPrincipal,
-                'descripcion' =>(String)$detalle->detalle->descripcion,
-                'cantidad' =>(String)$detalle->detalle->cantidad,
-                'p_unitario' => (String)$detalle->detalle->precioUnitario,
-                'descuento' => (String)$detalle->detalle->descuento,
-                'total' => (String)$detalle->detalle->precioTotalSinImpuesto
+                'cod_p' => (String)$detalle->codigoPrincipal,
+                'descripcion' =>(String)$detalle->descripcion,
+                'cantidad' =>(String)$detalle->cantidad,
+                'p_unitario' => (String)$detalle->precioUnitario,
+                'descuento' => (String)$detalle->descuento,
+                'total' => (String)$detalle->precioTotalSinImpuesto
             ];
 
-            foreach ($detalle->detalle->impuestos as $impuesto) {
+            foreach ($detalle->impuestos->impuesto as $impuesto) {
 
-                if((String)$impuesto->impuesto->codigoPorcentaje==2){
+                if((String)$impuesto->codigoPorcentaje==2){
 
-                    $subtotal12+=(float)$impuesto->impuesto->baseImponible;
-                    $iva12+= (float)$impuesto->impuesto->valor;
+                    $subtotal12+=(float)$impuesto->baseImponible;
+                    $iva12+= (float)$impuesto->valor;
 
-                }else if((String)$impuesto->impuesto->codigoPorcentaje==3){
+                }else if((String)$impuesto->codigoPorcentaje==3){
 
-                    $subtotal14+=(float)$impuesto->impuesto->baseImponible;
-                    $iva14 += (float)$impuesto->impuesto->valor;
+                    $subtotal14+=(float)$impuesto->baseImponible;
+                    $iva14 += (float)$impuesto->valor;
 
-                }else if((String)$impuesto->impuesto->codigoPorcentaje==0){
+                }else if((String)$impuesto->codigoPorcentaje==0){
 
-                    $subtotal0+=(float)$impuesto->impuesto->baseImponible;
+                    $subtotal0+=(float)$impuesto->baseImponible;
 
-                }else if((String)$impuesto->impuesto->codigoPorcentaje==7){
+                }else if((String)$impuesto->codigoPorcentaje==7){
 
-                    $excento+=(float)$impuesto->impuesto->baseImponible;
+                    $excento+=(float)$impuesto->baseImponible;
 
-                }else if((String)$impuesto->impuesto->codigoPorcentaje==6){
+                }else if((String)$impuesto->codigoPorcentaje==6){
 
-                    $noObjeto+=(float)$impuesto->impuesto->baseImponible;
+                    $noObjeto+=(float)$impuesto->baseImponible;
                 }
             }
 
@@ -144,6 +145,7 @@ class PdfFactura implements ShouldQueue
 
         if(!file_exists($ruta))
             mkdir($ruta, 0775, true);
+
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('comprobantes.factura.pdf', compact('data'));

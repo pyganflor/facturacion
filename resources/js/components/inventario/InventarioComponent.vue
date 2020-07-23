@@ -187,7 +187,7 @@
                                                 <v-select
                                                         :items="catgArticulos"
                                                         label="Categoría"
-                                                        :rules="categoriaRules"
+                                                        :rules="requiredRules"
                                                         item-text="categoria"
                                                         item-value="id_categoria_inventario"
                                                         v-model="editedItem.id_categoria_inventario"
@@ -205,6 +205,7 @@
                                                         label="Nombre"
                                                         :rules="nombreRules"
                                                         dense
+                                                        counter="300"
                                                 ></v-text-field>
                                             </v-col>
                                             <v-col class="pb-0" cols="12" sm="4">
@@ -214,7 +215,7 @@
                                                         dense
                                                 ></v-text-field>
                                             </v-col>
-                                            <v-col class="pb-0" cols="12" sm="3">
+                                            <v-col class="pb-0" cols="12" sm="2">
                                                 <v-text-field
                                                         v-model="editedItem.codigo_a"
                                                         label="Código auxiliar"
@@ -222,6 +223,17 @@
                                                 ></v-text-field>
                                             </v-col>
                                             <v-col class="pb-0" cols="12" sm="3">
+                                                <v-select
+                                                        :items="stockeable"
+                                                        label="Disminuye stock?"
+                                                        item-text="name"
+                                                        item-value="id"
+                                                        v-model="editedItem.stockeable"
+                                                        dense
+                                                >
+                                                </v-select>
+                                            </v-col>
+                                            <v-col class="pb-0" cols="12" sm="2">
                                                 <v-text-field
                                                         v-model.number="editedItem.stock"
                                                         label="Stock"
@@ -231,12 +243,12 @@
                                                         dense
                                                 ></v-text-field>
                                             </v-col>
-                                            <v-col class="pb-0" cols="12" sm="3">
+                                            <v-col class="pb-0" cols="12" sm="2">
                                                 <v-select
                                                         :items=um
-                                                        label="Und de medida"
+                                                        label="Und med."
                                                         v-model="editedItem.und"
-                                                        :rules="undRules"
+                                                        :rules="requiredRules"
                                                         dense
                                                 >
                                                 </v-select>
@@ -421,6 +433,7 @@
             dataTableCatg : [],
             catgArticulos: [],
             impsArticulo:[],
+            stockeable:[{id:0, name:'No'},{id:1, name:'Si'}],
             editedItem: {
                 articulo:'',
                 id_articulo_categoria_inventario:'',
@@ -429,7 +442,8 @@
                 id_categoria_inventario: '',
                 und:'',
                 neto:'',
-                stock:''
+                stock:'',
+                stockeable:''
             },
             defaultItem: {
                 articulo:'',
@@ -439,17 +453,15 @@
                 id_categoria_inventario: '',
                 und:'',
                 neto:'',
-                stock:''
+                stock:'',
+                stockeable:''
             },
             nombreRules:[
                 v => !!v || 'La nombre del árticulo es obligatorio',
                 v => (v && v.length <= 300) || 'El campo debe ser menor o igual 300 caracteres'
             ],
-            categoriaRules:[
-                v => !!v || 'La categoría es obligatoria',
-            ],
-            undRules:[
-                v => !!v || 'La unidad de medida es obligatoria',
+            requiredRules:[
+                v => !!v || 'Campo obligatorio',
             ],
             netoRules:[
                 v => !!v || 'El valor neto es obligatorio',
@@ -565,7 +577,9 @@
                     if(typeof imp.id_impuesto!="undefined"
                         && typeof imp.id_tipo_impuesto!="undefined"
                         && imp.id_impuesto !=""
-                        && imp.id_tipo_impuesto!="" )
+                        && imp.id_tipo_impuesto!=""
+                        && imp.id_impuesto !=null
+                        && imp.id_tipo_impuesto!=null)
                     {
                         impuestos.push({
                             id_impuesto: imp.id_impuesto,
@@ -623,8 +637,6 @@
                     this.closeModal()
 
                 })
-
-
 
             },
 

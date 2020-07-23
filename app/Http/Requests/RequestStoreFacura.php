@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Model\ArticuloCategoriaInventario;
+use App\Model\Cliente;
 use App\Model\Impuesto;
 use App\Model\TipoImpuesto;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,6 +44,13 @@ class RequestStoreFacura extends FormRequest
             'idCliente'=> 'required|exists:cliente,id_cliente',
             'formaPago' => 'required|numeric',
             'idTipoPago' => 'required|numeric|exists:tipo_pago,id_tipo_pago',
+            'total' => function($attribute,$value,$onFailure) use ($request){
+                if($value>=200){
+                    $cliente= Cliente::find($request->idCliente);
+                    if($cliente->tipo_identificacion->codigo=='07')
+                        $onFailure('La factura supera o es igual a los 200 USD de importe total por cuanto no puede ser emitida a nombre de CONSUMIDOR FINAL, debe cambiar el tipo de identificación del cliente');
+                }
+            },
             'correos'=> function($attribute,$value,$onFailure){
                 $correos = explode(',',$value);
                 foreach($correos as $correo){
