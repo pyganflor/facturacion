@@ -3,7 +3,6 @@
 namespace App\Jobs\pdf;
 
 use App\Model\TipoPago;
-use App\Model\Usuario;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,15 +21,15 @@ class PdfFactura implements ShouldQueue
      *
      * @return void
      */
-
+    public $tries = 5;
     public $carpeta;
     public $response;
-    public $idUsuario;
+    public $logo;
 
-    public function __construct($carpeta,$response,$idUsuario)
+    public function __construct($carpeta,$response,$logo)
     {
         $this->response = $response;
-        $this->idUsuario = $idUsuario;
+        $this->logo = $logo;
         $this->carpeta = $carpeta;
     }
 
@@ -42,8 +41,6 @@ class PdfFactura implements ShouldQueue
     public function handle()
     {
         $barcode = new BarcodeGenerator();
-        $usuario= Usuario::find($this->idUsuario);
-
         $xml = new SimpleXMLElement((String)$this->response->comprobante);
         $articulos= [];
         $subtotal12=0;
@@ -138,14 +135,13 @@ class PdfFactura implements ShouldQueue
             'propina' =>'0.00',
             'total' => number_format((String)$xml->infoFactura->importeTotal,2,".",","),
             'bar_code' => $barcode->generate(),
-            'img_usuario' => $usuario->perfil->logo_empresa
+            'img_usuario' => $this->logo
         ];
 
         $ruta= storage_path('app/public/pdf/facturas/').$this->carpeta;
 
         if(!file_exists($ruta))
             mkdir($ruta, 0775, true);
-
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('comprobantes.factura.pdf', compact('data'));

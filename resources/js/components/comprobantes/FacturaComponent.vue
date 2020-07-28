@@ -417,9 +417,12 @@
                                                             </tr>
                                                             </thead>
                                                             <tbody>
-                                                            <tr v-for="(art ,x) in articulosFactura" :key="x">
+                                                            <tr
+                                                                    v-for="(art ,x) in articulosFactura"
+                                                                    :key="x"
+                                                            >
                                                                 <td>{{(x+1)}})</td>
-                                                                <td style="width: 400px;">
+                                                                <td style="width: 200px;">
                                                                     <v-select
                                                                             class="py-0"
                                                                             :items="categorias"
@@ -576,9 +579,6 @@
             <template v-slot:item.total="{ item }">
                 ${{parseFloat(item.total).toFixed(2)}}
             </template>
-            <!--<template v-slot:item.estado="{ item }">
-                {{estados.find(e => e.id ===item.estado).nombre}}
-            </template>-->
             <template v-slot:item.entorno="{ item }">
                 {{item.entorno === 1 ? 'Pruebas' : 'Producción'}}
             </template>
@@ -648,7 +648,14 @@
                                 </v-btn>
                             </v-list-item-title>
                         </v-list-item>
-                        <v-list-item v-if="item.estado===0 || item.estado===2" class="list-actions">
+                        <v-list-item v-if="item.estado!==1 && item.estado!==3 && item.estado!==4" class="list-actions">
+                            <v-list-item-title>
+                                <v-btn text small @click="editarFactura(item.id_factura)">
+                                    <v-icon color="warning">mdi-pencil</v-icon> Editar
+                                </v-btn>
+                            </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item v-if="(item.estado===0 || item.estado===2) && item.estado!==4" class="list-actions">
                             <v-list-item-title>
                                 <v-btn text small >
                                     <v-icon color="success">mdi-auto-upload</v-icon> Reenviar al sri
@@ -662,20 +669,13 @@
                                 </v-btn>
                             </v-list-item-title>
                         </v-list-item>
-                        <v-list-item v-if="item.estado!=1 && item.estado!=3" class="list-actions">
+                        <v-list-item class="list-actions">
                             <v-list-item-title>
-                                <v-btn text small >
-                                    <v-icon color="warning">mdi-pencil</v-icon> Editar
+                                <v-btn text small @click="consultarFactura(item)">
+                                    <v-icon color="success">mdi-comment-question-outline</v-icon> Consultar factura
                                 </v-btn>
                             </v-list-item-title>
                         </v-list-item>
-                        <!--<v-list-item v-if="item.estado!=1" class="list-actions">
-                            <v-list-item-title>
-                                <v-btn text small >
-                                    <v-icon class="red&#45;&#45;text">mdi-delete-sweep</v-icon> Borrar
-                                </v-btn>
-                            </v-list-item-title>
-                        </v-list-item>-->
                     </v-list>
                 </v-menu>
             </template>
@@ -714,6 +714,7 @@
                 default:{}
             }
         },
+
         data: () => ({
             dates: [
                 new Date().toISOString().substr(0, 10),
@@ -732,9 +733,6 @@
             fechaVencimiento:new Date().toISOString().substr(0, 10),
             idCliente:'',
             idClienteSearch:'',
-            notifications:false,
-            sound:false,
-            widgets:false,
             search:'',
             idSustentoTributario:1,
             idTipoPago:'',
@@ -750,6 +748,9 @@
             total:0,
             overlay:false,
             loadingTable:false,
+            editar :false,
+            secuencialEdit :'',
+            idFactura:'',
             undTiempo: ['Dias','Semanas','Meses'],
             formaPago:[
                 {id_forma_pago:1,nombre:'Contado'},
@@ -770,8 +771,9 @@
             estados:[
                 {id: 1, nombre: 'Autorizados'},
                 {id: 0, nombre: 'Rechazados' },
-                {id: 2, nombre: 'No enviado'},
-                {id: 3, nombre: 'Anulado'}
+                {id: 2, nombre: 'No recibido'},
+                {id: 3, nombre: 'Anulado'},
+                {id: 4, nombre: 'No consultado'},
             ],
             estado:1,
             editedIndex: -1,
@@ -845,7 +847,7 @@
             },
 
             setArticulos(obj){
-                let art =this.inventario.categorias_activadas.find(ele => ele.id_categoria_inventario === obj.id_categoria)
+                let art = this.inventario.categorias_activadas.find(ele => ele.id_categoria_inventario === obj.id_categoria)
                 obj.articulos = art.articulos
             },
 
@@ -892,7 +894,7 @@
                 let calculoTotal = 0
 
                 for(let arr of this.articulosFactura){
-
+                    console.log(arr)
                     let art = arr.articulos.find(ele => ele.id_articulo_categoria_inventario === arr.id_articulo)
                     let subTotalArticulo = parseFloat(arr.total)
                     let totalMontoImpuesto = 0
@@ -964,8 +966,8 @@
                 }).then((result) => {
                     if (result.value) {
 
-                        this.overlay=true
-                        this.dialog=false
+                        this.overlay = true
+                        this.dialog = false
                         let articulos = []
 
                         for (let articulosCatg of this.articulosFactura) {
@@ -975,17 +977,17 @@
                             if (typeof articulo != "undefined") {
 
                                 let impuestos = []
-                                let valorConImpuesto=0
+                                let valorConImpuesto = 0
 
                                 for (let impuesto of articulo.impuestos) {
-                                    let valorImpuesto=0
+                                    let valorImpuesto = 0
 
-                                    if(impuesto.tipo_impuesto.tipo_tarifa === "%"){
-                                        valorImpuesto= parseFloat((articulo.neto * (impuesto.tipo_impuesto.tarifa/100)))
-                                        valorConImpuesto = parseFloat(articulo.neto)+valorImpuesto
-                                    }else if(impuesto.tipo_impuesto.tipo_tarifa === "t"){
+                                    if (impuesto.tipo_impuesto.tipo_tarifa === "%") {
+                                        valorImpuesto = parseFloat((articulo.neto * (impuesto.tipo_impuesto.tarifa / 100)))
+                                        valorConImpuesto = parseFloat(articulo.neto) + valorImpuesto
+                                    } else if (impuesto.tipo_impuesto.tipo_tarifa === "t") {
 
-                                    }else if(impuesto.tipo_impuesto.tipo_tarifa === "n"){
+                                    } else if (impuesto.tipo_impuesto.tipo_tarifa === "n") {
 
                                     }
 
@@ -994,18 +996,18 @@
                                         nombre_imp: impuesto.nombre,
                                         id_tipo_impuesto: impuesto.id_tipo_impuesto,
                                         tarifa: impuesto.tipo_impuesto.tarifa,
-                                        total  : valorConImpuesto,
-                                        valor_imp : valorImpuesto,
-                                        base_imponible : articulosCatg.total,
+                                        total: valorConImpuesto,
+                                        valor_imp: valorImpuesto,
+                                        base_imponible: articulosCatg.total,
                                         codigo_imp: impuesto.impuesto.codigo,
                                         codigo_tipo_imp: impuesto.tipo_impuesto.codigo,
                                         nombre_tipo_impuesto: impuesto.tipo_impuesto.descripcion
                                     })
                                 }
 
-
                                 articulos.push({
                                     id_articulo: articulo.id_articulo_categoria_inventario,
+                                    id_categoria_inventario: '',
                                     nombre: articulo.articulo,
                                     neto: articulo.neto,
                                     stock: articulo.stock,
@@ -1013,83 +1015,94 @@
                                     codigo_a: articulo.codigo_a,
                                     cantidad: articulosCatg.cantidad,
                                     descuento: articulosCatg.descuento,
-                                    total : articulosCatg.total,
+                                    total: articulosCatg.total,
                                     impuestos: impuestos
                                 });
                             }
 
                         }
 
-                        let data = {
-                            ptoEmision: this.puntoEmision,
-                            facturero: this.facturero,
-                            fechaDoc: this.fechaDocumento,
-                            fechaVenc: this.fechaVencimiento,
-                            sustTributario: this.idSustentoTributario,
-                            comentario: this.comentario,
-                            idCliente: this.idCliente,
-                            formaPago: this.idFormaPago,
-                            idTipoPago: this.idTipoPago,
-                            correos: this.correos,
-                            subTotal : this.subTotal,
-                            descuento : this.descuento,
-                            total: this.total,
-                            plazo: this.plazo,
-                            undTiempoPlazo: this.undTiempoPlazo,
-                            articulos: articulos,
-                            firmar: $("#firmar").is(":checked"),
-                            autorizar: $("#autorizar").is(":checked"),
-                            correo: $("#correo").is(":checked"),
-                        }
-
                         this.httpRequest({
                             method: 'post',
                             url: 'factura/store',
-                            data: data
+                            data: {
+                                ptoEmision: this.puntoEmision,
+                                facturero: this.facturero,
+                                fechaDoc: this.fechaDocumento,
+                                fechaVenc: this.fechaVencimiento,
+                                sustTributario: this.idSustentoTributario,
+                                comentario: this.comentario,
+                                idCliente: this.idCliente,
+                                formaPago: this.idFormaPago,
+                                idTipoPago: this.idTipoPago,
+                                correos: this.correos,
+                                subTotal: this.subTotal,
+                                descuento: this.descuento,
+                                total: this.total,
+                                plazo: this.plazo,
+                                undTiempoPlazo: this.undTiempoPlazo,
+                                articulos: articulos,
+                                firmar: $("#firmar").is(":checked"),
+                                autorizar: $("#autorizar").is(":checked"),
+                                correo: $("#correo").is(":checked"),
+                                editar : this.editar,
+                                secuencialEdit : this.secuencialEdit,
+                                id_factura : this.idFactura
+                            }
                         }).then((res) => {
-                            this.overlay=false
+
+                            this.overlay = false
                             this.alertNotification({
-                                param:{
+                                param: {
                                     title: res.data.success ? 'Exito' : 'Error',
                                     icon: res.data.success ? 'success' : 'error',
+                                    confirmButtonColor: res.data.success ? '#a5dc86' : '#00b388',
                                     html: res.data.msg,
-                                    toast:false,
-                                    grow:false,
+                                    toast: false,
+                                    grow: false,
                                     timer: 45000
                                 }
                             })
-                            if(res.data.success){
-                                if(this.estado===res.data.factura.estado)
+                            if (res.data.success) {
+
+                                if (this.estado === res.data.factura.estado)
                                     this.dataTable.unshift(res.data.factura);
 
-                                this.puntoEmision =''
-                                this.facturero =''
-                                this.fechaDocumento =''
-                                this.fechaVencimiento =''
-                                this.idSustentoTributario =''
-                                this.comentario =''
-                                this.idCliente =''
-                                this.idFormaPago =''
-                                this.idTipoPago =''
-                                this.correos =''
-                                this.subTotal =''
-                                this.descuento =''
-                                this.total =''
-                                this.plazo =''
-                                this.undTiempoPlazo =''
-                                Object.assign(this.articulosFactura,{
-                                    id_categoria:'',
-                                    id_articulo:'',
-                                    cantidad:1,
-                                    descuento:0,
-                                    monto:'',
-                                    total:0
+                                this.puntoEmision = ''
+                                this.facturero = ''
+                                this.fechaDocumento = ''
+                                this.fechaVencimiento = ''
+                                this.idSustentoTributario = ''
+                                this.comentario = ''
+                                this.idCliente = ''
+                                this.idFormaPago = ''
+                                this.idTipoPago = ''
+                                this.correos = ''
+                                this.subTotal = ''
+                                this.descuento = ''
+                                this.total = ''
+                                this.plazo = ''
+                                this.undTiempoPlazo = ''
+                                Object.assign(this.articulosFactura, {
+                                    id_categoria: '',
+                                    id_articulo: '',
+                                    cantidad: 1,
+                                    descuento: 0,
+                                    monto: '',
+                                    total: 0,
+                                    articulos: []
                                 })
-                                this.articulosFactura.articulos=[]
+
+                            }else if(!res.data.success && this.editar){
+                                this.getDataComponent()
                             }
-                        }).catch((err)=>{
-                            this.overlay=false
-                            this.dialog=true
+
+                            this.editar=false
+                            this.secuencialEdit=''
+                            this.idFactura=''
+                        }).catch((err) => {
+                            this.overlay = false
+                            this.dialog = true
                         })
                     }
                 });
@@ -1111,6 +1124,12 @@
                                 id_factura : idFactura
                             }
                         }).then((res) => {
+
+                            this.alertNotification({
+                                param: {
+                                    html: res.data.msg
+                                }
+                            })
 
                             let obj = this.dataTable.find(e => e.id_factura === idFactura)
                             let index = this.dataTable.indexOf(obj)
@@ -1184,17 +1203,100 @@
                             }
                         }).then((res) => {
 
-
+                            this.alertNotification({
+                                param:{
+                                    html: res.data.msg,
+                                }
+                            })
 
 
                         })
-
                     }
                 })
             },
 
+            editarFactura(idFactura){
+
+                this.editar=true
+                this.httpRequest({
+                    method: 'get',
+                    url: 'factura/editar',
+                    data: {
+                        id_factura : idFactura
+                    }
+                }).then((res) => {
+                    this.secuencialEdit = res.data.secuencial
+                    this.idFactura = idFactura
+                    this.puntoEmision = res.data.ptoEmi
+                    this.facturero = res.data.facturero
+                    this.fechaDocumento = res.data.fechaDoc
+                    this.fechaVencimiento = res.data.fechaVenc
+                    this.idSustentoTributario = res.data.sustTributario
+                    this.comentario = res.data.comentario
+                    this.idCliente = res.data.idCliente
+                    this.idFormaPago = res.data.formaPago
+                    this.idTipoPago = res.data.idTipoPago
+                    this.correos = res.data.correos
+                    this.plazo = res.data.plazo
+                    this.undTiempoPlazo = res.data.unTiempoPlazo
+                    this.dialog = true
+
+                    this.articulosFactura=[]
+                    for(let articulo  of res.data.articulos){
+                        this.articulosFactura.push({
+                            articulos: this.inventario.categorias_activadas.find(e => e.id_categoria_inventario === articulo.id_categoria_inventario).articulos,
+                            id_categoria: articulo.id_categoria_inventario,
+                            id_articulo: articulo.id_articulo_categoria_inventario,
+                            cantidad: articulo.cantidad,
+                            descuento: articulo.descuento,
+                            total: articulo.precio_total_sin_imp,
+                            monto: articulo.precio_unitario,
+                        })
+                    }
+
+                    this.calculaMontos()
+
+                })
+
+
+
+            },
+
             searchDataTable(){
                 console.log(this.dateRangeText)
+            },
+
+            consultarFactura(item){
+
+                this.overlay=true
+                this.httpRequest({
+                    method: 'post',
+                    url: 'factura/consultar',
+                    data: {
+                        comprobante:'factura',
+                        id_usuario: item.id_usuario,
+                        id_comprobante : item.id_factura,
+                        clave_acceso :item.clave_acceso,
+                        carpeta_personal : item.carpeta
+                    }
+                }).then((res) => {
+                    this.overlay=false
+                    this.alertNotification({
+                        param: {
+                            title: res.data.success ? 'Exito' : 'Error',
+                            icon: res.data.success ? 'success' : 'error',
+                            confirmButtonColor: res.data.success ? '#a5dc86' : '#ff7674',
+                            html: res.data.msg,
+                            toast: false,
+                            grow: false,
+                            timer: 45000
+                        }
+                    })
+                    this.getDataComponent()
+                }).catch((err) => {
+                    this.overlay = false
+                    this.dialog = true
+                })
             }
 
         },

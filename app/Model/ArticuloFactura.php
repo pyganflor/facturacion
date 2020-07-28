@@ -20,10 +20,16 @@ class ArticuloFactura extends Model
         'codigo_a',
         'precio_unitario',
         'descuento',
-        'precio_total_sin_imp'
+        'precio_total_sin_imp',
+        'id_categoria_inventario',
+        'id_articulo_categoria_inventario'
     ];
 
     public function impuestos(){
         return $this->hasMany('App\Model\ImpuestoArticuloFactura','id_articulo_factura');
+    }
+
+    public function categoria_inventario(){
+        return $this->belongsTo('App\Model\CategoriaInventario','id_categoria_inventario');
     }
 }

@@ -11,10 +11,9 @@ Route::get('pdf',function(){
 
     $clienteSoap = new SoapClient(env('WSDL_PRUEBAS_AUTORIZACION'));
     $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => '2107202001179244632500110017770000000621234567815']);
-    $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
+    $autorizacion = $response->RespuestaAutorizacionComprobante->numeroComprobantes;
 
-    $carpetaPersonal ='1/2020_07';
-    \App\Jobs\pdf\PdfFactura::dispatch($carpetaPersonal,$autorizacion,1)->onQueue('pdf_factura');
+    dd($autorizacion);
 });
 
 //USUARIOS LOGUEADOS

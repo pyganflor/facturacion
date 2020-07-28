@@ -24,6 +24,14 @@ class Factura extends Model
         'rehusar',
         'total',
         'carpeta',
+        'fecha_venc',
+        'comentario',
+        'correos',
+        'id_forma_pago',
+        'id_sustento_tributario',
+        'id_tipo_pago',
+        'plazo',
+        'und_tiempo',
         'estado'
     ];
 
@@ -35,7 +43,7 @@ class Factura extends Model
         return $this->belongsTo('App\Model\Cliente','id_cliente');
     }
 
-    public function detalles(){
+    public function detalle(){
         return $this->belongsTo('App\Model\Factura','id_factura');
     }
 

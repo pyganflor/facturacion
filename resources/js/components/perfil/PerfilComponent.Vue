@@ -812,6 +812,12 @@
 
                 }).then((res)=>{
 
+                    this.alertNotification({
+                        param: {
+                            html: res.data.msg
+                        }
+                    })
+
                     this.usuario.perfil = res.data.perfil
 
                     this.dialogInfoAdicional=false

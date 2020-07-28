@@ -74,7 +74,6 @@ export default new Vuex.Store({
 
             state.alertas='';
             let errorValidacion=false;
-            console.log(payload);
             if(typeof payload.data != 'undefined'){
                 errorValidacion = payload.data.status === 422
             }else if(typeof payload.status != 'undefined'){
@@ -173,11 +172,6 @@ export default new Vuex.Store({
                 }).then(res => {
 
                     resolve(res)
-                    dispatch('alertNotification',{
-                        param:{
-                            html: res.data.msg
-                        }
-                    });
 
                 }).catch(err => {
 

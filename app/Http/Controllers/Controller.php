@@ -2,12 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Model\Factura;
+use App\Model\Usuario;
+use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\EnvioComprobante;
+use DOMDocument;
+use SimpleXMLElement;
+use Illuminate\Http\Request;
+use App\Http\Requests\RequestValidaIdFactura;
+use SoapClient;
 
 class Controller extends BaseController
 {
@@ -25,8 +32,7 @@ class Controller extends BaseController
                 $cantidad = $arrNum[$i] * $x;
                 $total += $cantidad;
                 $x++;
-                if ($x == 8)
-                    $x = 2;
+                if ($x == 8) $x = 2;
             }
             $cociente = $total / 11;
             $producto = ((int)$cociente) * 11;
@@ -34,8 +40,6 @@ class Controller extends BaseController
             $digitoVerificador = 11 - $resultado;
 
             if ((11 * (int)$cociente) + $resultado === $total) {
-
-
                 if ($digitoVerificador == 10)
                     $digitoVerificador = 1;
                 elseif ($digitoVerificador == 11)
@@ -106,11 +110,17 @@ class Controller extends BaseController
     function mensajeEnvioXml($indice)
     {
         $mensaje = [
-            0 => "El comprobante fue enviado pero rechazado por el SRI, verfique en el estado rechazado, en la columna causa el motivo",
+            0 => "El comprobante fue enviado pero rechazado por el SRI, verfique en el estado rechazado, en la columna mensaje el motivo",
             1 => "Se ha autorizado con éxito la factura por el sri",
-            2 => "Fallo en la conexión con el web service del SRI, intente nuevamente"
+            2 => "Falló en la conexión con el web service del SRI, intente nuevamente"
         ];
-        return $mensaje[$indice];
+        if(!isset($mensaje[$indice])){
+            return $indice;
+        }else{
+            return $mensaje[$indice];
+        }
+
+
     }
 
     function envioCorreo($data){
@@ -160,5 +170,89 @@ class Controller extends BaseController
 
         return $msg;
 
+    }
+
+    function comprobanteDevuelta($tagComprobante,$pathRechazados,$secuencial){
+
+        $xmlDevuelta = new DOMDocument(1.0, 'UTF-8');
+        $xmlDevuelta->load($pathRechazados.'fact_'.$secuencial.'.xml');
+        $nodo = $xmlDevuelta->saveXML();
+        $a = explode($tagComprobante,explode('</ds:Signature>',$nodo)[1])[0];
+        $xml2 = new DOMDocument(1.0, 'UTF-8');
+        $xml2->loadXML($a);
+        $b = $xml2->saveXML();
+        $c = new SimpleXMLElement($b);
+        $msg='';
+        foreach ($c->comprobantes as $comprobante) {
+            foreach ($comprobante->comprobante->mensajes as $mensaje){
+                $msg.= (String)$mensaje->mensaje->mensaje.':';
+                $msg.= (String)$mensaje->mensaje->informacionAdicional.'. ';
+            }
+        }
+        return $msg;
+    }
+
+    function consultarComprobante(RequestValidaIdFactura $request){
+
+        $usuario = Usuario::find($request->id_usuario);
+        $wsdlAutorizacion = $usuario->perfil->entorno == 1 ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
+        $msg='';
+        $estado = 1;
+        $success=false;
+        $autorizacion='';
+        try{
+
+            switch ($request->comprobante){
+                case 'factura':
+                    $comprobante = Factura::find($request->id_comprobante);
+                    break;
+            }
+
+            $clienteSoap = new SoapClient($wsdlAutorizacion);
+            $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $request->clave_acceso]);
+            if($response->RespuestaAutorizacionComprobante->numeroComprobantes>0){
+                $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
+
+                if($autorizacion->estado=="NO AUTORIZADO" || $autorizacion->estado=="RECHAZADA") {
+                    $estado = 0;
+                    $causa = "Comprobante rechazado o no autorizado";
+                }else{
+                    $success=true;
+                    $causa="Comprobante autorizado por el SRI,<br /> 
+                                En fecha y hora: ".Carbon::parse($autorizacion->fechaAutorizacion)->format('d-m-Y H:i:s')."";
+                }
+
+                $msg .= $causa;
+                $comprobante->update([
+                    'estado'=> $estado,
+                    'fecha_aut' =>(String)$autorizacion->fechaAutorizacion,
+                    'causa' => $causa
+                ]);
+
+            }else{
+                $msg.='El comprobante no fue recibido por el SRI, por favor intente reenviarlo nuevamente';
+                $estado=2;
+                $comprobante->update([
+                    'estado'=> $estado,
+                    'causa' => $msg
+                ]);
+            }
+
+        }catch(\Exception $e){
+            $success=false;
+            $estado= 4;
+            $msg.='El web service del SRI no está disponible en este momento, por favor intente consultarlo nuevamente en unos minutos <br />'.$e->getMessage().'';
+            $comprobante->update([
+                'estado'=> $estado,
+                'causa' => $msg
+            ]);
+        }
+
+        return [
+            'success' => $success,
+            'msg' => $msg,
+            'estado' => $estado,
+            'autorizacion' => $autorizacion
+        ];
     }
 }

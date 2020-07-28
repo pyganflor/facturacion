@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\RequestReenvioCorreoComprobante;
+use App\Http\Requests\RequestValidaIdFactura;
 use App\Jobs\pdf\PdfFactura;
 use App\Jobs\xml\XmlRespuestaFactura;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Model\{ArticuloFactura,
+use App\Model\{ArticuloCategoriaInventario,
+    ArticuloFactura,
     Cliente,
     DetalleFactura,
     ImpuestoArticuloFactura,
@@ -16,7 +18,8 @@ use App\Model\{ArticuloFactura,
     TipoImpuesto,
     tipoPago,
     Inventario,
-    Factura};
+    Factura,
+    Usuario};
 use App\Http\Requests\RequestStoreFacura;
 use DomDocument;
 use SoapClient;
@@ -59,6 +62,8 @@ class FacturaController extends Controller
                 'factura.fecha_aut',
                 'factura.entorno',
                 'factura.causa',
+                'factura.carpeta',
+                'factura.id_usuario',
                 'df.importe_total as total'
             )->where(function($q) use ($request) {
                 if(isset($request->id_cliente))
@@ -78,13 +83,19 @@ class FacturaController extends Controller
             $codigoNumerico = 12345678;
             $arrFecha = explode('-',$request->fechaDoc);
             $fecha = $arrFecha[2].$arrFecha[1].$arrFecha[0];
+            if($request->editar == "true")
+                $usuario->perfil->n_factura = substr($request->secuencialEdit,6,9);
+
             $cadena = $fecha . '01' . $usuario->perfil->ruc . $usuario->perfil->entorno . $serie . $usuario->perfil->n_factura . $codigoNumerico . 1;
             $digitoVerificador = $this->digitoVerificador($cadena);
-
-            if(!$digitoVerificador && $digitoVerificador!=0)
+            $claveAcceso = $cadena . $digitoVerificador;
+            if(!$digitoVerificador && $digitoVerificador!=0){
                 return response()->json([
-                    'errors'=>['Mensaje:'=> ' La clave de acceso está mal formada, verifique que su información adicional este correctamente ingresada en la configuración de su perfil y vuelva a intentarlo']
+                    'errors'=>[
+                        'Mensaje:'=> ' La clave de acceso está mal formada, verifique que su información adicional este correctamente ingresada en la configuración de su perfil y vuelva a intentarlo'
+                    ]
                 ],500);
+            }
 
             $xml = new DomDocument('1.0', 'UTF-8');
             $factura = $xml->createElement('factura');
@@ -93,12 +104,12 @@ class FacturaController extends Controller
             $xml->appendChild($factura);
             $infoTributaria = $xml->createElement('infoTributaria');
             $factura->appendChild($infoTributaria);
-            $claveAcceso = $cadena . $digitoVerificador;
 
-            if(Factura::where('clave_acceso',$claveAcceso)->exists())
+            if(Factura::where('clave_acceso',$claveAcceso)->exists() && $request->editar == "false"){
                 return response()->json([
                     'errors'=>['Mensaje:'=> 'La clave de acceso ya está registrada']
                 ],500);
+            }
 
             $informacionTributaria = [
                 'ambiente' => $usuario->perfil->entorno,
@@ -250,6 +261,7 @@ class FacturaController extends Controller
                 'unidadTiempo' => $plazo
             ];
 
+            $request->request->add(['idFormaPago'=> $request->formaPago]);
             $request->request->add($infoPagos);
 
             foreach ($infoPagos as $key => $ip) {
@@ -276,12 +288,13 @@ class FacturaController extends Controller
                     'precioTotalSinImpuesto' => number_format($articulo->total, 2, ".", "")
                 ];
 
-                $articulos['articulo'][] = $informacionDetalle;
-
                 foreach ($informacionDetalle as $key => $iD) {
                     $nodo = $xml->createElement($key, $iD);
                     $detalle->appendChild($nodo);
                 }
+
+                $informacionDetalle['id_articulo'] = $articulo->id_articulo;
+                $articulos['articulo'][] = $informacionDetalle;
 
                 $impuestos = $xml->createElement('impuestos');
                 $detalle->appendChild($impuestos);
@@ -315,7 +328,8 @@ class FacturaController extends Controller
 
             $campos_adicionales = [
                 'Dirección'=> $usuario->perfil->direc_establecimiento,
-                'Email'    => $usuario->correo
+                'Email'    => $usuario->correo,
+                'Telefono' => $usuario->tlf
             ];
 
             $request->request->add($campos_adicionales);
@@ -331,7 +345,7 @@ class FacturaController extends Controller
             $stringXml = $xml->saveXML();
             $xml = "fact_".$request->ptoEmision.$request->facturero.$usuario->perfil->n_factura.'.xml';
             $pathFacturas = storage_path('app/public/xml/facturas/');
-            $carpetaPersonal = $usuario->id_usuario.'/'.Carbon::now()->format('Y_m');
+            $carpetaPersonal = $usuario->id_usuario.'/'.($arrFecha[0].'_'.$arrFecha[1]);
             $request->request->add(['carpeta' => $carpetaPersonal]);
 
             // GUARDAR DATOS DE LA FACTURA
@@ -404,37 +418,69 @@ class FacturaController extends Controller
 
                                     if($resultado[0] == 0){
                                         //ENVIADO PERO RECHAZADO, BUSCAR ARCHIVO EN LA CARPETA RECHAZADOS CORRESPONDIENTE
-                                        $factura->update(['estado'=>0]);
-                                        $success=false;
-
-                                    }else if($resultado[0] == 1){
-
-                                        $wsdlAutorizacion = $usuario->perfil->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
-                                        $clienteSoap = new SoapClient($wsdlAutorizacion);
-                                        $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $claveAcceso]);
-                                        $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
-                                        $estado=1;
-
-                                        if($autorizacion->estado=="NO AUTORIZADO" || $autorizacion->estado=="RECHAZADA" || $autorizacion->estado=="DEVUELTA"){
-                                            $resultado[0]=0;
-                                            $estado=0;
-                                            $success=false;
-                                        }else{
-                                            PdfFactura::dispatch($carpetaPersonal,$autorizacion,$usuario->id_usuario)->onQueue('pdf_factura');
-                                        }
-
+                                        $causa = $this->comprobanteDevuelta('</factura>',$pathRechazados,$factura->secuencial);
                                         $factura->update([
-                                            'estado'=>$estado,
-                                            'fecha_aut' =>(String)$autorizacion->fechaAutorizacion
+                                            'estado'=>0,
+                                            'causa' => $causa
                                         ]);
-
-                                    }else if($resultado[0] == 2){
-                                        //FALLA DE CONEXIÓN CON WSDL WEB SERVICE O NO ENVIADO
-                                        $factura->update(['estado'=>2]);
                                         $success=false;
                                     }
 
-                                    XmlRespuestaFactura::dispatch($claveAcceso,$usuario->id_usuario)->onQueue('respuesta_sri_factura');
+                                    if($resultado[0] == 1){
+
+                                        $wsdlAutorizacion = $usuario->perfil->entorno == 1 ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
+
+                                        try{
+
+                                            $clienteSoap = new SoapClient($wsdlAutorizacion);
+                                            $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $claveAcceso]);
+                                            if($response->RespuestaAutorizacionComprobante->numeroComprobantes>0){
+                                                $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
+
+                                                if($autorizacion->estado=="NO AUTORIZADO" || $autorizacion->estado=="RECHAZADA") {
+
+                                                    $resultado[0] = 0;
+                                                    $success = false;
+                                                    $causa= "Factura rechazada o no autorizada";
+
+                                                }else{
+
+                                                    PdfFactura::dispatch($carpetaPersonal,$autorizacion,$usuario->id_usuario)->onQueue('pdf_factura');
+                                                    $causa="Factura autorizada";
+                                                }
+
+                                                $factura->update([
+                                                    'estado'=> $resultado[0],
+                                                    'fecha_aut' =>(String)$autorizacion->fechaAutorizacion,
+                                                    'causa' => $causa
+                                                ]);
+
+                                                XmlRespuestaFactura::dispatch($claveAcceso,$usuario->id_usuario)->onQueue('respuesta_sri_factura');
+                                            }else{
+                                                $resultado[0]=2;
+                                                $success=false;
+                                                $msg.='La factura no fue recibida por el SRI, por favor intente reenviarla nuevamente';
+                                            }
+
+                                        }catch(\Exception $e){
+                                            $success=false;
+                                            $msg.='La factura no pudo ser consultada en el SRI, por favor intente consultarla nuevamente';
+                                            $factura->update([
+                                                'estado'=> 4,
+                                                'causa' => 'La factura no pudo ser consultada en el SRI, por favor intente consultarla nuevamente'
+                                            ]);
+                                        }
+
+                                    }
+
+                                    if($resultado[0] == 2){
+                                        //FALLA DE CONEXIÓN CON WSDL WEB SERVICE O NO ENVIADO
+                                        $factura->update([
+                                            'estado'=> $resultado[0],
+                                            'causa' => 'Falló la conexión con el sri, por favor intenter reenviar la factura en unos minutos'
+                                        ]);
+                                        $success=false;
+                                    }
 
                                     $msg .= $this->mensajeEnvioXml($resultado[0]).'<br />';
 
@@ -481,20 +527,20 @@ class FacturaController extends Controller
             return response()->json([
                 'msg' => $msg,
                 'success' => $success,
-                'factura' =>Factura::where('factura.id_factura',$storeFactura['id_factura'])
-                    ->join('cliente as c','factura.id_cliente','c.id_cliente')
-                    ->select(
-                        'factura.id_factura',
-                        'factura.secuencial',
-                        'factura.clave_acceso',
-                        'factura.total',
-                        'factura.estado',
-                        'c.nombre as cliente',
-                        'factura.fecha_doc',
-                        'factura.fecha_aut',
-                        'factura.entorno',
-                        'factura.causa'
-                    )->first()
+                'factura' => Factura::where('factura.id_factura',$storeFactura['id_factura'])
+                                ->join('cliente as c','factura.id_cliente','c.id_cliente')
+                                ->select(
+                                    'factura.id_factura',
+                                    'factura.secuencial',
+                                    'factura.clave_acceso',
+                                    'factura.total',
+                                    'factura.estado',
+                                    'c.nombre as cliente',
+                                    'factura.fecha_doc',
+                                    'factura.fecha_aut',
+                                    'factura.entorno',
+                                    'factura.causa'
+                                )->first()
             ],200);
 
         }catch(\Exception $e){
@@ -502,7 +548,7 @@ class FacturaController extends Controller
         }
     }
 
-    public function storeFactura($request,$new=false){
+    public function storeFactura($request){
 
         try{
 
@@ -516,7 +562,16 @@ class FacturaController extends Controller
                     'entorno' => $request['ambiente'],
                     'id_cliente' => $request['idCliente'],
                     'carpeta' => $request['carpeta'],
-                    'id_usuario' => Auth::user()->id_usuario
+                    'id_usuario' => Auth::user()->id_usuario,
+                    'fecha_venc' => $request['fechaVenc'],
+                    'id_sustento_tributario' => $request['sustTributario'],
+                    'total' => $request['total'],
+                    'comentario' => isset($request['comentario']) ? $request['comentario'] : '',
+                    'correos'=> $request['correos'],
+                    'id_forma_pago' => $request['idFormaPago'],
+                    'id_tipo_pago' => $request['idTipoPago'],
+                    'plazo' => $request['plazo'],
+                    'und_tiempo' => $request['undTiempoPlazo']
                 ]
             );
 
@@ -552,6 +607,8 @@ class FacturaController extends Controller
 
             foreach ($request['articulo'] as $x => $articulo) {
 
+                $articuloCategoriaInventario = ArticuloCategoriaInventario::where('id_articulo_categoria_inventario',$articulo['id_articulo'])->first();
+
                 ArticuloFactura::create([
                     'id_factura' =>  $factura->id_factura,
                     'codigo_p' => $articulo['codigoPrincipal'],
@@ -560,7 +617,9 @@ class FacturaController extends Controller
                     'precio_unitario' => $articulo['precioUnitario'],
                     'descuento' => $articulo['descuento'],
                     'precio_total_sin_imp' => $articulo['precioTotalSinImpuesto'],
-                    'descripcion' => $articulo['descripcion']
+                    'descripcion' => $articulo['descripcion'],
+                    'id_categoria_inventario' => $articuloCategoriaInventario->id_categoria_inventario,
+                    'id_articulo_categoria_inventario' => $articulo['id_articulo']
                 ]);
 
                 $art = ArticuloFactura::all()->last();
@@ -599,13 +658,13 @@ class FacturaController extends Controller
                 ArticuloFactura::destroy($oldArticulosFactura);
 
             //ACTUALIZAR EL SECUENCIAL
-            if($new){
+            if($request['editar']=="false"){
                 $usuario = Auth::user();
                 $usuario->perfil->update(['n_factura'=> str_pad($usuario->perfil->n_factura+1, 9, '0', STR_PAD_LEFT)]);
             }
 
             return [
-                'msg' => 'El xml de la factura se ha guardado y registrado éxitosamente con el número '.$factura->secuencial,
+                'msg' => 'El xml N° '.$factura->secuencial.' se ha guardado y registrado',
                 'success' => true,
                 'id_factura'=>$factura->id_factura
             ];
@@ -677,9 +736,66 @@ class FacturaController extends Controller
 
             $this->envioCorreo($data);
 
+            return response()->json([
+                'msg'=> 'Se ha enviado el correo a los destinatarios'
+            ]);
+
         }catch(\Execption $e){
             return HomeController::catch($e);
         }
+
+    }
+
+    public function editar(RequestValidaIdFactura $request){
+
+        try{
+
+            $factura = Factura::find($request->id_factura);
+
+            return response()->json([
+                'ptoEmi' => substr($factura->clave_acceso, 24, 3),
+                'facturero' => substr($factura->clave_acceso, 27, 3),
+                'secuencial' => $factura->secuencial,
+                'fechaDoc' => $factura->fecha_doc,
+                'fechaVenc' => $factura->fecha_venc,
+                'sustTributario' => $factura->id_sustento_tributario,
+                'idCliente' => $factura->id_cliente,
+                'formaPago'=>$factura->id_forma_pago,
+                'comentario' => $factura->comentario,
+                'idTipoPago'=> $factura->id_tipo_pago,
+                'correos'=> $factura->correos,
+                'plazo' => $factura->plazo,
+                'unTiempoPlazo' => $factura->und_tiempo,
+                'articulos' => $factura->articulos
+            ]);
+
+        }catch(\Exception $e){
+            return HomeController::catch($e);
+        }
+    }
+
+    public function consultar(RequestValidaIdFactura $request){
+
+        $usuario = Usuario::find($request->id_usuario);
+        $logo = $usuario->perfil->logo_empresa;
+        $data = $this->consultarComprobante($request);
+
+        if($data['estado'] !=2){
+            switch ($request->comprobante){
+                case 'factura':
+                    if($data['estado']==1)
+                        PdfFactura::dispatch($request->carpeta_personal,$data['autorizacion'],$logo)->onQueue('pdf_factura');
+                    if($data['estado']!=4 && $data['estado']!=3)
+                        XmlRespuestaFactura::dispatch($request->carpeta_personal,$usuario->id_usuario,$data['autorizacion'])->onQueue('respuesta_sri_factura');
+                    break;
+            }
+        }
+
+        return response()->json([
+            'success' => $data['success'],
+            'msg' => $data['msg'],
+            'estado' => $data['estado']
+        ]);
 
     }
 

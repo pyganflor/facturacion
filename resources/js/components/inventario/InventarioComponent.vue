@@ -486,7 +486,7 @@
         },
         methods:{
 
-            ...mapActions(['httpRequest']),
+            ...mapActions(['httpRequest','alertNotification']),
 
             ...mapMutations(['setLoadingBtn']),
 
@@ -523,6 +523,12 @@
                             }
                         }).then((res)=>{
 
+                            this.alertNotification({
+                                param: {
+                                    html: res.data.msg
+                                }
+                            })
+
                             let index = this.dataTable.indexOf(item)
 
                             item.estado = !item.estado
@@ -541,6 +547,12 @@
                     url:'inventario/estado_categoria',
                     data:item
                 }).then((res)=>{
+
+                    this.alertNotification({
+                        param: {
+                            html: res.data.msg
+                        }
+                    })
 
                     let indexSelect = this.catgArticulos.indexOf(item)
                     let indexTable = this.dataTableCatg.indexOf(item)
@@ -608,6 +620,12 @@
 
                 }).then((res)=>{
 
+                    this.alertNotification({
+                        param: {
+                            html: res.data.msg
+                        }
+                    })
+
                     this.setLoadingBtn()
 
                     let data = {
@@ -647,6 +665,12 @@
                     url:'inventario/store_categoria',
                     data:item
                 }).then((res)=>{
+
+                    this.alertNotification({
+                        param: {
+                            html: res.data.msg
+                        }
+                    })
 
                     let data= {
                         id_categoria_inventario: res.data.idCategoria,

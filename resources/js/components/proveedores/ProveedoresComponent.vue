@@ -318,12 +318,13 @@
                             }
                         }).then(res => {
 
+                            this.alertNotification({
+                                param: {
+                                    html: res.data.msg
+                                }
+                            })
+
                             item.estado =  !item.estado
-                            /*if (this.editedIndex > -1) { // ACTUALIZA
-                                Object.assign(this.desserts[this.editedIndex],res.data.proveedor)
-                            } else { // GUARDA
-                                this.desserts.push(res.data.proveedor)
-                            }*/
 
                             this.closeModal()
 
@@ -353,6 +354,12 @@
                     url:'proveedor/store',
                     data : this.editedItem
                 }).then(res => {
+
+                    this.alertNotification({
+                        param: {
+                            html: res.data.msg
+                        }
+                    })
 
                     if (this.editedIndex > -1) { // ACTUALIZA
                         Object.assign(this.desserts[this.editedIndex],res.data.proveedor)
