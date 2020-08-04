@@ -21,13 +21,15 @@ class EnvioComprobante extends Mailable
     public $carpetaPersonal;
     public $nombreArchivo;
     public $usuario;
+    public $anulacion;
 
 
-    public function __construct($carpetaPersonal,$nombreArchivo,$usuario)
+    public function __construct($carpetaPersonal,$nombreArchivo,$usuario,$anulacion)
     {
         $this->carpetaPersonal = $carpetaPersonal;
         $this->nombreArchivo = $nombreArchivo;
         $this->usuario = $usuario;
+        $this->anulacion = $anulacion;
     }
 
     /**
@@ -41,8 +43,11 @@ class EnvioComprobante extends Mailable
         $xml = storage_path('app/public/xml/facturas/autorizado/'.$this->carpetaPersonal.'/'.$this->nombreArchivo.'.xml');
 
         $mail= $this->from("facturacion_electronica@pyganflor.com")
-            ->subject($this->usuario .', Comprobante electrónico N° '.$this->nombreArchivo)
-            ->view('comprobantes.factura.correo_comprobante');
+            ->subject($this->usuario . ($this->anulacion ? ' Anulación':''). ', comprobante electrónico N° '.$this->nombreArchivo)
+            ->view('comprobantes.factura.correo_comprobante')->with([
+                'usuario',$this->usuario,
+                'anulacion',$this->anulacion
+            ]);
 
         if(file_exists($xml))
             $mail->attach($xml,[

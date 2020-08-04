@@ -30,7 +30,14 @@ export default new Vuex.Store({
             timerProgressBar: true,
             position:'top',
             confirmButtonColor: '#a5dc86',
-        }
+        },
+        estados:[
+            {id: 1, nombre: 'Autorizado'},
+            {id: 0, nombre: 'Rechazado' },
+            {id: 2, nombre: 'No recibido'},
+            {id: 3, nombre: 'Anulado'},
+            {id: 4, nombre: 'No consultado'},
+        ],
     },
     mutations: {
         setDrawer (state) {

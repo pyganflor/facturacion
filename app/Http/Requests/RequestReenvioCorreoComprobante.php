@@ -26,7 +26,10 @@ class RequestReenvioCorreoComprobante extends FormRequest
         return [
             'id_factura' => 'required|exists:factura,id_factura',
             'correos' => ['nullable','string',function($attrbute,$value,$onFailure){
-                if(isset($value)){
+
+                if(!isset($value) || $value ==""){
+                    $onFailure('Debe ingresar al menos un correo, para poder envíar el mail');
+                }else{
                     $correos = explode(',',$value);
                     foreach($correos as $correo){
                         if(trim($correo)!=""){

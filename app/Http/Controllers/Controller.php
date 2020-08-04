@@ -12,8 +12,10 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Mail;
 use DOMDocument;
 use SimpleXMLElement;
+use App\Mail\EnvioComprobante;
 use Illuminate\Http\Request;
-use App\Http\Requests\RequestValidaIdFactura;
+use App\Http\Requests\RequestValidaIdComprobante;
+use stdClass;
 use SoapClient;
 
 class Controller extends BaseController
@@ -74,7 +76,6 @@ class Controller extends BaseController
 
     function enviarXml($data)
     {
-        ini_set('max_execution_time', 600);
         set_time_limit (600);
         exec('java -Dfile.encoding=UTF-8 -jar ' . env('PATH_ENVIADOR') . " "
             . $data['carpetaFirmardos'] . " "
@@ -88,6 +89,16 @@ class Controller extends BaseController
             . $data['claveAcceso'] . " ",
             $salida, $var);
 
+        dd('java -Dfile.encoding=UTF-8 -jar ' . env('PATH_ENVIADOR') . " "
+            . $data['carpetaFirmardos'] . " "
+            . $data['xml']. " "
+            . $data['carpetaEnviados'] . " "
+            . $data['carpetaRechazados'] . " "
+            . $data['carpetaAutorizados']  . " "
+            . $data['carpetaNoAutorizados'] . " "
+            . $data['wsdlRecepcion'] . " "
+            . $data['wsdlAutorizacion'] . " "
+            . $data['claveAcceso'],$salida);
         if ($var == 0)
             return $salida;
         if ($var != 0)
@@ -128,6 +139,7 @@ class Controller extends BaseController
         $correos = explode(',',$data['correos']);
         $correosValidos = [];
         $correosNoValidos=[];
+        $data['anulacion'] = isset($data['anulacion']) ? $data['anulacion'] : false;
 
         foreach ($correos as $correo) {
             if(trim($correo)!=""){
@@ -142,7 +154,7 @@ class Controller extends BaseController
 
         if(count($correosValidos)>0){
 
-            $message = (new EnvioComprobante($data['carpeta_personal'],$data['archivo'],$data['usuario']))->onQueue('emails');
+            $message = (new EnvioComprobante($data['carpeta_personal'],$data['archivo'],$data['usuario'],$data['anulacion']))->onQueue('emails');
 
             $msg='';
             $mail = Mail::to($correosValidos[0]);
@@ -192,7 +204,7 @@ class Controller extends BaseController
         return $msg;
     }
 
-    function consultarComprobante(RequestValidaIdFactura $request){
+    function consultarComprobante(RequestValidaIdComprobante $request){
 
         $usuario = Usuario::find($request->id_usuario);
         $wsdlAutorizacion = $usuario->perfil->entorno == 1 ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
@@ -219,7 +231,7 @@ class Controller extends BaseController
                 }else{
                     $success=true;
                     $causa="Comprobante autorizado por el SRI,<br /> 
-                                En fecha y hora: ".Carbon::parse($autorizacion->fechaAutorizacion)->format('d-m-Y H:i:s')."";
+                                En fecha y hora: ".Carbon::parse($autorizacion->fechaAutorizacion)->format('d-m-Y H:i:s')."<br />";
                 }
 
                 $msg .= $causa;

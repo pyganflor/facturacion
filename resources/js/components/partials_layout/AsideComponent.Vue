@@ -225,11 +225,11 @@
                 }
             ],
             menuUsuario:[
-                {
+                /*{
                     title: 'Documentos',
                     icon: 'mdi-file-pdf',
                     url:'documento'
-                },
+                },*/
                 {
                     title: 'Formularios',
                     icon: 'mdi-file-document',

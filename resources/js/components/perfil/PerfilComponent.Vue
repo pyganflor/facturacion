@@ -745,7 +745,7 @@
                 }).catch(error => {
 
                     let response = error.response;
-                    console.log(response,error);
+
 
                     this.errorRequest({
                         data : {

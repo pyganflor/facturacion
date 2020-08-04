@@ -3,6 +3,15 @@
         <v-overlay :value="overlay">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
         </v-overlay>
+        <v-alert
+                color="primary"
+                dark
+                icon="mdi-file-document"
+                border="left"
+                dense
+        >
+            En esta sección puede realizar las diferentes acciones con sus facturas
+        </v-alert>
         <v-data-table
                 :headers="headers"
                 :items="dataTable"
@@ -34,7 +43,7 @@
                                                 readonly
                                                 v-bind="attrs"
                                                 v-on="on"
-                                                @change="searchDataTable"
+
                                         ></v-text-field>
                                     </template>
                                     <v-date-picker
@@ -42,6 +51,8 @@
                                             v-model="dates"
                                             no-title
                                             @input="menu2 = false"
+                                            @change="searchDataTable"
+
                                     ></v-date-picker>
                                 </v-menu>
                             </v-col>
@@ -60,7 +71,7 @@
                                         v-model="idClienteSearch"
                                         clearable
                                         dense
-                                        @change="getDataComponent()"
+                                        @change="getDataComponent"
                                 >
                                 </v-select>
                             </v-col>
@@ -83,6 +94,7 @@
                                     md="2"
                                     sm="6">
                                 <v-select
+                                        style="padding-top: 2.4px"
                                         class="mt-5"
                                         :items="estados"
                                         label="Estados"
@@ -323,7 +335,7 @@
 
                                                         >
                                                             <v-text-field
-                                                                    class="pb-0"
+                                                                    class="py-0"
                                                                     style="margin-top: -2px"
                                                                     v-model="correos"
                                                                     :rules="requiredRule"
@@ -333,7 +345,7 @@
                                                         </v-col>
                                                         <v-col
                                                                 cols="12"
-                                                                class="pb-0"
+                                                                class="py-0"
                                                                 sm="6"
                                                         >
                                                             <v-row>
@@ -346,6 +358,7 @@
                                                                             class="pb-0"
                                                                             style="padding-top: 6px;"
                                                                             v-model="plazo"
+                                                                            :rules="requiredRule"
                                                                             label="Tiempo pago plazo"
                                                                     ></v-text-field>
                                                                 </v-col>
@@ -359,6 +372,7 @@
                                                                             :items=undTiempo
                                                                             label="Und. tiempo"
                                                                             v-model="undTiempoPlazo"
+                                                                            :rules="requiredRule"
                                                                             dense
                                                                     >
                                                                     </v-select>
@@ -367,37 +381,7 @@
                                                         </v-col>
                                                     </v-row>
                                                 </v-col>
-                                                <v-col cols="12">
-                                                    <v-alert
-                                                            color="primary"
-                                                            border="left"
-                                                            elevation="2"
-                                                            colored-border
-                                                            icon="mdi-package-variant-closed"
-                                                            dense
-                                                    >
-                                                        Productos de venta
-                                                        <div class="float-right">
-                                                            <v-btn
-                                                                    fab
-                                                                    color="secondary"
-                                                                    title="Agregar artículo a la factura"
-                                                                    @click="addArticulo"
-                                                                    x-small
-                                                            >
-                                                                <v-icon>mdi-plus</v-icon>
-                                                            </v-btn>
-                                                            <v-btn
-                                                                fab
-                                                                color="primary"
-                                                                title="Crear nuevo producto"
-                                                                x-small
-                                                            >
-                                                                <v-icon>mdi-package-up</v-icon>
-                                                            </v-btn>
-                                                        </div>
-                                                    </v-alert>
-                                                </v-col>
+                                                addArticulo
                                                 <v-col>
                                                     <v-simple-table
                                                             dense
@@ -577,10 +561,13 @@
                 Sin registros
             </template>
             <template v-slot:item.total="{ item }">
-                ${{parseFloat(item.total).toFixed(2)}}
+                <b>${{parseFloat(item.total).toFixed(2)}}</b>
             </template>
-            <template v-slot:item.entorno="{ item }">
+            <!--<template v-slot:item.entorno="{ item }">
                 {{item.entorno === 1 ? 'Pruebas' : 'Producción'}}
+            </template>-->
+            <template v-slot:item.estado="{ item }">
+                {{estados.find(e => e.id === item.estado).nombre}}
             </template>
             <template v-slot:item.causa="{ item }">
                 <v-tooltip top>
@@ -641,38 +628,47 @@
                                 </v-btn>
                             </v-list-item-title>
                         </v-list-item>
-                        <v-list-item class="list-actions" v-if="item.estado === 1">
+                        <v-list-item
+                                class="list-actions"
+                                v-if="item.estado === 1"
+                        >
                             <v-list-item-title >
-                                <v-btn text small @click="reenviarCorreo(item.id_factura)">
+                                <v-btn text small @click="reenviarCorreo(item)">
                                     <v-icon color="success">mdi-email-outline</v-icon> Enviar correo
                                 </v-btn>
                             </v-list-item-title>
                         </v-list-item>
-                        <v-list-item v-if="item.estado!==1 && item.estado!==3 && item.estado!==4" class="list-actions">
+                        <v-list-item
+                                v-if="item.estado!==1 && item.estado!==3 && item.estado!==4"
+                                class="list-actions"
+                        >
                             <v-list-item-title>
                                 <v-btn text small @click="editarFactura(item.id_factura)">
                                     <v-icon color="warning">mdi-pencil</v-icon> Editar
                                 </v-btn>
                             </v-list-item-title>
                         </v-list-item>
-                        <v-list-item v-if="(item.estado===0 || item.estado===2) && item.estado!==4" class="list-actions">
+                        <!--<v-list-item
+                                v-if="(item.estado===0 || item.estado===2) && item.estado!==4"
+                                class="list-actions"
+                        >
                             <v-list-item-title>
                                 <v-btn text small >
                                     <v-icon color="success">mdi-auto-upload</v-icon> Reenviar al sri
                                 </v-btn>
                             </v-list-item-title>
-                        </v-list-item>
-                        <v-list-item v-if="item.estado===1" class="list-actions">
-                            <v-list-item-title>
-                                <v-btn text small @click="anularFactura(item.id_factura)">
-                                    <v-icon color="red">mdi-cancel</v-icon> Anular factura
-                                </v-btn>
-                            </v-list-item-title>
-                        </v-list-item>
+                        </v-list-item>-->
                         <v-list-item class="list-actions">
                             <v-list-item-title>
                                 <v-btn text small @click="consultarFactura(item)">
                                     <v-icon color="success">mdi-comment-question-outline</v-icon> Consultar factura
+                                </v-btn>
+                            </v-list-item-title>
+                        </v-list-item>
+                        <v-list-item v-if="item.estado===1" class="list-actions">
+                            <v-list-item-title>
+                                <v-btn text small @click="anularFactura(item)">
+                                    <v-icon color="red">mdi-cancel</v-icon> Anular factura
                                 </v-btn>
                             </v-list-item-title>
                         </v-list-item>
@@ -684,7 +680,6 @@
 </template>
 
 <script>
-
     import {mapActions,mapMutations,mapState} from 'vuex'
 
     export default {
@@ -736,8 +731,8 @@
             search:'',
             idSustentoTributario:1,
             idTipoPago:'',
-            undTiempoPlazo:0,
-            plazo:0,
+            undTiempoPlazo:'Dias',
+            plazo:'0',
             iva0:0,
             iva12:0,
             iva14:0,
@@ -763,18 +758,11 @@
                 { text: 'Fecha autorización', value: 'fecha_aut'},
                 { text: 'Cliente', value: 'cliente' },
                 { text: 'Total', value: 'total', align: 'center'  },
-                { text: 'Entorno', value: 'entorno', align: 'center'  },
+                { text: 'Estado', value: 'estado', align: 'center'  },
                 { text: 'Mensajes', value: 'causa' },
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
             dataTable: [],
-            estados:[
-                {id: 1, nombre: 'Autorizados'},
-                {id: 0, nombre: 'Rechazados' },
-                {id: 2, nombre: 'No recibido'},
-                {id: 3, nombre: 'Anulado'},
-                {id: 4, nombre: 'No consultado'},
-            ],
             estado:1,
             editedIndex: -1,
             articulos:[],
@@ -787,7 +775,7 @@
                     id_categoria:'',
                     id_articulo:'',
                     cantidad:1,
-                    descuento:0,
+                    descuento:'0',
                     monto:'',
                     total:0
                 }
@@ -802,7 +790,7 @@
                 return this.dates.join(' ~ ')
             },
 
-            ...mapState(['loadingBtn','paramsAlertQuestion']),
+            ...mapState(['loadingBtn','paramsAlertQuestion','estados']),
         },
 
         methods: {
@@ -829,6 +817,7 @@
                     url: 'factura/list',
                     data: {
                         estado : this.estado,
+                        fechas: this.dateRangeText,
                         id_cliente : this.idClienteSearch
                     }
                 }).then((res) => {
@@ -857,7 +846,7 @@
                     id_articulo:'',
                     cantidad:1,
                     monto:'',
-                    descuento:0,
+                    descuento:'0',
                     total:0
                 })
             },
@@ -1068,26 +1057,26 @@
                                 if (this.estado === res.data.factura.estado)
                                     this.dataTable.unshift(res.data.factura);
 
-                                this.puntoEmision = ''
-                                this.facturero = ''
-                                this.fechaDocumento = ''
-                                this.fechaVencimiento = ''
-                                this.idSustentoTributario = ''
+                                this.puntoEmision = this.punto_emision.length===1 ? this.punto_emision[0].numero : ''
+                                this.facturero = this.factureros.length===1 ? this.factureros[0].numero : ''
+                                this.fechaDocumento = new Date().toISOString().substr(0, 10)
+                                this.fechaVencimiento = new Date().toISOString().substr(0, 10)
+                                this.idSustentoTributario = 2
                                 this.comentario = ''
                                 this.idCliente = ''
-                                this.idFormaPago = ''
+                                this.idFormaPago = 1
                                 this.idTipoPago = ''
                                 this.correos = ''
                                 this.subTotal = ''
                                 this.descuento = ''
                                 this.total = ''
-                                this.plazo = ''
-                                this.undTiempoPlazo = ''
+                                this.plazo = '0'
+                                this.undTiempoPlazo = 'Dias'
                                 Object.assign(this.articulosFactura, {
                                     id_categoria: '',
                                     id_articulo: '',
                                     cantidad: 1,
-                                    descuento: 0,
+                                    descuento: '0',
                                     monto: '',
                                     total: 0,
                                     articulos: []
@@ -1100,6 +1089,7 @@
                             this.editar=false
                             this.secuencialEdit=''
                             this.idFactura=''
+
                         }).catch((err) => {
                             this.overlay = false
                             this.dialog = true
@@ -1108,10 +1098,10 @@
                 });
             },
 
-            anularFactura(idFactura){
+            anularFactura(item){
 
                 Vue.swal({
-                    text: "Esta seguro de anular esta factura?",
+                    text: "Esta seguro de anular la factura "+item.secuencial+"?",
                     ...this.paramsAlertQuestion,
                     timerProgressBar:false,
                     icon:'question'
@@ -1121,27 +1111,21 @@
                             method: 'post',
                             url: 'factura/anular',
                             data: {
-                                id_factura : idFactura
+                                id_factura : item.id_factura
                             }
                         }).then((res) => {
-
-                            this.alertNotification({
-                                param: {
-                                    html: res.data.msg
-                                }
-                            })
-
-                            let obj = this.dataTable.find(e => e.id_factura === idFactura)
-                            let index = this.dataTable.indexOf(obj)
-                            this.dataTable.splice(index,1)
 
                             Vue.swal({
                                 title: 'Recordatorio',
                                 icon: 'info',
                                 timerProgressBar:false,
-                                html: res.data.msg+', recuerde que debe ingresar al portal del SRI <a target="_blank" href="https://srienlinea.sri.gob.ec/sri-en-linea/inicio/NAT">https://srienlinea.sri.gob.ec</a> para realizar las acciones pertinentes y anular la factura ',
+                                html: res.data.msg+'<br/> Recuerde que debe ingresar al portal del SRI <a target="_blank" href="https://srienlinea.sri.gob.ec/sri-en-linea/inicio/NAT">https://srienlinea.sri.gob.ec</a> para realizar las acciones pertinentes y anular la factura ',
                                 ...this.paramsAlertQuestion
                             })
+
+                            let obj = this.dataTable.find(e => e.id_factura === item.id_factura)
+                            let index = this.dataTable.indexOf(obj)
+                            this.dataTable.splice(index,1)
 
                         })
 
@@ -1150,8 +1134,7 @@
 
             },
 
-            reenviarCorreo(idFactura){
-
+            reenviarCorreo(item){
                 Vue.swal({
                     ...this.paramsAlertQuestion,
                     timerProgressBar:false,
@@ -1159,7 +1142,8 @@
                     iconHtml: '<span class="mdi mdi-email-outline"></span>',
                     html: '<div>' +
                                 '<div style="margin-bottom: 15px">Para agregar un correo adicional ingreselo separado por coma (,)?</div>'+
-                                '<input type="text" style="border: 1px solid gainsboro;padding: 5px;width: 95%;margin: 0 auto;border-radius: 3px" id="correos" placeholder="Correos extra">' +
+                                '<input type="text" style="border: 1px solid gainsboro;padding: 5px;width: 95%;margin: 0 auto;border-radius: 3px"' +
+                                ' value="'+item.correos+'" id="correos" placeholder="Correos extra">' +
                                 '<div style="color:red" id="error"></div>'+
                           '</div>',
                     preConfirm:()=>{
@@ -1198,14 +1182,20 @@
                             method: 'post',
                             url: 'factura/reenviar_correo',
                             data: {
-                                id_factura : idFactura,
-                                correos : $("#correos").val()
+                                id_factura : item.id_factura,
+                                correos : $("#correos").val(),
+                                carpeta : item.carpeta,
+                                secuencial : item.secuencial,
+                                razon_social : item.razon_social
                             }
                         }).then((res) => {
 
                             this.alertNotification({
                                 param:{
                                     html: res.data.msg,
+                                    timer:20000,
+                                    grow:false,
+                                    toast:false
                                 }
                             })
 
@@ -1222,7 +1212,8 @@
                     method: 'get',
                     url: 'factura/editar',
                     data: {
-                        id_factura : idFactura
+                        id_comprobante : idFactura,
+                        'comprobante' : 'factura',
                     }
                 }).then((res) => {
                     this.secuencialEdit = res.data.secuencial
@@ -1263,7 +1254,8 @@
             },
 
             searchDataTable(){
-                console.log(this.dateRangeText)
+                if(this.dateRangeText.split('~').length===2)
+                    this.getDataComponent()
             },
 
             consultarFactura(item){
@@ -1300,8 +1292,17 @@
             }
 
         },
+
         created () {
             this.getDataComponent()
+
+            if(this.factureros.length===1)
+                this.facturero = this.factureros[0].numero
+
+            if(this.punto_emision.length===1)
+                this.puntoEmision = this.punto_emision[0].numero
+
+            this.undTiempoPlazo='Días'
 
             for(let categoria of this.inventario.categorias_activadas){
                 this.categorias.push({

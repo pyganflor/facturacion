@@ -65,32 +65,33 @@ class PdfFactura implements ShouldQueue
                 'total' => (String)$detalle->precioTotalSinImpuesto
             ];
 
-            foreach ($detalle->impuestos->impuesto as $impuesto) {
+        }
 
-                if((String)$impuesto->codigoPorcentaje==2){
+        foreach ($xml->infoFactura->totalConImpuestos as $totalConImpuesto) {
+            foreach ($totalConImpuesto->totalImpuesto as $ti) {
+                if((String)$ti->codigoPorcentaje==2){
 
-                    $subtotal12+=(float)$impuesto->baseImponible;
-                    $iva12+= (float)$impuesto->valor;
+                    $subtotal12+=(float)$ti->baseImponible;
+                    $iva12+= (float)$ti->valor;
 
-                }else if((String)$impuesto->codigoPorcentaje==3){
+                }else if((String)$ti->codigoPorcentaje==3){
 
-                    $subtotal14+=(float)$impuesto->baseImponible;
-                    $iva14 += (float)$impuesto->valor;
+                    $subtotal14+=(float)$ti->baseImponible;
+                    $iva14 += (float)$ti->valor;
 
-                }else if((String)$impuesto->codigoPorcentaje==0){
+                }else if((String)$ti->codigoPorcentaje==0){
 
-                    $subtotal0+=(float)$impuesto->baseImponible;
+                    $subtotal0+=(float)$ti->baseImponible;
 
-                }else if((String)$impuesto->codigoPorcentaje==7){
+                }else if((String)$ti->codigoPorcentaje==7){
 
-                    $excento+=(float)$impuesto->baseImponible;
+                    $excento+=(float)$ti->baseImponible;
 
-                }else if((String)$impuesto->codigoPorcentaje==6){
+                }else if((String)$ti->codigoPorcentaje==6){
 
-                    $noObjeto+=(float)$impuesto->baseImponible;
+                    $noObjeto+=(float)$ti->baseImponible;
                 }
             }
-
         }
 
         $pagos=[];
