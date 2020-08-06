@@ -666,11 +666,19 @@ class FacturaController extends Controller
         $pdf = storage_path('app/public/pdf/facturas/'.$factura->carpeta.'/'.'fact_'.$factura->secuencial.'.pdf');
 
         if(!file_exists($pdf)){
-            $wsdlAutorizacion = $factura->entorno == 1  ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
-            $clienteSoap = new SoapClient($wsdlAutorizacion);
-            $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $factura->clave_acceso]);
-            $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
-            PdfFactura::dispatchNow($factura->carpeta,$autorizacion,$factura->usuario->perfil->logo_empresa);
+            try{
+                $response =  $this->autorizacionComprobante($factura->clave_acceso, $factura->id_usuario);
+                $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
+                PdfFactura::dispatchNow($factura->carpeta,$autorizacion,$factura->usuario->perfil->logo_empresa);
+            }catch(\Exception $e){
+                return response()->json([
+                    'errors'=>[
+                        'mensaje'=> 'Se produjo un error al consultar la retenciones_clientes al sri, verifique su conexión a internet e intente nuevamente, 
+                                 si el problema persite, se debe a que el web service del sri está indispuesto en este momento, proceda a intentarlo en unos minutos '.
+                            ', "'.$e->getMessage().'"'
+                    ]
+                ],500);
+            }
         }
 
         return response()->file($pdf);

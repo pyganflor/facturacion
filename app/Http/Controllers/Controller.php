@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use DOMDocument;
 use SimpleXMLElement;
@@ -22,6 +23,11 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
+    /**
+     * @param $cadena
+     * @return bool|float|int
+     * @action Genera el dígito verificador con la fórmula del módulo 11
+     */
     function digitoVerificador($cadena)
     {
         $arrNum = str_split($cadena);
@@ -56,6 +62,11 @@ class Controller extends BaseController
         }
     }
 
+    /**
+     * @param $data
+     * @return bool
+     * @action Firma un documento XML con la firma digital
+     */
     function firmarXml($data)
     {
         exec("java -Dfile.encoding=UTF-8 -jar " . env('PATH_FIRMADOR') . " "
@@ -89,16 +100,6 @@ class Controller extends BaseController
             . $data['claveAcceso'] . " ",
             $salida, $var);
 
-        dd('java -Dfile.encoding=UTF-8 -jar ' . env('PATH_ENVIADOR') . " "
-            . $data['carpetaFirmardos'] . " "
-            . $data['xml']. " "
-            . $data['carpetaEnviados'] . " "
-            . $data['carpetaRechazados'] . " "
-            . $data['carpetaAutorizados']  . " "
-            . $data['carpetaNoAutorizados'] . " "
-            . $data['wsdlRecepcion'] . " "
-            . $data['wsdlAutorizacion'] . " "
-            . $data['claveAcceso'],$salida);
         if ($var == 0)
             return $salida;
         if ($var != 0)
@@ -131,9 +132,13 @@ class Controller extends BaseController
             return $mensaje[$indice];
         }
 
-
     }
 
+    /**
+     * @param $data
+     * @return string
+     * @action acciona el queue que envia el correo al cliente con los comprobantes electrónicos
+     */
     function envioCorreo($data){
 
         $correos = explode(',',$data['correos']);
@@ -184,7 +189,14 @@ class Controller extends BaseController
 
     }
 
-    function comprobanteDevuelta($tagComprobante,$pathRechazados,$secuencial){
+    /**
+     * @param $tagComprobante
+     * @param $pathRechazados
+     * @param $secuencial
+     * @action Acción que se ejecuta cuando el sri devuelve por x motivo el xml y no lo aprueba
+     * @return string
+     */
+    function comprobanteDevuelta($tagComprobante, $pathRechazados, $secuencial){
 
         $xmlDevuelta = new DOMDocument(1.0, 'UTF-8');
         $xmlDevuelta->load($pathRechazados.'fact_'.$secuencial.'.xml');
@@ -206,8 +218,6 @@ class Controller extends BaseController
 
     function consultarComprobante(RequestValidaIdComprobante $request){
 
-        $usuario = Usuario::find($request->id_usuario);
-        $wsdlAutorizacion = $usuario->perfil->entorno == 1 ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
         $msg='';
         $estado = 1;
         $success=false;
@@ -220,8 +230,8 @@ class Controller extends BaseController
                     break;
             }
 
-            $clienteSoap = new SoapClient($wsdlAutorizacion);
-            $response = $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $request->clave_acceso]);
+            $response = $this->autorizacionComprobante($request->clave_acceso,$request->id_usuario);
+
             if($response->RespuestaAutorizacionComprobante->numeroComprobantes>0){
                 $autorizacion = $response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion;
 
@@ -266,5 +276,19 @@ class Controller extends BaseController
             'estado' => $estado,
             'autorizacion' => $autorizacion
         ];
+    }
+
+    /**
+     * @param $claveAcceso
+     * @param null $idUsuario
+     * @return mixed
+     * @action Verifica una clave de acceso en el ws del SRI
+     */
+    function autorizacionComprobante($claveAcceso, $idUsuario=null){
+        $usuario = isset($idUsuario) ? Usuario::find($idUsuario) : Auth::user();
+        $wsdlAutorizacion ='https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline?wsdl';
+        //$wsdlAutorizacion = $usuario->perfil->entorno == 1 ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
+        $clienteSoap = new SoapClient($wsdlAutorizacion);
+        return $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $claveAcceso]);
     }
 }

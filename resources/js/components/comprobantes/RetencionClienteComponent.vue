@@ -135,16 +135,6 @@
                                                 <v-icon>mdi-percent</v-icon> Registrar retención de cliente
                                             </v-toolbar-title>
                                             <v-spacer></v-spacer>
-                                            <v-toolbar-items class="pb-4" >
-                                                <v-btn
-                                                        dark
-                                                        text
-                                                        @click="storeRetencionCliente"
-                                                >
-                                                    <v-icon>mdi-content-save</v-icon>
-                                                    <span class="d-none d-md-block">Guardar</span>
-                                                </v-btn>
-                                            </v-toolbar-items>
                                         </v-toolbar>
                                         <v-container
                                                 fluid
@@ -157,189 +147,28 @@
                                                     :centered=true
                                                     :grow=true
                                             >
-                                                <v-tab
-                                                        href="#tab-1"
-                                                >
+                                                <v-tab href="#tab-1">
                                                     <v-icon >mdi-pencil</v-icon>
                                                     Manual
                                                 </v-tab>
-
-                                                <v-tab
-                                                        href="#tab-2"
-                                                >
-                                                    <v-icon >mdi-file-plus</v-icon>
-                                                    Automático
+                                                <v-tab href="#tab-2">
+                                                    <v-icon >mdi-package-up</v-icon>
+                                                     Asistente
                                                 </v-tab>
-
-                                                <v-tab-item
-                                                        value="tab-1"
-
-                                                >
+                                                <v-tab-item value="tab-1">
+                                                    <form-retencion-cliente
+                                                        :facturas=facturas
+                                                        :clientes=clientes
+                                                        :conceptos=conceptos
+                                                    />
+                                                </v-tab-item>
+                                                <v-tab-item value="tab-2">
                                                     <v-card
                                                             flat
                                                             tile
-                                                            color="grey lighten-4"
+                                                           color="grey lighten-4"
                                                     >
                                                         <v-container fluid>
-                                                            <v-row>
-                                                                <v-col
-                                                                    cols="12"
-                                                                    md="6"
-                                                                >
-                                                                    <v-alert
-                                                                            color="primary"
-                                                                            border="left"
-                                                                            elevation="2"
-                                                                            colored-border
-                                                                            icon="mdi-file-document"
-                                                                            dense
-                                                                    >
-                                                                        Datos de la retención
-                                                                    </v-alert>
-                                                                    <v-col cols="12" class="py-0" >
-                                                                        <v-text-field
-                                                                                v-model="clave_acceso"
-                                                                                label="Clave de acceso"
-                                                                                append-icon="mdi-numeric"
-                                                                                :rules="requiredRule"
-                                                                        ></v-text-field>
-                                                                    </v-col>
-                                                                    <v-col cols="12" class="py-0" >
-                                                                        <v-text-field
-                                                                                v-model="n_autorizacion"
-                                                                                label="Número de autorización"
-                                                                                append-icon="mdi-numeric"
-                                                                                :rules="requiredRule"
-                                                                        ></v-text-field>
-                                                                    </v-col>
-                                                                    <v-col cols="12" class="py-0">
-                                                                        <v-row>
-                                                                            <v-col
-                                                                                    class="py-0"
-                                                                                    cols="12"
-                                                                                    sm="6"
-                                                                            >
-                                                                                <v-menu>
-                                                                                    <template v-slot:activator="{ on, attrs }">
-                                                                                        <v-text-field
-                                                                                                v-model="fecha_doc"
-                                                                                                label="Fecha del documento"
-                                                                                                persistent-hint
-                                                                                                readonly
-                                                                                                append-icon="mdi-calendar"
-                                                                                                readonly
-                                                                                                v-bind="attrs"
-                                                                                                v-on="on"
-
-                                                                                        ></v-text-field>
-                                                                                    </template>
-                                                                                    <v-date-picker
-                                                                                            v-model="dates"
-                                                                                            no-title
-                                                                                            @input="menu2 = false"
-                                                                                    ></v-date-picker>
-                                                                                </v-menu>
-                                                                            </v-col>
-                                                                            <v-col
-                                                                                    class="py-0"
-                                                                                    cols="12"
-                                                                                    sm="6"
-                                                                            >
-                                                                                <v-menu>
-                                                                                    <template v-slot:activator="{ on, attrs }">
-                                                                                        <v-text-field
-                                                                                                v-model="fecha_cont"
-                                                                                                label="Fecha de contabilidad"
-                                                                                                persistent-hint
-                                                                                                readonly
-                                                                                                append-icon="mdi-calendar"
-                                                                                                readonly
-                                                                                                v-bind="attrs"
-                                                                                                v-on="on"
-
-                                                                                        ></v-text-field>
-                                                                                    </template>
-                                                                                    <v-date-picker
-                                                                                            v-model="dates"
-                                                                                            no-title
-                                                                                            @input="menu2 = false"
-                                                                                    ></v-date-picker>
-                                                                                </v-menu>
-                                                                            </v-col>
-                                                                        </v-row>
-                                                                    </v-col>
-                                                                </v-col>
-                                                                <v-col
-                                                                        cols="12"
-                                                                        md="6"
-                                                                >
-                                                                    <v-alert
-                                                                            color="primary"
-                                                                            border="left"
-                                                                            elevation="2"
-                                                                            colored-border
-                                                                            icon="mdi-account-convert"
-                                                                            dense
-                                                                    >
-                                                                        Datos del cliente
-                                                                    </v-alert>
-                                                                    <v-col cols="12" class="py-0" >
-                                                                        <v-row>
-                                                                            <v-col cols="12" class="py-0">
-                                                                                <v-autocomplete
-                                                                                        class="mt-5"
-                                                                                        :items="clientes"
-                                                                                        label="Cliente"
-                                                                                        item-text="nombre"
-                                                                                        item-value="id_cliente"
-                                                                                        :rules="requiredRule"
-                                                                                        v-model="idCliente"
-                                                                                        dense
-                                                                                >
-                                                                                    <template slot='selection' slot-scope='{ item }'>
-                                                                                        {{ item.identificacion }} - {{ item.nombre }}
-                                                                                    </template>
-                                                                                    <template slot='item' slot-scope='{ item }'>
-                                                                                        {{ item.identificacion }} - {{ item.nombre }}
-                                                                                    </template>
-                                                                                    <template v-slot:no-data>
-                                                                                        <div class="ml-2">
-                                                                                            <v-icon>mdi-alert-circle-outline</v-icon> Sin clientes
-                                                                                        </div>
-                                                                                    </template>
-                                                                                </v-autocomplete>
-                                                                            </v-col>
-                                                                            <v-col cols="12" class="py-0">
-                                                                                <v-autocomplete
-                                                                                        class="mt-5"
-                                                                                        :items="facturas"
-                                                                                        label="Factura"
-                                                                                        item-text="secuencial"
-                                                                                        item-value="id_factura"
-                                                                                        :rules="requiredRule"
-                                                                                        v-model="idFactura"
-                                                                                        dense
-                                                                                >
-                                                                                    <template v-slot:no-data>
-                                                                                        <div class="ml-2">
-                                                                                            <v-icon>mdi-alert-circle-outline</v-icon> Sin facturas
-                                                                                        </div>
-                                                                                    </template>
-                                                                                </v-autocomplete>
-                                                                            </v-col>
-                                                                        </v-row>
-                                                                    </v-col>
-                                                                    <v-col cols="12" class="py-0" >
-                                                                        <v-text-field
-                                                                                v-model="comentario"
-                                                                                label="Comentario"
-                                                                                counter="200"
-                                                                                :rules=comentarioRule
-                                                                                append-icon="mdi-comment-text-outline"
-                                                                        ></v-text-field>
-                                                                    </v-col>
-                                                                </v-col>
-                                                            </v-row>
                                                             <v-row>
                                                                 <v-col cols="12">
                                                                     <v-alert
@@ -347,36 +176,50 @@
                                                                             border="left"
                                                                             elevation="2"
                                                                             colored-border
-                                                                            icon="mdi-package-variant-closed"
+                                                                            icon="mdi-file-check"
                                                                             dense
                                                                     >
-                                                                        <span style="position: relative;top:4px">Items retenidos</span>
-                                                                        <div class="float-right">
-                                                                            <v-btn
-                                                                                    fab
-                                                                                    color="secondary"
-                                                                                    title="Agregar retención"
-                                                                                    @click="addItemRetencion"
-                                                                                    x-small
-                                                                            >
-                                                                                <v-icon>mdi-plus</v-icon>
-                                                                            </v-btn>
-                                                                        </div>
+                                                                        Puede cargar el archivo .xml de la retención del cliente o cargar el archivo .txt descargado desde la web del SRI
                                                                     </v-alert>
+                                                                </v-col>
+                                                                <v-col cols="12" class="py-0">
+                                                                    <v-row>
+                                                                        <v-col
+                                                                                cols="12"
+                                                                                md="6"
+                                                                                class="py-0"
+                                                                        >
+                                                                            <v-file-input
+                                                                                    show-size
+                                                                                    counter
+                                                                                    label="Carga el archivo .xml"
+                                                                                    accept=".xml"
+                                                                                    append-icon="mdi-send"
+                                                                                    :rules="xmlRules"
+                                                                                    @change="readXml"
+                                                                                    @click:append="procesarXml"
+                                                                            ></v-file-input>
+                                                                        </v-col>
+                                                                        <v-col
+                                                                                cols="12"
+                                                                                md="6"
+                                                                                class="py-0"
+                                                                        >
+                                                                            <v-file-input
+                                                                                    show-size
+                                                                                    counter
+                                                                                    label="Carga el archivo .txt"
+                                                                                    accept=".txt"
+                                                                                    append-icon="mdi-send"
+                                                                                    :rules="txtRules"
+                                                                                    @change="readTxt"
+                                                                                    @click:append="procesarTxt"
+                                                                            ></v-file-input>
+                                                                        </v-col>
+                                                                    </v-row>
                                                                 </v-col>
                                                             </v-row>
                                                         </v-container>
-                                                    </v-card>
-                                                </v-tab-item>
-                                                <v-tab-item
-                                                        value="tab-2"
-                                                >
-                                                    <v-card
-                                                            flat
-                                                            tile
-                                                           color="grey lighten-4"
-                                                    >
-                                                        <v-card-text>hola2</v-card-text>
                                                     </v-card>
                                                 </v-tab-item>
                                             </v-tabs>
@@ -477,12 +320,16 @@
         props: {
             clientes: {
                 type: Array,
-                default: []
+                required:true
             },
             facturas: {
                 type: Array,
-                default: []
+                required:true
             },
+            conceptos:{
+                type: Array,
+                required:true
+            }
         },
         name: "RetencionCliente",
         data: ()=> ({
@@ -502,37 +349,32 @@
                 { text: 'Actions', value: 'actions', sortable: false },
             ],
             dataTable:[],
-            itemsRetencion:[],
-            requiredRule:[
-                v => !!v || 'Campo obligatorio'
-            ],
-            comentarioRule:[
-                v=> v.length<=200 || "Sólo hasta 200 caracteres"
-            ],
             estados:[
                 {id:0, nombre: 'Anulada'},
                 {id:1, nombre: 'Recibida'}
             ],
-            clave_acceso:null,
-            fecha_doc: new Date().toISOString().substr(0, 10),
-            fecha_cont: new Date().toISOString().substr(0, 10),
+            txtRules:[
+                v => !v || (!!v && v.name.split(".")[v.name.split(".").length-1]== "txt") || 'Debe cargar un archivo .txt'
+            ],
+            xmlRules:[
+                v => !v || (!!v && v.name.split(".")[v.name.split(".").length-1]== "xml") || 'Debe cargar un archivo .xml'
+            ],
             overlay:false,
             tab:null,
+            txt:null,
+            xml:null,
             idCliente:null,
             loadingTable:false,
             search:'',
             dialog:false,
-            idFactura:null,
-            n_autorizacion:null,
             idClienteSearch: '',
-            estado: 1,
-            comentario:null,
+            estado: 1
         }),
         watch:{
-            dates: function (val) {
+            dates : function () {
                 if(this.dateRangeText.split('~').length===2)
                     this.getDataComponent()
-            }
+            },
         },
         computed: {
             dateRangeText () {
@@ -541,7 +383,7 @@
             ...mapState(['loadingBtn','paramsAlertQuestion']),
         },
         methods:{
-            ...mapActions(['httpRequest','alertNotification']),
+            ...mapActions(['httpRequest','alertNotification','errorRequest']),
 
             ...mapMutations(['setLoadingBtn']),
 
@@ -557,32 +399,82 @@
                         id_cliente : this.idClienteSearch
                     }
                 }).then((res) => {
-                    console.log(res.data)
                     this.dataTable=res.data
                     this.loadingTable = false
                 })
             },
 
-            addItemRetencion(){
-                this.itemsRetencion.push({
-                    id_categoria:'',
-                    id_articulo:'',
-                    cantidad:1,
-                    monto:'',
-                    descuento:'0',
-                    total:0
-                })
+            readTxt(event){
+                this.txt = typeof event != "undefined" ? event : null
+            },
+
+            readXml(event){
+                this.xml = typeof event != "undefined" ? event : null
+            },
+
+            procesarTxt(){
+
+                let formTxt = new FormData();
+                formTxt.append('txt',this.txt)
+
+                axios.post('/retencion_cliente/procesar_txt',
+                    formTxt
+                ).then(response => {
+
+                    this.alertNotification({
+                        param:{
+                            html: response.data.msg
+                        }
+                    });
+
+                }).catch(error => {
+
+                    let response = error.response;
+                    this.errorRequest({
+                        data : {
+                            datos: response.data.errors,
+                            status : response.status
+                        }
+                    });
+
+                });
+            },
+
+            procesarXml(){
+                let formXml = new FormData();
+                formXml.append('xml',this.xml)
+
+                axios.post('/retencion_cliente/procesar_xml',
+                    formXml
+                ).then(response => {
+
+                    this.alertNotification({
+                        param:{
+                            html: response.data.msg
+                        }
+                    });
+
+                }).catch(error => {
+
+                    let response = error.response;
+                    this.errorRequest({
+                        data : {
+                            datos: response.data.errors,
+                            status : response.status
+                        }
+                    });
+
+                });
             },
 
 
-            storeRetencionCliente(){
+
+            storeRetencionAsistido(){
 
             }
         },
         created(){
-
             this.getDataComponent()
-
         }
     }
 </script>

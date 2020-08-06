@@ -615,7 +615,6 @@
                 }else{
                     this.facturero.push({numero:''})
                 }
-                console.log(tipo,this.ptoEmision,this.facturero)
             },
 
             removeInput(item){

@@ -40,3 +40,4 @@ Vue.component('gestion-retencion-cliente', require('./components/comprobantes/Re
 //COMPONENTES TEMPLATE BASE
 Vue.component('base-material-card', require('./components/base/MaterialCard.vue').default);
 Vue.component('base-breadcumbs', require('./components/base/BreadCumbsComponent.vue').default);
+Vue.component('form-retencion-cliente', require('./components/base/FormRetencionCliente.vue').default);

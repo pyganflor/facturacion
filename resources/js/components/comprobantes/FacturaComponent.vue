@@ -381,7 +381,29 @@
                                                         </v-col>
                                                     </v-row>
                                                 </v-col>
-                                                addArticulo
+                                                <v-col cols="12">
+                                                    <v-alert
+                                                            color="primary"
+                                                            border="left"
+                                                            elevation="2"
+                                                            colored-border
+                                                            icon="mdi-package-variant-closed"
+                                                            dense
+                                                    >
+                                                        <span style="position: relative;top:4px">Árticulos</span>
+                                                        <div class="float-right">
+                                                            <v-btn
+                                                                    fab
+                                                                    color="secondary"
+                                                                    title="Agregar retención"
+                                                                    @click="addArticulo"
+                                                                    x-small
+                                                            >
+                                                                <v-icon>mdi-plus</v-icon>
+                                                            </v-btn>
+                                                        </div>
+                                                    </v-alert>
+                                                </v-col>
                                                 <v-col>
                                                     <v-simple-table
                                                             dense
