@@ -19,7 +19,7 @@
                     class="elevation-1"
                     :items-per-page="10"
                     dense
-                    :loading=loadTable
+                    :loading=loadingTable
                     loading-text="Cargando datos"
                     :search="search"
             >
@@ -200,6 +200,9 @@
 </template>
 
 <script>
+
+    import {mapState,mapMutations,mapActions} from 'vuex'
+
     export default {
         props:{
             usuarios:{
@@ -226,7 +229,6 @@
                 { text: 'Acciones', value:'actions', sotable:false }
             ],
             dialog: false,
-            loadTable:false,
             correo :'',
             show: false,
             chip:true,
@@ -259,6 +261,7 @@
             formTitle () {
                 return this.editedIndex === -1 ? 'Nuevo usuario' : 'Editar usuario'
             },
+            ...mapState(['loadingTable','paramsAlertQuestion'])
         },
         watch: {
             dialog (val) {
@@ -267,24 +270,22 @@
         },
         methods:{
 
+            ...mapMutations(['setLoadingTable','setLoadingBtn']),
+
+            ...mapActions(['alertNotification']),
+
             editItem (item) {
                 this.show= false
                 this.editedIndex = this.desserts.indexOf(item)
                 this.editedItem = Object.assign({}, item)
                 this.contrasena=''
                 this.dialog = true
-                console.log(item);
             },
 
             estadoItem (item) {
                 Vue.swal({
                     text: "¿Esta seguro de "+(item.estado ? 'desactivar': 'activar')+" al usuario "+item.nombre.toUpperCase()+".?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#00b388',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar',
-                    cancelButtonText: 'Cancelar'
+                    ...this.paramsAlertQuestion
                 }).then((result) => {
                     if (result.value) {
                         axios.post('/usuario/estado',{
@@ -340,7 +341,7 @@
                     return;
 
                 this.$store.commit('setLoadingBtn')
-
+                this.setLoadingTable()
                 axios.post('/usuario/store',{
                     idUsuario : this.editedItem.id_usuario,
                     nombre: this.editedItem.nombre,
@@ -366,14 +367,13 @@
                     }
 
                     this.closeModal();
-
-                    this.$store.commit('setLoadingBtn')
-                    this.$store.dispatch({
-                        type: 'alertNotification',
+                    this.setLoadingBtn()
+                    this.alertNotification({
                         param:{
                             html: response.data.msg
                         }
                     });
+                    this.setLoadingTable()
 
                 }).catch(error => {
                     let response = error.response;
@@ -390,7 +390,6 @@
             }
         },
         mounted() {
-            console.log(this.usuarios);
             this.desserts = this.usuarios
         }
     }

@@ -11,6 +11,7 @@ export default new Vuex.Store({
         drawer: true,
         loadingBtn : false,
         loadingBtn2 : false,
+        loadingTable:false,
         paramsAlertQuestion:{
             icon: 'warning',
             showCancelButton: true,
@@ -24,7 +25,7 @@ export default new Vuex.Store({
             html:'',
             icon:'success',
             toast:true,
-            timer:5000,
+            timer:8000,
             grow:'row',
             confirmButtonText :'<span class="mdi mdi-close-circle-outline"></span> Cerrar',
             timerProgressBar: true,
@@ -40,6 +41,10 @@ export default new Vuex.Store({
         ],
     },
     mutations: {
+        setLoadingTable (state) {
+            state.loadingTable = !state.loadingTable
+        },
+
         setDrawer (state) {
             state.drawer = !state.drawer
         },
@@ -192,6 +197,9 @@ export default new Vuex.Store({
                             status : response.status,
                         }
                     });
+
+                    if(state.loadingTable)
+                        commit('setLoadingTable')
 
                 });
 

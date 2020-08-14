@@ -9,9 +9,11 @@ import Vuetify from 'vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import { VueMaskDirective } from 'v-mask'
 
 Vue.use(VueSweetalert2);
 Vue.use(Vuetify)
+Vue.directive('mask', VueMaskDirective)
 
 const app = new Vue({
     el: '#app',

@@ -5,3 +5,5 @@
     Route::post('retencion_cliente/procesar_xml','RetencionClienteController@procesarXml');
     Route::post('retencion_cliente/store_retencion_manual','RetencionClienteController@storeRetencionManual');
     Route::post('retencion_cliente/store_retencion_asistido','RetencionClienteController@storeRetencionAsistido');
+    Route::post('retencion_cliente/anular_retencion','RetencionClienteController@anularRetencion');
+    Route::post('retencion_cliente/remove_retencion','RetencionClienteController@removeRetencion');

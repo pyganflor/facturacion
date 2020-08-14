@@ -216,6 +216,10 @@ class Controller extends BaseController
         return $msg;
     }
 
+    /**
+     * @param RequestValidaIdComprobante $request
+     * @return array
+     */
     function consultarComprobante(RequestValidaIdComprobante $request){
 
         $msg='';
@@ -252,7 +256,7 @@ class Controller extends BaseController
                 ]);
 
             }else{
-                $msg.='El comprobante no fue recibido por el SRI, por favor intente reenviarlo nuevamente';
+                $msg.='El comprobante no ha sido recibido por el SRI, por favor intente generarlo nuevamente';
                 $estado=2;
                 $comprobante->update([
                     'estado'=> $estado,

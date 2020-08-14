@@ -764,7 +764,6 @@
             descuento:0,
             total:0,
             overlay:false,
-            loadingTable:false,
             editar :false,
             secuencialEdit :'',
             idFactura:'',
@@ -812,14 +811,14 @@
                 return this.dates.join(' ~ ')
             },
 
-            ...mapState(['loadingBtn','paramsAlertQuestion','estados']),
+            ...mapState(['loadingBtn','paramsAlertQuestion','estados','loadingTable']),
         },
 
         methods: {
 
             ...mapActions(['httpRequest','alertNotification']),
 
-            ...mapMutations(['setLoadingBtn']),
+            ...mapMutations(['setLoadingBtn','setLoadingTable']),
 
             copyClaveAcceso(id){
                 var codigoACopiar = document.getElementById('clave_acceso_'+id);
@@ -832,7 +831,7 @@
             },
 
             getDataComponent(){
-                this.loadingTable = true
+                this.setLoadingTable()
                 this.dataTable=[]
                 this.httpRequest({
                     method: 'get',
@@ -845,7 +844,7 @@
                 }).then((res) => {
 
                     this.dataTable=res.data
-                    this.loadingTable = false
+                    this.setLoadingTable()
                 })
 
             },

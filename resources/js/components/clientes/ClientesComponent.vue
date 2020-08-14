@@ -19,7 +19,7 @@
                     class="elevation-1"
                     :items-per-page="10"
                     dense
-                    :loading=loadTable
+                    :loading=loadingTable
                     loading-text="Cargando datos"
                     :search="search"
             >
@@ -227,7 +227,7 @@
 
 <script>
 
-    import {mapState} from 'vuex'
+    import {mapState,mapMutations} from 'vuex'
 
     export default {
         props:{
@@ -258,7 +258,6 @@
                 { text: 'Acciones', value:'actions', sotable:false }
             ],
             dialog: false,
-            loadTable:false,
             cm:false, //consumidor final
             search : '',
             textAlert: 'No se encontraron registros',
@@ -304,7 +303,7 @@
                 return this.editedIndex === -1 ? 'Nuevo cliente' : 'Editar cliente '+this.editedItem.nombre
             },
 
-            ...mapState(['paramsAlertQuestion'])
+            ...mapState(['paramsAlertQuestion','loadingTable'])
         },
         watch: {
             dialog (val) {
@@ -312,6 +311,8 @@
             },
         },
         methods:{
+
+            ...mapMutations(['setLoadingTable','setLoadingBtn']),
 
             consumidorFinal(idTipIdent){
                 if(idTipIdent===4){ // 4 es el ID del consumidor final en la tabla tipo_identificacion
@@ -383,7 +384,8 @@
                 if (!this.$refs.form.validate())
                     return;
 
-                this.$store.commit('setLoadingBtn')
+                this.setLoadingBtn()
+                this.setLoadingTable()
 
                 axios.post('/cliente/store',{
                     data : this.editedItem
@@ -397,8 +399,8 @@
                     }
 
                     this.closeModal();
-
-                    this.$store.commit('setLoadingBtn')
+                    this.setLoadingBtn()
+                    this.setLoadingTable()
                     this.$store.dispatch({
                         type: 'alertNotification',
                         param:{
@@ -422,7 +424,6 @@
         },
         mounted() {
             this.desserts = this.clientes
-            console.log(this.impuestos);
         }
     }
 </script>

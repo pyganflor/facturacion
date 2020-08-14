@@ -19,7 +19,7 @@
                     class="elevation-1"
                     :items-per-page="10"
                     dense
-                    :loading=loadTable
+                    :loading=loadingTable
                     loading-text="Cargando datos"
                     :search="search"
             >
@@ -228,7 +228,6 @@
                 { text: 'Acciones', value:'actions', sotable:false }
             ],
             dialog: false,
-            loadTable:false,
             search : '',
             textAlert: 'No se encontraron registros',
             editedIndex: -1,
@@ -274,7 +273,7 @@
             ]
         }),
         computed: {
-            ...mapState(['loadingBtn']),
+            ...mapState(['loadingBtn','loadingTable']),
 
             formTitle () {
                 return this.editedIndex === -1 ? 'Nuevo proveedor' : 'Editar proveedor '+this.editedItem.nombre_comercial
@@ -287,7 +286,7 @@
         },
         methods:{
 
-            ...mapMutations(['setLoadingBtn']),
+            ...mapMutations(['setLoadingBtn','setLoadingTable']),
 
             ...mapActions(['errorRequest','alertNotification','httpRequest']),
 
@@ -348,7 +347,7 @@
                     return;
 
                 this.setLoadingBtn()
-
+                this.setLoadingTable()
                 this.httpRequest({
                     method:'post',
                     url:'proveedor/store',
@@ -368,9 +367,8 @@
                     }
 
                     this.closeModal()
-
                     this.setLoadingBtn()
-
+                    this.setLoadingTable()
                 })
 
             }

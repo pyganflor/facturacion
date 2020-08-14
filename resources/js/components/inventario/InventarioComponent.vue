@@ -18,7 +18,7 @@
                 class="elevation-1"
                 :items-per-page="10"
                 dense
-                :loading=loadTable
+                :loading=loadingTable
                 loading-text="Cargando datos"
                 :search="search"
         >
@@ -78,7 +78,7 @@
                                                                 class="elevation-1"
                                                                 :items-per-page="10"
                                                                 dense
-                                                                :loading=loadTable
+                                                                :loading=loadingTable
                                                                 loading-text="Cargando datos"
                                                                 :search="searchCatg"
                                                         >
@@ -419,7 +419,7 @@
             ],
             dialog: false,
             dialogCatg:false,
-            loadTable:true,
+            loadingTable:true,
             um:['und','kg','l'],
             correo :'',
             search : '',
@@ -476,7 +476,7 @@
             formTitle () {
                 return this.editedIndex === -1 ? 'Nuevo árticulo' : 'Editar árticulo'
             },
-            ...mapState(['loadingBtn','paramsAlertQuestion']),
+            ...mapState(['loadingBtn','paramsAlertQuestion','loadingTable']),
         },
         watch: {
             dialog (val) {
@@ -488,7 +488,7 @@
 
             ...mapActions(['httpRequest','alertNotification']),
 
-            ...mapMutations(['setLoadingBtn']),
+            ...mapMutations(['setLoadingBtn','setLoadingTable']),
 
             editItem (item) {
                 this.show= false
@@ -600,6 +600,7 @@
                     }
                 }
 
+                this.setLoadingTable()
                 this.setLoadingBtn()
 
                 this.httpRequest({
@@ -653,7 +654,7 @@
 
                     }
                     this.closeModal()
-
+                    this.setLoadingTable()
                 })
 
             },
@@ -760,7 +761,7 @@
                 })
             }
 
-            this.loadTable=false
+            this.loadingTable=false
 
         }
     }

@@ -20,6 +20,8 @@ class DetalleRetencionCliente extends Model
         'valor_retenido',
         'cod_doc_sustento',
         'num_doc_sustento',
+        'base_imponible',
         'fecha_emi_doc_sustento'
     ];
+
 }
