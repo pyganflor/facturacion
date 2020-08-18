@@ -3,7 +3,7 @@
 import Vue from 'vue'
 
 // LOGIN
-Vue.component('login-component', require('./components/auth/loginComponent.vue').default);
+Vue.component('login-component', require('./components/auth/LoginComponent.vue').default);
 
 // LAYOUT
 Vue.component('nav-component', require('./components/partials_layout/NavComponent.vue').default);
