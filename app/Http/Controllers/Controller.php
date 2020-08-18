@@ -290,8 +290,8 @@ class Controller extends BaseController
      */
     function autorizacionComprobante($claveAcceso, $idUsuario=null){
         $usuario = isset($idUsuario) ? Usuario::find($idUsuario) : Auth::user();
-        $wsdlAutorizacion ='https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline?wsdl';
-        //$wsdlAutorizacion = $usuario->perfil->entorno == 1 ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
+        //$wsdlAutorizacion ='https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline?wsdl';
+        $wsdlAutorizacion = $usuario->perfil->entorno == 1 ? env('WSDL_PRUEBAS_AUTORIZACION') : env('WSDL_PRODUCCION_AUTORIZACION');
         $clienteSoap = new SoapClient($wsdlAutorizacion);
         return $clienteSoap->autorizacionComprobante(["claveAccesoComprobante" => $claveAcceso]);
     }
