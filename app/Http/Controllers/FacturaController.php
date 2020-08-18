@@ -48,8 +48,12 @@ class FacturaController extends Controller
     }
 
     public function list(Request $request){
-        return Factura::where('factura.estado',$request->estado)
-            ->join('cliente as c','factura.id_cliente','c.id_cliente')
+        $usuario = Auth::user();
+
+        return Factura::where([
+            ['factura.estado',$request->estado],
+            ['entorno',$usuario->perfil->entorno]
+        ])->join('cliente as c','factura.id_cliente','c.id_cliente')
             ->join('detalle_factura as df','factura.id_factura','df.id_factura')
             ->select(
                 'factura.id_factura',
@@ -436,7 +440,6 @@ class FacturaController extends Controller
                                     if($resultado[0] == 1){
 
                                         //CONSULTAR EL ESTADO DE LA FACTURA
-
                                         $req = new RequestValidaIdComprobante([
                                             'id_usuario'=> $factura->id_usuario,
                                             'comprobante'=>'factura',

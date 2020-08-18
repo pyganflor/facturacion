@@ -591,9 +591,11 @@
                                                                                 cols="12"
                                                                                 class="text-center"
                                                                                 v-if="dataTableRetencion.length>0"
-                                                                                @click="storeRetencionAsistido"
                                                                         >
-                                                                            <v-btn class="primary">
+                                                                            <v-btn
+                                                                                    class="primary"
+                                                                                    @click="storeRetencionAsistido"
+                                                                            >
                                                                                 <v-icon>mdi-content-save</v-icon> Registrar
                                                                             </v-btn>
                                                                         </v-col>
@@ -637,7 +639,7 @@
                             >
                                 <td>{{ detalle.concepto }}</td>
                                 <td>${{ detalle.base_imponile }}</td>
-                                <td>${{ detalle.porcentaje }}</td>
+                                <td>{{ detalle.porcentaje }}%</td>
                                 <td>${{ detalle.valor_retenido }}</td>
                             </tr>
                             </tbody>
@@ -792,6 +794,7 @@
             dateRangeText () {
                 return this.dates.join(' ~ ')
             },
+
             ...mapState(['loadingBtn','paramsAlertQuestion','loadingTable',])
         },
         methods:{
@@ -824,6 +827,43 @@
                 this.xml = typeof event != "undefined" ? event : null
             },
 
+            precesaDataFile(data){
+                this.dataTableRetencion=[]
+
+                for(let retencion of data){
+
+                    let t_iva=0
+                    let t_renta=0
+                    let total=0
+                    for(let detalle of retencion.retenciones){
+
+                        if(detalle.codigoTipoImpuesto === 2 || detalle.codigoTipoImpuesto === 4){ //IVA
+
+                            t_iva += parseFloat(detalle.valorRetenido)
+
+                        }else if(detalle.codigoTipoImpuesto === 1){ //RENTA
+
+                            t_renta += parseFloat(detalle.valorRetenido)
+
+                        }
+
+                    }
+
+                    total+= (t_iva+t_renta)
+
+                    this.dataTableRetencion.push({
+                        fecha: retencion.fechaEmision,
+                        numero: retencion.secuencial,
+                        cliente: retencion.razonSocial,
+                        factura:retencion.retenciones[0].numDocSustento,
+                        t_iva : t_iva,
+                        t_renta : t_renta,
+                        total: total
+                    })
+
+                }
+            },
+
             procesarTxt(){
 
                 let formTxt = new FormData();
@@ -836,7 +876,8 @@
 
                     let observacion = (response.data.x > 0 ||response.data.y > 0 || response.data.z > 0)
                     let retencionesConsultadas = response.data.retencionesConsultadas
-
+                    this.resultadoRetenciones = retencionesConsultadas.length > 0
+                    this.precesaDataFile(retencionesConsultadas)
                     this.alertNotification({
                         param:{
                             html: response.data.msg,
@@ -849,39 +890,6 @@
                         }
                     });
 
-                    this.resultadoRetenciones = retencionesConsultadas.length > 0
-                    this.dataTableRetencion=[]
-
-                    for(let retencion of retencionesConsultadas){
-
-                        let t_iva=0
-                        let t_renta=0
-                        let total=0
-                        for(let detalle of retencion.retenciones){
-                            console.log(detalle.valorRetenido)
-                           if(detalle.codigoTipoImpuesto === 2 || detalle.codigoTipoImpuesto === 4){ //IVA
-
-                               t_iva += parseFloat(detalle.valorRetenido)
-
-                           }else if(detalle.codigoTipoImpuesto === 1){ //RENTA
-                               t_renta += parseFloat(detalle.valorRetenido)
-                           }
-
-                        }
-
-                        total+= (t_iva+t_renta)
-
-                        this.dataTableRetencion.push({
-                            fecha: retencion.fechaEmision,
-                            numero: retencion.secuencial,
-                            cliente: retencion.razonSocial,
-                            factura:retencion.retenciones[0].numDocSustento,
-                            t_iva : t_iva,
-                            t_renta : t_renta,
-                            total: total
-                        })
-
-                    }
                 }).catch(error => {
                     let response = error.response;
                     this.errorRequest({
@@ -896,40 +904,51 @@
             },
 
             procesarXml(){
+                this.overlay=true
                 let formXml = new FormData();
                 formXml.append('xml',this.xml)
-
                 axios.post('/retencion_cliente/procesar_xml',
                     formXml
                 ).then(response => {
-
+                    let observacion = (response.data.x > 0 || response.data.y > 0)
+                    let retencionesConsultadas = response.data.retencionesConsultadas
+                    this.resultadoRetenciones = retencionesConsultadas.length > 0
+                    this.precesaDataFile(retencionesConsultadas)
+                    this.overlay=false
                     this.alertNotification({
                         param:{
-                            html: response.data.msg
+                            html: response.data.msg,
+                            timer: observacion ? 40000 : 5000,
+                            toast : !observacion,
+                            grow : observacion ? 'none' : 'row',
+                            icon : observacion ? 'warning' : 'success',
+                            confirmButtonColor: observacion ? '#87adbd' : '#a5dc86',
+                            title : observacion ? 'Alerta' : 'Éxito',
                         }
                     });
-
                 }).catch(error => {
-
+                    this.overlay=false
                     let response = error.response;
+
                     this.errorRequest({
                         data : {
                             datos: response.data.errors,
                             status : response.status
                         }
                     });
-
                 });
             },
 
             setDataTable (item) {
-                console.log(item)
+
                 let data = !Array.isArray(item) ? [item.retencionCliente] : item
                 this.dialog = false
 
                 for (let retencion of data) {
 
-                    if(retencion.estado === this.estado){
+                    let filterFecha = retencion.fecha_emision >= this.dates[0] && retencion.fecha_emision <= this.dates[1]
+
+                    if(retencion.estado === this.estado && filterFecha){
                         let totalIva = 0
                         let totalRenta = 0
                         let detalles =[]
@@ -1088,17 +1107,18 @@
             },
 
             removeRetencion(item){
+
                 Vue.swal({
                     text: "¿Esta seguro de quitar la retención "+item.numero+" de la lista?, no se registrará la retención en el sistema",
                     ...this.paramsAlertQuestion
                 }).then((result) => {
                     if (result.value) {
+                        this.overlay=true
                         this.httpRequest({
                             method:'post',
                             url:'retencion_cliente/remove_retencion',
                             data:item
                         }).then((res)=>{
-
                             this.alertNotification({
                                 param: {
                                     html: res.data.msg
@@ -1106,7 +1126,8 @@
                             })
                             let index = this.dataTableRetencion.indexOf(item)
                             this.dataTableRetencion.splice(index,1)
-
+                        }).then(()=>{
+                            this.overlay=false
                         })
                     }
                 })
@@ -1115,20 +1136,24 @@
             storeRetencionAsistido(){
 
                 this.setLoadingBtn()
+                this.overlay=true
                 this.httpRequest({
                     method: 'post',
                     url: 'retencion_cliente/store_retencion_asistido',
                     data: null
                 }).then((res) => {
                     this.setLoadingBtn()
-                    this.setDataTable(res.data.retencionCliente)
                     this.txt=null
                     this.dataTableRetencion=[]
+                    this.resultadoRetenciones=false
+                    this.setDataTable(res.data.retencionCliente)
                     this.alertNotification({
                         param: {
                             html: res.data.msg
                         }
                     })
+                }).then(()=>{
+                    this.overlay=false
                 })
             }
         },

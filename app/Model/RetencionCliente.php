@@ -31,6 +31,7 @@ class RetencionCliente extends Model
         'fecha_contabilidad',
         'electronica',
         'comentario',
+        'entorno',
         'estado'
     ];
 

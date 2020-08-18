@@ -43,24 +43,24 @@ class RetencionClienteController extends Controller
     }
 
     public function list(Request $request){
-        return RetencionCliente::where('estado',$request->estado)
-            ->whereBetween('fecha_emision',explode('~',$request->fechas))
-            ->where(function($q) use($request){
+
+        $usuario = Auth::user();
+
+        return RetencionCliente::where([
+            ['estado',$request->estado],
+            ['entorno',$usuario->perfil->entorno]
+        ])->whereBetween('fecha_emision',explode('~',$request->fechas))
+            ->where(function($q) use($request,$usuario){
 
                 if(isset($request->id_cliente)){
-
                     $q->where('id_cliente',$request->id_cliente);
-
                 }else{
-
-                    $usuario = Auth::user();
                     $clientes = Cliente::where([
                         ['id_usuario',$usuario->id_usuario],
                         ['estado',true]
                     ])->pluck('id_cliente')->toArray();
 
                     $q->whereIn('id_cliente',$clientes);
-
                 }
 
             })->orderBy('id_retencion_cliente','desc')
@@ -100,6 +100,12 @@ class RetencionClienteController extends Controller
             }
         }
 
+        if(count($arrClaveAccesoFail)>0){
+            return $this->errorCargaAsistida(
+                'Las siguientes clave de acceso no son correctas, por favor remuevalas del archivo txt: <br />'.implode("<br />",$arrClaveAccesoFail)
+            );
+        }
+
         try{
 
             $data=[];
@@ -112,7 +118,7 @@ class RetencionClienteController extends Controller
 
             foreach($arrClaveAcceso as $claveAcceso){
                 $existClaveAcceso = RetencionCliente::where([
-                    ['clave_acceso' ,$claveAcceso],
+                    ['clave_acceso', $claveAcceso],
                     ['estado',true]
                 ])->exists();
 
@@ -122,65 +128,77 @@ class RetencionClienteController extends Controller
                         $response = $this->autorizacionComprobante($claveAcceso);
                         if($response->RespuestaAutorizacionComprobante->numeroComprobantes>0){
 
-                            $dataXML = (String)$response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion->comprobante;
-                            $xml = new SimpleXMLElement($dataXML);
+                            $estado = (String)$response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion->ambiente;
+                            $ambiente = $usuario->perfil->entorno;
 
-                            $cliente = Cliente::where('identificacion',(String)$xml->infoTributaria->ruc)->first();
-                            $factura = Factura::where([
-                                ['secuencial',(String)$xml->impuestos->impuesto->numDocSustento],
-                                ['id_usuario',$usuario->id_usuario]
-                            ])->first();
+                            if($estado === "PRODUCCIÓN" && $ambiente == 2 || $estado === "PRUEBAS" && $ambiente== 1){
+                                $dataXML = (String)$response->RespuestaAutorizacionComprobante->autorizaciones->autorizacion->comprobante;
+                                $xml = new SimpleXMLElement($dataXML);
 
-                            if(isset($cliente)){
-                                if(isset($factura)){
-                                    $req = new Request([
-                                        'idCliente' => $cliente->id_cliente,
-                                        'idUsuario' => $usuario->id_usuario,
-                                        'idFactura' => $factura->id_factura,
-                                        'razonSocial' => (String)$xml->infoTributaria->razonSocial,
-                                        'ruc' => $cliente->identificacion,
-                                        'secuencial' => (String)$xml->infoTributaria->estab.(String)$xml->infoTributaria->ptoEmi.(String)$xml->infoTributaria->secuencial,
-                                        'dirMatriz' => (String)$xml->infoTributaria->dirMatriz,
-                                        'fechaEmision' => (String)$xml->infoCompRetencion->fechaEmision,
-                                        'dirEstablecimiento' => (String)$xml->infoTributaria->dirMatriz,
-                                        'contriEsp' => (String)$xml->infoCompRetencion->contribuyenteEspecial,
-                                        'obligContabilidad' => (String)$xml->infoCompRetencion->obligadoContabilidad,
-                                        'claveAcceso' => (String)$xml->infoTributaria->claveAcceso,
-                                        'tipoIdentSujRetenido' => (String)$xml->infoCompRetencion->tipoIdentificacionSujetoRetenido,
-                                        'razonSocialSujRetenido' => (String)$xml->infoCompRetencion->razonSocialSujetoRetenido,
-                                        'identSujRetenido' => (String)$xml->infoCompRetencion->identificacionSujetoRetenido,
-                                        'peridoFiscal' => (String)$xml->infoCompRetencion->periodoFiscal,
-                                        'fechaCont' => (String)$xml->infoCompRetencion->fechaEmision,
-                                        'comentario' => '',
-                                        'electronica' => true,
-                                    ]);
+                                $cliente = Cliente::where('identificacion',(String)$xml->infoTributaria->ruc)->first();
+                                $factura = Factura::where([
+                                    ['secuencial',(String)$xml->impuestos->impuesto->numDocSustento],
+                                    ['id_usuario',$usuario->id_usuario]
+                                ])->first();
 
-                                    $retenciones=[];
-                                    foreach($xml->impuestos->impuesto as $impuesto){
-                                        $impuestoRetencion = ImpuestosRetencion::where('codigo',(String)$impuesto->codigo)->first();
-                                        $detalleImpuestoRetencion = DetalleImpuestosRetencion::where('codigo',(String)$impuesto->codigoRetencion)->first();
-
-                                        $retenciones[]=[
-                                            'codigoTipoImpuesto' => $impuestoRetencion->id_impuestos_retencion,
-                                            'codigoRetencion' => $detalleImpuestoRetencion->id_detalle_impuesto_retencion,
-                                            'baseImponible'=> (String)$impuesto->baseImponible,
-                                            'porcentRetenido' => (String)$impuesto->porcentajeRetener,
-                                            'valorRetenido' => (String)$impuesto->valorRetenido,
-                                            'codDocSustento' => (String)$impuesto->codDocSustento,
-                                            'numDocSustento' => (String)$impuesto->numDocSustento,
-                                            'fechaEmiDocSustento' => (String)$impuesto->fechaEmisionDocSustento
+                                if(isset($cliente)){
+                                    if(isset($factura)){
+                                        $arrData=[
+                                            'idCliente' => $cliente->id_cliente,
+                                            'idUsuario' => $usuario->id_usuario,
+                                            'idFactura' => $factura->id_factura,
+                                            'razonSocial' => (String)$xml->infoTributaria->razonSocial,
+                                            'ruc' => $cliente->identificacion,
+                                            'secuencial' => (String)$xml->infoTributaria->estab.(String)$xml->infoTributaria->ptoEmi.(String)$xml->infoTributaria->secuencial,
+                                            'dirMatriz' => (String)$xml->infoTributaria->dirMatriz,
+                                            'fechaEmision' => (String)$xml->infoCompRetencion->fechaEmision,
+                                            'dirEstablecimiento' => (String)$xml->infoTributaria->dirMatriz,
+                                            'contriEsp' => (String)$xml->infoCompRetencion->contribuyenteEspecial,
+                                            'obligContabilidad' => (String)$xml->infoCompRetencion->obligadoContabilidad,
+                                            'claveAcceso' => (String)$xml->infoTributaria->claveAcceso,
+                                            'tipoIdentSujRetenido' => (String)$xml->infoCompRetencion->tipoIdentificacionSujetoRetenido,
+                                            'razonSocialSujRetenido' => (String)$xml->infoCompRetencion->razonSocialSujetoRetenido,
+                                            'identSujRetenido' => (String)$xml->infoCompRetencion->identificacionSujetoRetenido,
+                                            'peridoFiscal' => (String)$xml->infoCompRetencion->periodoFiscal,
+                                            'fechaCont' => (String)$xml->infoCompRetencion->fechaEmision,
+                                            'comentario' => '',
+                                            'electronica' => true,
                                         ];
-                                    }
 
-                                    $req->query->add(['retenciones'=>$retenciones]);
-                                    $data[] = $req->all();
+                                        $retenciones=[];
+                                        foreach($xml->impuestos->impuesto as $impuesto){
+                                            $impuestoRetencion = ImpuestosRetencion::where('codigo',(String)$impuesto->codigo)->first();
+                                            $detalleImpuestoRetencion = DetalleImpuestosRetencion::where('codigo',(String)$impuesto->codigoRetencion)->first();
+
+                                            $retenciones[]=[
+                                                'codigoTipoImpuesto' => $impuestoRetencion->id_impuestos_retencion,
+                                                'codigoRetencion' => $detalleImpuestoRetencion->id_detalle_impuesto_retencion,
+                                                'baseImponible'=> (String)$impuesto->baseImponible,
+                                                'porcentRetenido' => (String)$impuesto->porcentajeRetener,
+                                                'valorRetenido' => (String)$impuesto->valorRetenido,
+                                                'codDocSustento' => (String)$impuesto->codDocSustento,
+                                                'numDocSustento' => (String)$impuesto->numDocSustento,
+                                                'fechaEmiDocSustento' => (String)$impuesto->fechaEmisionDocSustento
+                                            ];
+                                        }
+
+                                        $arrData['retenciones']=$retenciones;
+                                        $data[] = $arrData;
+                                    }else{
+                                        $x++;
+                                        $sinFacturas.= (String)$xml->infoTributaria->estab.(String)$xml->infoTributaria->ptoEmi.(String)$xml->infoTributaria->secuencial.'<br />';
+                                    }
                                 }else{
-                                    $x++;
-                                    $sinFacturas.= (String)$xml->infoTributaria->estab.(String)$xml->infoTributaria->ptoEmi.(String)$xml->infoTributaria->secuencial.'<br />';
+                                    $y++;
+                                    $sinClientes.=  (String)$xml->infoTributaria->razonSocial.'<br />';
                                 }
                             }else{
-                                $y++;
-                                $sinClientes.=  (String)$xml->infoTributaria->razonSocial.'<br />';
+                                return $this->errorCargaAsistida(
+                                    'La retención N° '. substr($claveAcceso, 24, 15). ' está en el ambiente de '
+                                    .$estado.' pero la configuración "Entorno" de su perfil esta en '
+                                    .($ambiente == 1 ? 'PPRUEBAS' : 'PRODUCCIÓN')
+                                    .', cambie su configuración y vuelva a importar el xml'
+                                );
                             }
                         }else{
                             $z++;
@@ -202,10 +220,12 @@ class RetencionClienteController extends Controller
             if($z>0)
                 $errors.= $sinClaveAcceso;
 
-            session(['dataTxt' => $data]);
+            session(['dataRetenciones' => $data]);
+
+            $fail = ($x>0 || $y>0 || $z>0 || $w>0);
 
             return response()->json([
-                'msg' => 'El archivo txt se ha analizado '. (($x>0 || $y>0 || $z>0 || $w>0) ? ('con las siguientes observaciones:<br /> '.$errors) : ''),
+                'msg' => 'El archivo txt se ha analizado '. ($fail ? ('con las siguientes observaciones:<br /> '.$errors) : ''),
                 'retencionesConsultadas' => $data,
                 'x' => $x,
                 'y' => $y,
@@ -213,20 +233,164 @@ class RetencionClienteController extends Controller
             ]);
 
         }catch(\Exception $e){
-            return response()->json([
-                'errors'=>[
-                    'mensaje'=> 'Se produjo un error al consultar la retenciones_clientes al sri, verifique su conexión a internet e intente nuevamente, 
-                                 si el problema persite, se debe a que el web service del sri está indispuesto en este momento, proceda a intentarlo en unos minutos '.
-                                 ', "'.$e->getMessage().'"'
-                ]
-            ],500);
+            return $this->errorCargaAsistida(
+                'Se produjo un error al consultar la retenciones_clientes al sri, verifique su conexión a internet e intente nuevamente, 
+                si el problema persite, se debe a que el web service del sri está indispuesto en este momento, proceda a intentarlo en unos minutos '.
+                ', "'.$e->getMessage().'"'
+            );
         }
 
     }
 
     public function procesarXml(Request $request){
 
-        dd($request->all());
+        $request->validate([
+            'xml' => 'required|file|mimes:xml'
+        ],[
+            'xml.required' => 'El archivo xml es obligatorio',
+            'xml.file' => ' El xml cargado debe ser un archivo válido',
+            'xml.mimes' => 'El archivo Cargado debe tener la extensión .xml'
+        ]);
+
+        $archivo = File::get($request->xml);
+        $usuario = Auth::user();
+        $xml = simplexml_load_string($archivo);
+        list($x,$y) = [0,0];
+        $sinFacturas = 'No existe factura en el sistema asociada para la retención: <br />';
+        $sinClientes= 'No existe el siguiente cliente: <br />';
+        $data=[];
+        $errors='';
+
+        if(strlen((String)$xml)>0){
+            $estado = (String)$xml->estado;
+            if(strlen($estado)>0 && $estado == "AUTORIZADO"){
+                if(strlen((String)$xml->comprobante)>0){
+                    if(strlen((String)$xml->numeroAutorizacion)==49){
+                        $tipoDoc = substr($xml->numeroAutorizacion, 8, 2);
+                        if($tipoDoc == "07"){ // RETENCIÓN
+                            if(strlen((String)$xml->fechaAutorizacion)>0){
+                                $ambiente = $usuario->perfil->entorno;
+                                if(strlen((String)$xml->ambiente === "PRODUCCIÓN") && $ambiente == 2 ||  strlen((String)$xml->ambiente === "PRUEBAS") && $ambiente== 1){
+                                    $retencion = simplexml_load_string((String)$xml->comprobante);
+                                    $cliente = Cliente::where('identificacion',(String)$retencion->infoTributaria->ruc)->first();
+                                    $factura = Factura::where([
+                                        ['secuencial',(String)$retencion->impuestos->impuesto->numDocSustento],
+                                        ['id_usuario',$usuario->id_usuario]
+                                    ])->first();
+
+                                    if(isset($cliente)){
+                                        if(isset($factura)){
+                                            if(isset($retencion->infoTributaria)){
+                                                if(isset($retencion->infoCompRetencion)){
+                                                    $arrData = [
+                                                        'idCliente' => $cliente->id_cliente,
+                                                        'idUsuario' => $usuario->id_usuario,
+                                                        'idFactura' => $factura->id_factura,
+                                                        'razonSocial' => (String)$retencion->infoTributaria->razonSocial,
+                                                        'ruc' => $cliente->identificacion,
+                                                        'secuencial' => (String)$retencion->infoTributaria->estab.(String)$retencion->infoTributaria->ptoEmi.(String)$retencion->infoTributaria->secuencial,
+                                                        'dirMatriz' => (String)$retencion->infoTributaria->dirMatriz,
+                                                        'fechaEmision' => (String)$retencion->infoCompRetencion->fechaEmision,
+                                                        'dirEstablecimiento' => (String)$retencion->infoTributaria->dirMatriz,
+                                                        'contriEsp' => (String)$retencion->infoCompRetencion->contribuyenteEspecial,
+                                                        'obligContabilidad' => (String)$retencion->infoCompRetencion->obligadoContabilidad,
+                                                        'claveAcceso' => (String)$retencion->infoTributaria->claveAcceso,
+                                                        'tipoIdentSujRetenido' => (String)$retencion->infoCompRetencion->tipoIdentificacionSujetoRetenido,
+                                                        'razonSocialSujRetenido' => (String)$retencion->infoCompRetencion->razonSocialSujetoRetenido,
+                                                        'identSujRetenido' => (String)$retencion->infoCompRetencion->identificacionSujetoRetenido,
+                                                        'peridoFiscal' => (String)$retencion->infoCompRetencion->periodoFiscal,
+                                                        'fechaCont' => (String)$retencion->infoCompRetencion->fechaEmision,
+                                                        'comentario' => '',
+                                                        'electronica' => true,
+                                                    ];
+                                                    if(isset($retencion->impuestos->impuesto)){
+                                                        $retenciones=[];
+                                                        foreach($retencion->impuestos->impuesto as $impuesto){
+                                                            $impuestoRetencion = ImpuestosRetencion::where('codigo',(String)$impuesto->codigo)->first();
+                                                            $detalleImpuestoRetencion = DetalleImpuestosRetencion::where('codigo',(String)$impuesto->codigoRetencion)->first();
+                                                            $retenciones[]=[
+                                                                'codigoTipoImpuesto' => $impuestoRetencion->id_impuestos_retencion,
+                                                                'codigoRetencion' => $detalleImpuestoRetencion->id_detalle_impuesto_retencion,
+                                                                'baseImponible'=> (String)$impuesto->baseImponible,
+                                                                'porcentRetenido' => (String)$impuesto->porcentajeRetener,
+                                                                'valorRetenido' => (String)$impuesto->valorRetenido,
+                                                                'codDocSustento' => (String)$impuesto->codDocSustento,
+                                                                'numDocSustento' => (String)$impuesto->numDocSustento,
+                                                                'fechaEmiDocSustento' => (String)$impuesto->fechaEmisionDocSustento
+                                                            ];
+                                                        }
+                                                        $arrData['retenciones']=$retenciones;
+                                                        $data[] = $arrData;
+                                                    }else{
+                                                        // NO EXISTE EL TAG impuesto
+                                                        return $this->errorCargaAsistida('El xml cargado está mal estructurado o fue cambiado su contenido, no posee el tag "impuestos"');
+                                                    }
+                                                }else{
+                                                    // NO EXISTE EL TAG infoCompRetencion
+                                                    return $this->errorCargaAsistida('El xml cargado está mal estructurado o fue cambiado su contenido, no posee el tag "infoCompRetencion"');
+                                                }
+                                            }else{
+                                                // NO EXISTE EL TAG infoTributaria
+                                                return $this->errorCargaAsistida('El xml cargado está mal estructurado o fue cambiado su contenido, no posee el tag "infoTributaria"');
+                                            }
+                                        }else{
+                                            $x++;
+                                            $sinFacturas.= (String)$retencion->infoTributaria->estab.(String)$retencion->infoTributaria->ptoEmi.(String)$retencion->infoTributaria->secuencial.'<br />';
+                                        }
+                                    }else{
+                                        $y++;
+                                        $sinClientes.= (String)$retencion->infoTributaria->razonSocial.'<br />';
+                                    }
+
+                                    if($x>0)
+                                        $errors.= $sinFacturas;
+                                    if($y>0)
+                                        $errors.= $sinClientes;
+
+                                    session(['dataRetenciones' => $data]);
+
+                                    $alerta = $x>0 || $y>0;
+
+                                    return response()->json([
+                                        'msg' => 'El archivo xml se ha analizado '. ($alerta ? ('con las siguientes observaciones:<br /> '.$errors) : ''),
+                                        'retencionesConsultadas' => $data,
+                                        'x' => $x,
+                                        'y' => $y,
+                                    ],200);
+
+                                }else{
+                                    // ESTÁ TRATANDO DE IMPORTAR UNA RETENCIÓN QUE NO CORRESPONDE AL ENTORNO ACTUAL
+                                    return $this->errorCargaAsistida('La retención N° '. substr($xml->numeroAutorizacion, 24, 15). ' está en el ambiente de '
+                                                .$estado.' pero la configuración "Entorno" de su perfil esta en '
+                                                .($ambiente == 1 ? 'PPRUEBAS' : 'PRODUCCIÓN')
+                                                .', cambie su configuración y vuelva a importar el xml');
+                                }
+                            }else{
+                                //EL XML NO TIENE LA PROPIEDAD fechaAutorizacion
+                                return $this->errorCargaAsistida('El xml cargado está mal estructurado o fue cambiado su contenido, no posee el tag "fechaAutorizacion"');
+                            }
+                        }else{
+                            // EL XML CARGADO NO ES UNA RETENCIÓN
+                           return $this->errorCargaAsistida('El xml cargado cargado no es una retención');
+                        }
+                    }else{
+                        //EL XML NO TIENE LA PROPIEDAD numeroAutorizacion o esta mal estructurada
+                       return $this->errorCargaAsistida('El xml cargado está mal estructurado o fue cambiado su contenido, no posee el tag "numeroAutorizacion"');
+                    }
+                }else{
+                    // EL XML NO TIENE LA PROPIEDAD COMPROBANTE
+                    return $this->errorCargaAsistida('El xml cargado está mal estructurado o fue cambiado su contenido, no posee el tag "comprobante"');
+                }
+            }else{
+                // LA RENTENCIÓN NO ESTA AUTORIZADA
+                return $this->errorCargaAsistida('La retención que se encuentra dentro del archivo xml no está aprobada por el SRI');
+            }
+
+        }else{
+            // EL XML ESTÀ VACIO
+            return $this->errorCargaAsistida('El Xml cargado está vacío');
+        }
+
     }
 
     public function storeRetencionManual(RequestStoreRetencionManualCliente $request){
@@ -330,10 +494,10 @@ class RetencionClienteController extends Controller
 
         try{
 
-            $data= session('dataTxt');
+            $data= session('dataRetenciones');
             $index = array_search($request->numero,array_column($data,'secuencial'));
             unset($data[$index]);
-            session(['dataTxt'=> $data]);
+            session(['dataRetenciones'=> $data]);
 
             return response()->json([
                 'msg' => 'Se ha removido la retención '.$request->numero
@@ -345,11 +509,15 @@ class RetencionClienteController extends Controller
 
     }
 
-    public function storeRetencionAsistido(Request $request){
+    public function storeRetencionAsistido(){
 
-        $retenciones = session('dataTxt');
+        $retenciones = session('dataRetenciones');
         $savedRetenciones=[];
         $msg = 'Se han guardado las siguientes retenciones: <br />';
+
+        if(count($retenciones)===0)
+            return $this->errorCargaAsistida('No se cargó niguna retencion para registrar');
+
         foreach ($retenciones as $x => $retencion) {
             try{
                 $req = new Request($retencion);
@@ -357,7 +525,7 @@ class RetencionClienteController extends Controller
                 $msg.= $req->secuencial;
                 $savedRetenciones[]= $response['retencionCliente'];
             }catch(\Exception $e){
-                return response()->json(['errors'=>['mensaje'=> $e->getMessage()]],500);
+                return $this->errorCargaAsistida($e->getMessage());
             }
         }
 
@@ -427,7 +595,12 @@ class RetencionClienteController extends Controller
             throw new \Exception('Ya existe una retención recibida para la facutra '.$request->retenciones[0]['numDocSustento']);
         }
 
+    }
 
+    public function errorCargaAsistida($msg){
+        return response()->json([
+            'errors'=>['Mensaje: '=> $msg]
+        ],500);
     }
 
 }
