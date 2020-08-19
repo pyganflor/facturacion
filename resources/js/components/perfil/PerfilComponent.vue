@@ -56,10 +56,11 @@
                                     <v-text-field
                                             label="Ruc"
                                             type="number"
-                                            v-model="ruc"
+                                            v-model.number="ruc"
                                             :counter="13"
                                             :rules=rucRules
                                             required
+                                            v-mask="'#############'"
                                     />
                                 </v-col>
 
