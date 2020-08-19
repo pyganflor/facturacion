@@ -550,7 +550,7 @@
             ],
             rucRules:[
                 v => !!v || 'El ruc es obligatorio ',
-                v => (v && v.length === 13) || 'El ruc debe ser de 13 dígitos',
+                v => (v && v.length == 13) || 'El ruc debe ser de 13 dígitos',
             ],
             usuarioRules:[
                 v => (v && v.length >= 6) || 'Debe escribir por lo menos 6 caracteres'
