@@ -7,7 +7,7 @@ Vue.component('login-component', require('./components/auth/LoginComponent.vue')
 
 // LAYOUT
 Vue.component('nav-component', require('./components/partials_layout/NavComponent.vue').default);
-Vue.component('aside-component', require('components/partials_layout/AsideComponent.vue').default);
+Vue.component('aside-component', require('./components/partials_layout/AsideComponent.vue').default);
 
 // DASHBOARD
 Vue.component('administrador-component', require('./components/dashboard/AdministradorComponent.vue').default);
