@@ -56,7 +56,7 @@
                                     <v-text-field
                                             label="Ruc"
                                             type="number"
-                                            v-model.number="ruc"
+                                            v-model="ruc"
                                             :counter="13"
                                             :rules=rucRules
                                             required
