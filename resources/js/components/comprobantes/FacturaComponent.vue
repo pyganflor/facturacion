@@ -1156,7 +1156,7 @@
             },
 
             reenviarCorreo(item){
-                console.log(item)
+
                 Vue.swal({
                     ...this.paramsAlertQuestion,
                     timerProgressBar:false,
