@@ -16,13 +16,12 @@ use App\Model\{ArticuloCategoriaInventario,
     ImpuestoDetalleFactura,
     SustentoTributario,
     TipoImpuesto,
-    tipoPago,
+    TipoPago,
     Inventario,
     Factura,
     Usuario};
 use App\Http\Requests\RequestStoreFacura;
 use DomDocument;
-use SoapClient;
 use Illuminate\Support\Facades\{Storage,Auth};
 
 
@@ -41,7 +40,7 @@ class FacturaController extends Controller
             'factureros' => $usuario->factureros,
             'sustentoTributario' => SustentoTributario::get(),
             'puntoEmision' => $usuario->ptoEmision,
-            'tiposPago' => tipoPago::get(),
+            'tiposPago' => TipoPago::get(),
             'inventario' => Inventario::where('id_usuario',$usuario->id_usuario)->with('categoriasActivadas')->first()
         ]);
 

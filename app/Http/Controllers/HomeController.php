@@ -24,7 +24,6 @@ class HomeController extends Controller
      */
     public function index()
     {
-
         $roles= Auth::user()->roles->pluck('id_rol')->toArray();
 
         return view('dashboard.principal',[
