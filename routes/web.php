@@ -38,8 +38,6 @@ Route::group(['middleware' => 'auth'],function () {
     include_once 'usuarios/comprobantes/factura.php';
     include_once 'usuarios/comprobantes/retenciones_cliente.php';
 
-    Route::get('comprobante','ComprobanteController@inicio');
-
     Route::group(['middleware'=>'Permiso'],function (){
 
         //Administrador
