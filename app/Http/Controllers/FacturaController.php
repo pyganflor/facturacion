@@ -515,7 +515,7 @@ class FacturaController extends Controller
                                     'factura.clave_acceso',
                                     'factura.total',
                                     'factura.estado',
-                                    'factura.correo',
+                                    'factura.correos',
                                     'c.nombre as cliente',
                                     'factura.fecha_doc',
                                     'factura.fecha_aut',
