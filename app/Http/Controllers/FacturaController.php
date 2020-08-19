@@ -772,6 +772,7 @@ class FacturaController extends Controller
     public function consultar(RequestValidaIdComprobante $request){
 
         $usuario = Usuario::find($request->id_usuario);
+        dd($usuario);
         $logo = $usuario->perfil->logo_empresa;
         $data = $this->consultarComprobante($request);
 
