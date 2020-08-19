@@ -29,10 +29,12 @@ class RequestLogin extends FormRequest
                 function($attribute,$value,$onFailure){
                     if(!isset($value)){
                         $onFailure('Escriba el usuario');
-                    }else{
-                        $usuario= Usuario::where('nombre',$value)->first();
-                        if(!$usuario->estado)
+                    }else {
+                        $usuario = Usuario::where('nombre', $value)->first();
+
+                        if (isset($usuario) && !$usuario->estado)
                             $onFailure('El usuario esta desactivado del sistema, comuniquese con la administración para activarlo');
+
                     }
                 }],
             'contrasena' => 'required|min:5|alpha_num'
