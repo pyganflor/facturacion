@@ -47,7 +47,7 @@ class RetencionClienteController extends Controller
         $usuario = Auth::user();
 
         return RetencionCliente::where('estado',$request->estado)
-            ->where(function($q) use($usuario) {
+            ->where(function($q) use ($usuario) {
             if (isset($usuario->perfil)) {
                 $q->where('entorno', $usuario->perfil->entorno);
             }
