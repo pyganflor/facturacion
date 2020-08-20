@@ -46,10 +46,12 @@ class RetencionClienteController extends Controller
 
         $usuario = Auth::user();
 
-        return RetencionCliente::where([
-            ['estado',$request->estado],
-            ['entorno',$usuario->perfil->entorno]
-        ])->whereBetween('fecha_emision',explode('~',$request->fechas))
+        return RetencionCliente::where('estado',$request->estado)
+            ->where(function($q) use($usuario) {
+            if (isset($usuario->perfil)) {
+                $q->where('entorno', $usuario->perfil->entorno);
+            }
+        })->whereBetween('fecha_emision',explode('~',$request->fechas))
             ->where(function($q) use($request,$usuario){
 
                 if(isset($request->id_cliente)){
