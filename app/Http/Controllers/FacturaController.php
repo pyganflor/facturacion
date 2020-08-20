@@ -19,7 +19,8 @@ use App\Model\{ArticuloCategoriaInventario,
     TipoPago,
     Inventario,
     Factura,
-    Usuario};
+    Usuario,
+    UsuarioFacturero};
 use App\Http\Requests\RequestStoreFacura;
 use DomDocument;
 use Illuminate\Support\Facades\{Storage,Auth};
@@ -93,12 +94,15 @@ class FacturaController extends Controller
             $codigoNumerico = 12345678;
             $arrFecha = explode('-',$request->fechaDoc);
             $fecha = $arrFecha[2].$arrFecha[1].$arrFecha[0];
-            if($request->editar == "true")
-                $usuario->perfil->n_factura = substr($request->secuencialEdit,6,9);
 
-            $cadena = $fecha . '01' . $usuario->perfil->ruc . $usuario->perfil->entorno . $serie . $usuario->perfil->n_factura . $codigoNumerico . 1;
+            $request->editar == "true"
+                ? $secuencial = substr($request->secuencialEdit,6,9)
+                : $secuencial = $usuario->factureros->where('numero',$request->facturero)->first()->n_factura;
+
+            $cadena = $fecha . '01' . $usuario->perfil->ruc . $usuario->perfil->entorno . $serie . (String)$secuencial . $codigoNumerico . 1;
             $digitoVerificador = $this->digitoVerificador($cadena);
             $claveAcceso = $cadena . $digitoVerificador;
+
             if(!$digitoVerificador && $digitoVerificador!=0){
                 return response()->json([
                     'errors'=>[
@@ -131,7 +135,7 @@ class FacturaController extends Controller
                 'codDoc' => '01',
                 'estab' => $request->ptoEmision,
                 'ptoEmi' => $request->facturero,
-                'secuencial' => $usuario->perfil->n_factura,
+                'secuencial' => $secuencial,
                 'dirMatriz' => $usuario->perfil->direc_matriz
             ];
 
@@ -353,7 +357,7 @@ class FacturaController extends Controller
             $xml->formatOutput = true;
             $xml->preserveWhiteSpace = false;
             $stringXml = $xml->saveXML();
-            $xml = "fact_".$request->ptoEmision.$request->facturero.$usuario->perfil->n_factura.'.xml';
+            $xml = "fact_".$request->ptoEmision.$request->facturero.$secuencial.'.xml';
             $pathFacturas = storage_path('app/public/xml/facturas/');
             $carpetaPersonal = $usuario->id_usuario.'/'.($arrFecha[0].'_'.$arrFecha[1]);
             $request->request->add(['carpeta' => $carpetaPersonal]);
@@ -469,7 +473,7 @@ class FacturaController extends Controller
                                         $data=[
                                             'correos' => $request->correos,
                                             'carpeta_personal' => $carpetaPersonal,
-                                            'archivo'=> 'fact_'.$serie.str_pad($usuario->perfil->n_factura-1, 9, '0', STR_PAD_LEFT),
+                                            'archivo'=> 'fact_'.$serie.str_pad($secuencial,9, '0', STR_PAD_LEFT),
                                             'usuario' => $usuario->perfil->razon_social
                                         ];
                                         $msg.= $this->envioCorreo($data);
@@ -641,7 +645,9 @@ class FacturaController extends Controller
             //ACTUALIZAR EL SECUENCIAL
             if($request['editar']=="false"){
                 $usuario = Auth::user();
-                $usuario->perfil->update(['n_factura'=> str_pad($usuario->perfil->n_factura+1, 9, '0', STR_PAD_LEFT)]);
+                $facturero = $usuario->factureros->where('numero',$request['ptoEmi'])->first();
+                $facturero= UsuarioFacturero::find($facturero->id_usuario_facturero);
+                $facturero->update(['n_factura'=> str_pad($request['secuencial']+1, 9, '0', STR_PAD_LEFT)]);
             }
 
             return [
