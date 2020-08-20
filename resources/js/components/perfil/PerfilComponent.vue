@@ -179,7 +179,7 @@
                                             <v-container class="py-0">
                                                 <v-col class="py-0" >
                                                     <v-form ref="form_datos_adicionales">
-                                                        <v-row>
+                                                        <!--<v-row>
                                                             <v-col
                                                                     class="12"
                                                                     md="2"
@@ -228,7 +228,6 @@
                                                                     v-if="modulos.notaCredito"
                                                             >
                                                                 <v-text-field
-
                                                                         label="Nº de nota de crédito"
                                                                         v-model="secuencial.n_nota_credito"
                                                                         required
@@ -243,7 +242,6 @@
                                                                     v-if="modulos.retencion"
                                                             >
                                                                 <v-text-field
-
                                                                         label="Nº de retención"
                                                                         v-model="secuencial.n_retencion"
                                                                         required
@@ -252,7 +250,55 @@
                                                                         :rules="secuencialRule"
                                                                 />
                                                             </v-col>
-                                                        </v-row>
+                                                        </v-row>-->
+                                                        <v-col
+                                                        >
+                                                            <v-row>
+                                                                <v-col
+                                                                        class="headline"
+                                                                        cols="12"
+                                                                        sm="10"
+                                                                        md="11"
+                                                                >
+                                                                    Números de factureros
+                                                                </v-col>
+                                                                <v-col
+                                                                        cols="12"
+                                                                        sm="2"
+                                                                        md="1"
+                                                                        class="text-sm-right"
+                                                                >
+                                                                    <v-btn
+                                                                            color="primary"
+                                                                            fab
+                                                                            x-small
+                                                                            @click="addNumeroEsp('fact')"
+                                                                    >
+                                                                        <v-icon>mdi-plus</v-icon>
+                                                                    </v-btn>
+                                                                </v-col>
+                                                            </v-row>
+                                                            <v-row>
+                                                                <v-col
+                                                                        cols="12"
+                                                                        md="2"
+                                                                        sm="4"
+                                                                        v-for="(fac, y) in facturero"
+                                                                        :key="`fac_${y}`"
+                                                                        :id="`fac_${y}`"
+                                                                >
+                                                                    <v-text-field
+                                                                            label="Número"
+                                                                            v-model="fac.numero"
+                                                                            :rules="requiredRule"
+                                                                            type="number"
+                                                                            required
+                                                                            append-icon="mdi-delete-forever"
+                                                                            @click:append="removeInput(fac)"
+                                                                    ></v-text-field>
+                                                                </v-col>
+                                                            </v-row>
+                                                        </v-col>
                                                         <v-row>
                                                             <v-col cols="12" class="py-0">
                                                                 <v-switch
@@ -264,85 +310,46 @@
                                                             </v-col>
                                                         </v-row>
                                                         <v-row>
-                                                            <v-col cols="12" sm="6">
-                                                                <v-col cols="12">
-                                                                    <v-row>
-                                                                        <div class="headline col-sm-9 col-md-10">Puntos de emisión</div>
-                                                                        <div class="col-sm-3 col-md-2">
-                                                                            <v-btn
-                                                                                    color="primary"
-                                                                                    fab
-                                                                                    x-small
-                                                                                    @click="addNumeroEsp('pe')"
-                                                                            >
-                                                                                <v-icon>mdi-plus</v-icon>
-                                                                            </v-btn>
-                                                                        </div>
-                                                                    </v-row>
-                                                                </v-col>
-                                                                <v-row>
-                                                                    <v-col
-                                                                            cols="12"
-                                                                            md="4"
-                                                                            sm="6"
-                                                                            v-for="(pe, x) in ptoEmision"
-                                                                            :key="`pto_${x}`"
-                                                                            :id="`pto_${x}`"
-                                                                    >
-                                                                        <v-text-field
-                                                                                label="Número"
-                                                                                v-model="pe.numero"
-                                                                                :rules="requiredRule"
-                                                                                type="number"
-                                                                                required
-                                                                                append-icon="mdi-delete-forever"
-                                                                                @click:append="removeInput(pe)"
-                                                                        />
-                                                                    </v-col>
-                                                                </v-row>
-                                                            </v-col>
-                                                            <v-divider
-
-                                                                    inset
-                                                                    vertical
-                                                            ></v-divider>
                                                             <v-col
+                                                                    cols="12"
+                                                                    sm="10"
+                                                                    md="11"
+                                                                    class="headline "
                                                             >
-                                                                <v-col cols="12">
-                                                                    <v-row>
-                                                                        <div class="headline col-sm-9 col-md-10">Números de factureros</div>
-                                                                        <div class="col-sm-3 col-md-2">
-                                                                            <v-btn
-                                                                                    color="primary"
-                                                                                    fab
-                                                                                    x-small
-                                                                                    @click="addNumeroEsp('fact')"
-                                                                            >
-                                                                                <v-icon>mdi-plus</v-icon>
-                                                                            </v-btn>
-                                                                        </div>
-                                                                    </v-row>
-                                                                </v-col>
-                                                                <v-row>
-                                                                    <v-col
-                                                                            cols="12"
-                                                                            md="4"
-                                                                            sm="6"
-                                                                            v-for="(fac, y) in facturero"
-                                                                            :key="`fac_${y}`"
-                                                                            :id="`fac_${y}`"
-                                                                    >
-                                                                        <v-text-field
-                                                                                label="Número"
-                                                                                v-model="fac.numero"
-                                                                                :rules="requiredRule"
-                                                                                type="number"
-                                                                                required
-                                                                                append-icon="mdi-delete-forever"
-                                                                                @click:append="removeInput(fac)"
-                                                                        />
-                                                                    </v-col>
-                                                                </v-row>
+                                                                Puntos de emisión
+                                                            </v-col>
+                                                            <v-col
+                                                                    cols="12"
+                                                                    sm="2"
+                                                                    md="1"
+                                                                    class="text-sm-right"
+                                                            >
+                                                                <v-btn
+                                                                        color="primary"
+                                                                        fab
+                                                                        x-small
+                                                                        @click="addNumeroEsp('pe')"
+                                                                >
+                                                                    <v-icon>mdi-plus</v-icon>
+                                                                </v-btn>
+                                                            </v-col>
+                                                            <v-col
+                                                                    cols="12"
+                                                                    md="2"
+                                                                    sm="4"
+                                                                    v-for="(pe, x) in ptoEmision"
+                                                                    :key="`pto_${x}`"
+                                                                    :id="`pto_${x}`"
+                                                            >
+                                                                <v-text-field
+                                                                        label="Número"
+                                                                        v-model="pe.numero"
+                                                                        :rules="requiredRule"
+                                                                        type="number"
+                                                                        required
+                                                                        append-icon="mdi-delete-forever"
+                                                                        @click:append="removeInput(pe)"
+                                                                ></v-text-field>
                                                             </v-col>
                                                         </v-row>
                                                     </v-form>

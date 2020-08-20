@@ -15,6 +15,11 @@ class UsuarioFacturero extends Model
     protected $fillable = [
         'id_usuario',
         'numero',
+        'n_factura',
+        'n_guia_remision',
+        'n_retencion',
+        'n_nota_debito',
+        'n_nota_credito',
         'fecha_registro'
     ];
 }
