@@ -137,11 +137,6 @@ class PerfilController extends Controller
             $perfil = UsuarioPerfil::updateOrCreate(
                 ['id_usuario'=>$request->id_usuario],
                 [
-                    'n_factura' => str_pad($request->n_factura, 9, '0', STR_PAD_LEFT),
-                    'n_guia_remision' => str_pad($request->n_guia_remision, 9, '0', STR_PAD_LEFT),
-                    'n_retencion' => str_pad($request->n_retencion, 9, '0', STR_PAD_LEFT),
-                    'n_nota_debito' => str_pad($request->n_nota_debito, 9, '0', STR_PAD_LEFT),
-                    'n_nota_credito' => str_pad($request->n_nota_credito, 9, '0', STR_PAD_LEFT),
                     "entorno" => $request->entorno == "true" ? 2 : 1
                 ]
             );
@@ -154,7 +149,12 @@ class PerfilController extends Controller
                 $f = json_decode($facturero);
                 UsuarioFacturero::create([
                     'id_usuario' => $request->id_usuario,
-                    'numero' => str_pad($f->numero, 3, '0', STR_PAD_LEFT)
+                    'numero' => str_pad($f->numero, 3, '0', STR_PAD_LEFT),
+                    'n_factura' =>str_pad((!isset($f->n_factura) ? 1 : $f->n_factura), 9, '0', STR_PAD_LEFT),
+                    'n_guia_remision' => str_pad((!isset($f->n_guia_remision) ? 1 : $f->n_guia_remision), 9, '0', STR_PAD_LEFT),
+                    'n_nota_debito' => str_pad((!isset($f->n_nota_debito) ? 1 : $f->n_nota_debito), 9, '0', STR_PAD_LEFT),
+                    'n_nota_credito' => str_pad((!isset($f->n_nota_credito) ? 1 : $f->n_nota_credito), 9, '0', STR_PAD_LEFT),
+                    'n_retencion' => str_pad((!isset($f->n_retencion) ? 1 : $f->n_retencion), 9, '0', STR_PAD_LEFT),
                 ]);
             }
 

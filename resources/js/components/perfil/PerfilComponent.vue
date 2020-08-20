@@ -179,6 +179,16 @@
                                             <v-container class="py-0">
                                                 <v-col class="py-0" >
                                                     <v-form ref="form_datos_adicionales">
+                                                        <v-row>
+                                                            <v-col cols="12" class="py-0">
+                                                                <v-switch
+                                                                        class="py-0"
+                                                                        v-model="entorno"
+                                                                        inset
+                                                                        :label="`Entorno para autorizaciones con el SRI: ${entornos[Number(entorno)].texto}`"
+                                                                ></v-switch>
+                                                            </v-col>
+                                                        </v-row>
                                                         <v-col
                                                         >
                                                             <v-row>
@@ -227,6 +237,7 @@
                                                                                     required
                                                                                     append-icon="mdi-delete-forever"
                                                                                     @click:append="removeInput(fac)"
+                                                                                    v-mask="'#########'"
                                                                             ></v-text-field>
                                                                         </v-col>
                                                                         <v-col
@@ -241,6 +252,7 @@
                                                                                     :rules="secuencialRule"
                                                                                     type="number"
                                                                                     min="0"
+                                                                                    v-mask="'#########'"
                                                                             ></v-text-field>
                                                                         </v-col>
                                                                         <v-col
@@ -256,6 +268,7 @@
                                                                                     type="number"
                                                                                     min="0"
                                                                                     :rules="secuencialRule"
+                                                                                    v-mask="'#########'"
                                                                             ></v-text-field>
                                                                         </v-col>
                                                                         <v-col
@@ -270,6 +283,7 @@
                                                                                     type="number"
                                                                                     :rules="secuencialRule"
                                                                                     min="0"
+                                                                                    v-mask="'#########'"
                                                                             ></v-text-field>
                                                                         </v-col>
                                                                         <v-col
@@ -284,6 +298,7 @@
                                                                                     type="number"
                                                                                     :rules="secuencialRule"
                                                                                     min="0"
+                                                                                    v-mask="'#########'"
                                                                             ></v-text-field>
                                                                         </v-col>
                                                                         <v-col
@@ -298,6 +313,7 @@
                                                                                     type="number"
                                                                                     min="0"
                                                                                     :rules="secuencialRule"
+                                                                                    v-mask="'#########'"
                                                                             ></v-text-field>
                                                                         </v-col>
                                                                     </v-row>
@@ -305,16 +321,6 @@
                                                                 </v-col>
                                                             </v-row>
                                                         </v-col>
-                                                        <v-row>
-                                                            <v-col cols="12" class="py-0">
-                                                                <v-switch
-                                                                        class="py-0"
-                                                                        v-model="entorno"
-                                                                        inset
-                                                                        :label="`Entorno para autorizaciones con el SRI: ${entornos[Number(entorno)].texto}`"
-                                                                ></v-switch>
-                                                            </v-col>
-                                                        </v-row>
                                                         <v-row>
                                                             <v-col
                                                                     cols="12"
@@ -814,7 +820,7 @@
                     entorno: this.entorno
                 }
 
-                if(this.secuencial.n_factura.length>0)
+                /*if(this.secuencial.n_factura.length>0)
                     infoAdicional.n_factura = this.secuencial.n_factura
                 if(this.secuencial.n_guia_remision.length>0)
                     infoAdicional.n_guia_remision = this.secuencial.n_guia_remision
@@ -823,7 +829,7 @@
                 if(this.secuencial.n_nota_debito.length>0)
                     infoAdicional.n_nota_debito = this.secuencial.n_nota_debito
                 if(this.secuencial.n_retencion.length>0)
-                    infoAdicional.n_retencion = this.secuencial.n_retencion
+                    infoAdicional.n_retencion = this.secuencial.n_retencion*/
 
                 infoAdicional.factureros = this.facturero
                 infoAdicional.ptoEmision = this.ptoEmision
@@ -886,14 +892,9 @@
                 this.modulos.guiaRemision = this.modulos.guiaRemision || modulo.id_modulo === 2
                 this.modulos.notaDebito = this.modulos.notaDebito || modulo.id_modulo === 3
                 this.modulos.notaCredito = this.modulos.notaCredito || modulo.id_modulo === 4
-                this.modulos.retencion = this.modulos.retencion || modulo.id_modulo === 5
+                this.modulos.retencion = this.modulos.retencion || modulo.id_modulo === 6
             }
 
-            this.secuencial.n_factura = this.usuario.perfil.n_factura
-            this.secuencial.n_guia_remision = this.usuario.perfil.n_guia_remision
-            this.secuencial.n_nota_credito = this.usuario.perfil.n_nota_credito
-            this.secuencial.n_nota_debito = this.usuario.perfil.n_nota_debito
-            this.secuencial.n_retencion = this.usuario.perfil.n_retencion
             this.entorno= this.usuario.perfil.entorno === 2
 
             if(this.usuario.factureros.length>0)
