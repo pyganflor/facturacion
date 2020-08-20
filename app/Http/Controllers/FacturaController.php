@@ -369,7 +369,6 @@ class FacturaController extends Controller
             // GUARDAR DATOS DE LA FACTURA
             $storeFactura = $this->storeFactura($request->all(),true);
 
-            dd($storeFactura);
             $msg.= $storeFactura['msg'].'<br />';
 
             if($storeFactura['success']){
