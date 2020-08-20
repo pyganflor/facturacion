@@ -179,78 +179,6 @@
                                             <v-container class="py-0">
                                                 <v-col class="py-0" >
                                                     <v-form ref="form_datos_adicionales">
-                                                        <!--<v-row>
-                                                            <v-col
-                                                                    class="12"
-                                                                    md="2"
-                                                                    v-if="modulos.facturacion"
-                                                            >
-                                                                <v-text-field
-                                                                        label="Nº de factura"
-                                                                        v-model="secuencial.n_factura"
-                                                                        required
-                                                                        :rules="secuencialRule"
-                                                                        type="number"
-                                                                        min="0"
-                                                                />
-                                                            </v-col>
-                                                            <v-col
-                                                                    md="2"
-                                                                    v-if="modulos.guiaRemision"
-                                                            >
-                                                                <v-text-field
-
-                                                                        label="Nº de guía"
-                                                                        v-model="secuencial.n_guia_remision"
-                                                                        required
-                                                                        type="number"
-                                                                        min="0"
-                                                                        :rules="secuencialRule"
-                                                                />
-                                                            </v-col>
-                                                            <v-col
-                                                                    class="12"
-                                                                    md="3"
-                                                                    v-if="modulos.notaDebito"
-                                                            >
-                                                                <v-text-field
-                                                                        label="Nº de nota de débito"
-                                                                        v-model="secuencial.n_nota_debito"
-                                                                        required
-                                                                        type="number"
-                                                                        :rules="secuencialRule"
-                                                                        min="0"
-                                                                />
-                                                            </v-col>
-                                                            <v-col
-                                                                    class="12"
-                                                                    md="3"
-                                                                    v-if="modulos.notaCredito"
-                                                            >
-                                                                <v-text-field
-                                                                        label="Nº de nota de crédito"
-                                                                        v-model="secuencial.n_nota_credito"
-                                                                        required
-                                                                        type="number"
-                                                                        :rules="secuencialRule"
-                                                                        min="0"
-                                                                />
-                                                            </v-col>
-                                                            <v-col
-                                                                    class="12"
-                                                                    md="2"
-                                                                    v-if="modulos.retencion"
-                                                            >
-                                                                <v-text-field
-                                                                        label="Nº de retención"
-                                                                        v-model="secuencial.n_retencion"
-                                                                        required
-                                                                        type="number"
-                                                                        min="0"
-                                                                        :rules="secuencialRule"
-                                                                />
-                                                            </v-col>
-                                                        </v-row>-->
                                                         <v-col
                                                         >
                                                             <v-row>
@@ -281,21 +209,99 @@
                                                             <v-row>
                                                                 <v-col
                                                                         cols="12"
-                                                                        md="2"
-                                                                        sm="4"
                                                                         v-for="(fac, y) in facturero"
                                                                         :key="`fac_${y}`"
                                                                         :id="`fac_${y}`"
                                                                 >
-                                                                    <v-text-field
-                                                                            label="Número"
-                                                                            v-model="fac.numero"
-                                                                            :rules="requiredRule"
-                                                                            type="number"
-                                                                            required
-                                                                            append-icon="mdi-delete-forever"
-                                                                            @click:append="removeInput(fac)"
-                                                                    ></v-text-field>
+                                                                    <v-row>
+                                                                        <v-col
+                                                                                class="py-0"
+                                                                                cols="12"
+                                                                                sm="2"
+                                                                        >
+                                                                            <v-text-field
+                                                                                    label="Número"
+                                                                                    v-model="fac.numero"
+                                                                                    :rules="requiredRule"
+                                                                                    type="number"
+                                                                                    required
+                                                                                    append-icon="mdi-delete-forever"
+                                                                                    @click:append="removeInput(fac)"
+                                                                            ></v-text-field>
+                                                                        </v-col>
+                                                                        <v-col
+                                                                                class="py-0"
+                                                                                sm="2"
+                                                                                v-if="modulos.facturacion"
+                                                                        >
+                                                                            <v-text-field
+                                                                                    label="Nº de factura"
+                                                                                    v-model="secuencial.n_factura"
+                                                                                    required
+                                                                                    :rules="secuencialRule"
+                                                                                    type="number"
+                                                                                    min="0"
+                                                                            ></v-text-field>
+                                                                        </v-col>
+                                                                        <v-col
+                                                                                class="py-0"
+                                                                                sm="2"
+                                                                                v-if="modulos.guiaRemision"
+                                                                        >
+                                                                            <v-text-field
+
+                                                                                    label="Nº de guía"
+                                                                                    v-model="secuencial.n_guia_remision"
+                                                                                    required
+                                                                                    type="number"
+                                                                                    min="0"
+                                                                                    :rules="secuencialRule"
+                                                                            ></v-text-field>
+                                                                        </v-col>
+                                                                        <v-col
+                                                                                class="py-0"
+                                                                                sm="2"
+                                                                                v-if="modulos.notaDebito"
+                                                                        >
+                                                                            <v-text-field
+                                                                                    label="Nº de nota de débito"
+                                                                                    v-model="secuencial.n_nota_debito"
+                                                                                    required
+                                                                                    type="number"
+                                                                                    :rules="secuencialRule"
+                                                                                    min="0"
+                                                                            ></v-text-field>
+                                                                        </v-col>
+                                                                        <v-col
+                                                                                class="py-0"
+                                                                                sm="2"
+                                                                                v-if="modulos.notaCredito"
+                                                                        >
+                                                                            <v-text-field
+                                                                                    label="Nº de nota de crédito"
+                                                                                    v-model="secuencial.n_nota_credito"
+                                                                                    required
+                                                                                    type="number"
+                                                                                    :rules="secuencialRule"
+                                                                                    min="0"
+                                                                            ></v-text-field>
+                                                                        </v-col>
+                                                                        <v-col
+                                                                                class="py-0"
+                                                                                sm="2"
+                                                                                v-if="modulos.retencion"
+                                                                        >
+                                                                            <v-text-field
+                                                                                    label="Nº de retención"
+                                                                                    v-model="secuencial.n_retencion"
+                                                                                    required
+                                                                                    type="number"
+                                                                                    min="0"
+                                                                                    :rules="secuencialRule"
+                                                                            ></v-text-field>
+                                                                        </v-col>
+                                                                    </v-row>
+
                                                                 </v-col>
                                                             </v-row>
                                                         </v-col>
@@ -524,7 +530,13 @@
                 n_retencion:''
             },
             ptoEmision:[{numero:''}],
-            facturero:[{numero:''}],
+            facturero:[{
+                    numero:'',
+                    n_guia_remison:'',
+                    n_nota_debito:'',
+                    n_nota_credito:'',
+                    n_retencion:''
+                }],
             entornos:[{texto:'Pruebas (Los comprobantes generados no tendrán validez)'},{texto:'Producción'}],
             entorno:false,
             contriEsp: '',
@@ -609,7 +621,6 @@
         }),
         computed:{
             ...mapState(['loadingBtn2']),
-
         },
         methods:{
             ...mapMutations(['setLoadingBtn2','setLoadingBtn']),

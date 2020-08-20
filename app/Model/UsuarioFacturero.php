@@ -22,4 +22,5 @@ class UsuarioFacturero extends Model
         'n_nota_credito',
         'fecha_registro'
     ];
+
 }

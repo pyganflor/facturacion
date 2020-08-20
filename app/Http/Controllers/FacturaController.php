@@ -50,10 +50,12 @@ class FacturaController extends Controller
     public function list(Request $request){
         $usuario = Auth::user();
 
-        return Factura::where([
-            ['factura.estado',$request->estado],
-            ['entorno',$usuario->perfil->entorno]
-        ])->join('cliente as c','factura.id_cliente','c.id_cliente')
+        return Factura::where('factura.estado',$request->estado)
+            ->where(function($q) use($usuario){
+            if(isset($usuario->perfil)){
+                $q->where('entorno',$usuario->perfil->entorno);
+            }
+        })->join('cliente as c','factura.id_cliente','c.id_cliente')
             ->join('detalle_factura as df','factura.id_factura','df.id_factura')
             ->select(
                 'factura.id_factura',
