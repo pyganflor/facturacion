@@ -14,7 +14,8 @@ class PerfilController extends Controller
     public function inicio(){
         return view('perfil.inicio',[
             'usuario'=> Usuario::where('id_usuario',Auth::user()->id_usuario)
-                                ->with('perfil')->with('modulos')->with('ptoEmision')->with('factureros')->first(),
+                                ->with('perfil')->with('modulos')->with('ptoEmision')
+                                ->with('factureros')->first(),
             'storage' => Storage::url('img_user')
         ]);
     }

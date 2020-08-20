@@ -236,7 +236,7 @@
                                                                         >
                                                                             <v-text-field
                                                                                     label="Nº de factura"
-                                                                                    v-model="secuencial.n_factura"
+                                                                                    v-model="fac.n_factura"
                                                                                     required
                                                                                     :rules="secuencialRule"
                                                                                     type="number"
@@ -251,7 +251,7 @@
                                                                             <v-text-field
 
                                                                                     label="Nº de guía"
-                                                                                    v-model="secuencial.n_guia_remision"
+                                                                                    v-model="fac.n_guia_remision"
                                                                                     required
                                                                                     type="number"
                                                                                     min="0"
@@ -265,7 +265,7 @@
                                                                         >
                                                                             <v-text-field
                                                                                     label="Nº de nota de débito"
-                                                                                    v-model="secuencial.n_nota_debito"
+                                                                                    v-model="fac.n_nota_debito"
                                                                                     required
                                                                                     type="number"
                                                                                     :rules="secuencialRule"
@@ -279,7 +279,7 @@
                                                                         >
                                                                             <v-text-field
                                                                                     label="Nº de nota de crédito"
-                                                                                    v-model="secuencial.n_nota_credito"
+                                                                                    v-model="fac.n_nota_credito"
                                                                                     required
                                                                                     type="number"
                                                                                     :rules="secuencialRule"
@@ -293,7 +293,7 @@
                                                                         >
                                                                             <v-text-field
                                                                                     label="Nº de retención"
-                                                                                    v-model="secuencial.n_retencion"
+                                                                                    v-model="fac.n_retencion"
                                                                                     required
                                                                                     type="number"
                                                                                     min="0"
@@ -632,7 +632,13 @@
                 if(tipo==='pe'){
                     this.ptoEmision.push({numero:''})
                 }else{
-                    this.facturero.push({numero:''})
+                    this.facturero.push({
+                        numero:'',
+                        n_guia_remison:'',
+                        n_nota_debito:'',
+                        n_nota_credito:'',
+                        n_retencion:''
+                    })
                 }
             },
 
