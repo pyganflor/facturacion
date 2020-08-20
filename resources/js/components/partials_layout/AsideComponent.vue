@@ -6,7 +6,7 @@
             :expand-on-hover="expandOnHover"
             :right=false
             :src="barImage"
-            mobile-break-point="640"
+            mobile-breakpoint="640"
             app
             width="230"
     >

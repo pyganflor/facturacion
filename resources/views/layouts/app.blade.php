@@ -33,7 +33,7 @@
                         :modulos="{{Auth::user()->modulos}}"
                 ></aside-component>
             @endif
-            <v-content>
+            <v-main>
                 @if(Auth::check())
                     <base-breadcumbs></base-breadcumbs>
                 @endif
@@ -54,7 +54,7 @@
                         </v-col>
                     </v-footer>
                 </v-container>
-            </v-content>
+            </v-main>
         </v-app>
     </div>
 </body>
