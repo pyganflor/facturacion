@@ -17,6 +17,7 @@ class Modulo extends Model
         'url',
         'icon',
         'estado',
+        'tipo',
         'fecha_registro'
     ];
 }

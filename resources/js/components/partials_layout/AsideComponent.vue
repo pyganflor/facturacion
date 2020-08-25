@@ -55,7 +55,11 @@
         >
             <v-subheader>Menú</v-subheader>
 
-            <v-list-item-group v-model="item" color="primary">
+            <v-list-item-group
+                    v-model="item"
+                    color="primary"
+            >
+
                 <v-list-item
                         link
                         dense
@@ -105,7 +109,7 @@
                         prepend-icon="mdi-cash-usd"
                         class="ml-n5"
                         dense
-                        v-if="modulos.length>0"
+                        v-if="moduloVentas.length>0"
                 >
                     <template  v-slot:activator >
                         <v-list-item-content >
@@ -115,7 +119,37 @@
                         </v-list-item-content>
                     </template>
                     <v-list-item
-                            v-for="(venta, x) in modulos"
+                            v-for="(venta, x) in moduloVentas"
+                            :key="x"
+                            dense
+                            :href=venta.modulo.url
+                    >
+                        <v-list-item-icon>
+                            <v-icon v-text="venta.modulo.icon"></v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title
+                                v-text="venta.modulo.nombre"
+                                dense
+                        ></v-list-item-title>
+                    </v-list-item>
+                </v-list-group>
+
+                <v-list-group
+                        sub-group
+                        prepend-icon="mdi-cash"
+                        class="ml-n5"
+                        dense
+                        v-if="moduloCompras.length>0"
+                >
+                    <template  v-slot:activator >
+                        <v-list-item-content >
+                            <v-list-item-title
+                                    style="font-size: .8125rem;font-weight: 500;line-height: 1rem;"
+                                    class="ml-3">Módulo compras</v-list-item-title>
+                        </v-list-item-content>
+                    </template>
+                    <v-list-item
+                            v-for="(venta, x) in moduloCompras"
                             :key="x"
                             dense
                             :href=venta.modulo.url
@@ -146,7 +180,7 @@
                 </v-list-item>
 
             </v-list-item-group>
-            <div />
+
         </v-list>
     </v-navigation-drawer>
 </template>
@@ -181,6 +215,8 @@
             item: 0,
             itemsConfig:[],
             itemsUser:[],
+            moduloVentas:[],
+            moduloCompras:[],
             menuConfig:[
                 {
                     usuario:[
@@ -232,7 +268,7 @@
                 },*/
                 {
                     title: 'Formularios',
-                    icon: 'mdi-file-document',
+                    icon: 'mdi-clipboard-text',
                     url:'formulario'
                 }
             ],
@@ -262,9 +298,16 @@
                     if(rol===2)
                         for(let mu of this.menuUsuario)
                             this.itemsUser.push(mu)
+
                 }
 
-                this.menuVentas = this.modulos
+                for(let moduldo of this.modulos){
+                    if(moduldo.modulo.tipo === 1){ //VENTAS
+                        this.moduloVentas.push(moduldo)
+                    }else if(moduldo.modulo.tipo === 2){ //COMPRAS
+                        this.moduloCompras.push(moduldo)
+                    }
+                }
             }
         },
         created(){

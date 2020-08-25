@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RequestReenvioCorreoComprobante;
-use App\Http\Requests\RequestValidaIdComprobante;
-use App\Jobs\pdf\PdfFactura;
-use App\Jobs\xml\XmlRespuestaFactura;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
+use App\Http\Requests\{
+    RequestReenvioCorreoComprobante,
+    RequestValidaIdComprobante,
+    RequestStoreFacura
+};
 use App\Model\{ArticuloCategoriaInventario,
     ArticuloFactura,
     Cliente,
@@ -20,10 +19,15 @@ use App\Model\{ArticuloCategoriaInventario,
     Inventario,
     Factura,
     Usuario,
-    UsuarioFacturero};
-use App\Http\Requests\RequestStoreFacura;
-use DomDocument;
+    UsuarioFacturero,
+    TipoIdentificacion,
+    Pais};
 use Illuminate\Support\Facades\{Storage,Auth};
+use App\Jobs\pdf\PdfFactura;
+use App\Jobs\xml\XmlRespuestaFactura;
+use DomDocument;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 
 class FacturaController extends Controller
@@ -41,7 +45,9 @@ class FacturaController extends Controller
             'factureros' => $usuario->factureros,
             'sustentoTributario' => SustentoTributario::get(),
             'puntoEmision' => $usuario->ptoEmision,
-            'tiposPago' => TipoPago::get(),
+            'tiposPago' => TipoPago::orderBy('nombre','asc')->get(),
+            'tipoIdentificacion' => TipoIdentificacion::orderBy('nombre','asc')->get(),
+            'paises' => Pais::orderBy('nombre','asc')->get(),
             'inventario' => Inventario::where('id_usuario',$usuario->id_usuario)->with('categoriasActivadas')->first()
         ]);
 
@@ -89,7 +95,6 @@ class FacturaController extends Controller
     public function store(RequestStoreFacura $request){
 
         try{
-
             $msg = '';
             $success=true;
             $usuario = Auth::user();
@@ -123,7 +128,7 @@ class FacturaController extends Controller
             $infoTributaria = $xml->createElement('infoTributaria');
             $factura->appendChild($infoTributaria);
 
-            if(Factura::where('clave_acceso',$claveAcceso)->exists() && $request->editar == "false"){
+            if(Factura::where('clave_acceso',$claveAcceso)->exists() && !$request->editar){
                 return response()->json([
                     'errors'=>['Mensaje:'=> 'La clave de acceso ya está registrada']
                 ],500);
@@ -143,7 +148,7 @@ class FacturaController extends Controller
                 'dirMatriz' => $usuario->perfil->direc_matriz
             ];
 
-            $request->request->add($informacionTributaria);
+            $request->query->add($informacionTributaria);
 
             foreach ($informacionTributaria as $key => $it) {
                 $nodo = $xml->createElement($key, $it);
@@ -163,7 +168,7 @@ class FacturaController extends Controller
                 'totalDescuento' => number_format($request->descuento, 2, ".", ""),
             ];
 
-            $request->request->add($informacionFactura);
+            $request->query->add($informacionFactura);
 
             foreach ($informacionFactura as $key => $if) {
                 $nodo = $xml->createElement($key, $if);
@@ -177,22 +182,21 @@ class FacturaController extends Controller
             $arrInformacionImpuestos=[];
 
             foreach ($request->articulos as $articulo) {
-                $articulo = json_decode($articulo);
 
-                foreach ($articulo->impuestos as $impuesto) {
+                foreach ($articulo['impuestos'] as $impuesto) {
 
-                    $arrInformacionImpuestos[$impuesto->codigo_imp][$impuesto->codigo_tipo_imp][]=[
-                        'codigo' => $impuesto->codigo_imp,
-                        'codigoPorcentaje' => $impuesto->codigo_tipo_imp,
-                        'baseImponible' => number_format($impuesto->base_imponible, 2, ".", ""),
-                        'valor' => number_format($impuesto->valor_imp, 2, ".", "")
+                    $arrInformacionImpuestos[$impuesto['codigo_imp']][$impuesto['codigo_tipo_imp']][]=[
+                        'codigo' => $impuesto['codigo_imp'],
+                        'codigoPorcentaje' => $impuesto['codigo_tipo_imp'],
+                        'baseImponible' => number_format($impuesto['base_imponible'], 2, ".", ""),
+                        'valor' => number_format($impuesto['valor_imp'], 2, ".", "")
                     ];
                     
                     $informacionImpuestos = [
-                        'codigo' => $impuesto->codigo_imp,
-                        'codigoPorcentaje' => $impuesto->codigo_tipo_imp,
-                        'baseImponible' => number_format($impuesto->base_imponible, 2, ".", ""),
-                        'valor' => number_format($impuesto->valor_imp, 2, ".", "")
+                        'codigo' => $impuesto['codigo_imp'],
+                        'codigoPorcentaje' => $impuesto['codigo_tipo_imp'],
+                        'baseImponible' => number_format($impuesto['base_imponible'], 2, ".", ""),
+                        'valor' => number_format($impuesto['valor_imp'], 2, ".", "")
                     ];
 
                     $arrArticulo['impuesto'][] = $informacionImpuestos;
@@ -238,14 +242,15 @@ class FacturaController extends Controller
                 }
             }
 
-            $request->request->add($arrArticulo);
+            $request->query->add($arrArticulo);
+
 
             $propina = $xml->createElement('propina', '0.00');
             $infoFactura->appendChild($propina);
 
             $importeTotal = $xml->createElement('importeTotal', number_format($request->total, 2, ".", ""));
 
-            $request->request->add(['importeTotal'=>number_format($request->total, 2, ".", "")]);
+            $request->query->add(['importeTotal'=>number_format($request->total, 2, ".", "")]);
 
             $infoFactura->appendChild($importeTotal);
 
@@ -279,8 +284,8 @@ class FacturaController extends Controller
                 'unidadTiempo' => $plazo
             ];
 
-            $request->request->add(['idFormaPago'=> $request->formaPago]);
-            $request->request->add($infoPagos);
+            $request->query->add(['idFormaPago'=> $request->formaPago]);
+            $request->query->add($infoPagos);
 
             foreach ($infoPagos as $key => $ip) {
                 $nodo = $xml->createElement($key, $ip);
@@ -293,17 +298,15 @@ class FacturaController extends Controller
             $articulos = [];
             foreach ($request->articulos as $x => $articulo) {
 
-                $articulo = json_decode($articulo);
-
                 $detalle = $xml->createElement('detalle');
                 $detalles->appendChild($detalle);
                 $informacionDetalle = [
-                    'codigoPrincipal' => $articulo->codigo_p,
-                    'descripcion' => $articulo->nombre,
-                    'cantidad' => $articulo->cantidad,
-                    'precioUnitario' => number_format($articulo->neto, 2, ".", ""),
-                    'descuento' => number_format($articulo->descuento, 2, ".", ""),
-                    'precioTotalSinImpuesto' => number_format($articulo->total, 2, ".", "")
+                    'codigoPrincipal' => $articulo['codigo_p'],
+                    'descripcion' => $articulo['nombre'],
+                    'cantidad' => $articulo['cantidad'],
+                    'precioUnitario' => number_format($articulo['neto'], 2, ".", ""),
+                    'descuento' => number_format($articulo['descuento'], 2, ".", ""),
+                    'precioTotalSinImpuesto' => number_format($articulo['total'], 2, ".", "")
                 ];
 
                 foreach ($informacionDetalle as $key => $iD) {
@@ -311,22 +314,22 @@ class FacturaController extends Controller
                     $detalle->appendChild($nodo);
                 }
 
-                $informacionDetalle['id_articulo'] = $articulo->id_articulo;
+                $informacionDetalle['id_articulo'] = $articulo['id_articulo'];
                 $articulos['articulo'][] = $informacionDetalle;
 
                 $impuestos = $xml->createElement('impuestos');
                 $detalle->appendChild($impuestos);
 
-                foreach ($articulo->impuestos as $imp) {
+                foreach ($articulo['impuestos'] as $imp) {
 
                     $impuesto = $xml->createElement('impuesto');
                     $impuestos->appendChild($impuesto);
                     $informacionImpuesto = [
-                        'codigo' => $imp->codigo_imp,
-                        'codigoPorcentaje' => $imp->codigo_tipo_imp,
-                        'tarifa' => number_format($imp->tarifa, 2, ".", ""),
-                        'baseImponible' => number_format($articulo->total, 2, ".", ""),
-                        'valor' => number_format($imp->valor_imp, 2, ".", "")
+                        'codigo' => $imp['codigo_imp'],
+                        'codigoPorcentaje' => $imp['codigo_tipo_imp'],
+                        'tarifa' => number_format($imp['tarifa'], 2, ".", ""),
+                        'baseImponible' => number_format($articulo['total'], 2, ".", ""),
+                        'valor' => number_format($imp['valor_imp'], 2, ".", "")
                     ];
 
                     $articulos['articulo'][$x]['impuestoArticulo'][] = $informacionImpuesto;
@@ -339,7 +342,7 @@ class FacturaController extends Controller
 
             }
 
-            $request->request->add($articulos);
+            $request->query->add($articulos);
 
             $informacionAdicional = $xml->createElement('infoAdicional');
             $factura->appendChild($informacionAdicional);
@@ -350,7 +353,7 @@ class FacturaController extends Controller
                 'Telefono' => $usuario->tlf
             ];
 
-            $request->request->add($campos_adicionales);
+            $request->query->add($campos_adicionales);
 
             foreach ($campos_adicionales as $key => $ca) {
                 $campoAdicional = $xml->createElement('campoAdicional', $ca);
@@ -364,9 +367,10 @@ class FacturaController extends Controller
             $xml = "fact_".$request->ptoEmision.$request->facturero.$secuencial.'.xml';
             $pathFacturas = storage_path('app/public/xml/facturas/');
             $carpetaPersonal = $usuario->id_usuario.'/'.($arrFecha[0].'_'.$arrFecha[1]);
-            $request->request->add(['carpeta' => $carpetaPersonal]);
+            $request->query->add(['carpeta' => $carpetaPersonal]);
 
             // GUARDAR DATOS DE LA FACTURA
+
             $storeFactura = $this->storeFactura($request->all(),true);
 
             $msg.= $storeFactura['msg'].'<br />';

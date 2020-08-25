@@ -28,6 +28,7 @@ class RequestStoreFacura extends FormRequest
      */
     public function rules(Request $request)
     {
+
         return [
             'ptoEmision' => 'required|numeric|between:001,999',
             'facturero' => 'required|numeric|between:001,999',
@@ -63,30 +64,25 @@ class RequestStoreFacura extends FormRequest
             },
             'plazo' => 'required_if:formaPago,2',
             'undTiempoPlazo' =>  'required_if:formaPago,2',
-            'articulos' =>function($attribute,$value,$onFailure){
+            'articulos.*' =>function($attribute,$value,$onFailure){
 
-                foreach ($value as $art) {
+                if(!ArticuloCategoriaInventario::where('id_articulo_categoria_inventario',$value['id_articulo'])->exists())
+                    $onFailure('El artículo '. $value['nombre']. ' no existe');
 
-                    $articulo = json_decode($art);
+                if($value['stock']==0)
+                    $onFailure('No existe stock del artículo '. $value['nombre']. ' en el inventario');
 
-                    if(!ArticuloCategoriaInventario::where('id_articulo_categoria_inventario',$articulo->id_articulo)->exists())
-                        $onFailure('El artículo '. $articulo->nombre. ' no existe');
+                if(!isset($value['neto']) || $value['neto']=='')
+                    $onFailure('No se obtuvo el valor del artículo '. $value['nombre']);
 
-                    if($articulo->stock==0)
-                        $onFailure('No existe stock del artículo '. $articulo->nombre. ' en el inventario');
+                foreach ($value['impuestos'] as $impuesto){
 
-                    if(!isset($articulo->neto) || $articulo->neto=='')
-                        $onFailure('No se obtuvo el valor del artículo '. $articulo->nombre);
+                    if(!Impuesto::where('id_impuesto',$impuesto['id_impuesto'])->exists())
+                        $onFailure('El impuesto '. $impuesto['nombre_imp'] .' no existe');
 
-                    foreach ($articulo->impuestos as $impuesto){
+                    if(!TipoImpuesto::where('id_tipo_impuesto',$impuesto['id_tipo_impuesto'])->exists())
+                        $onFailure('El tipo de impuesto '. $impuesto['nombre_tipo_impuesto'] .' no existe');
 
-                        if(!Impuesto::where('id_impuesto',$impuesto->id_impuesto)->exists())
-                            $onFailure('El impuesto '. $impuesto->nombre_imp .' no existe');
-
-                        if(!TipoImpuesto::where('id_tipo_impuesto',$impuesto->id_tipo_impuesto)->exists())
-                            $onFailure('El tipo de impuesto '. $impuesto->nombre_tipo_impuesto .' no existe');
-
-                    }
                 }
 
             }

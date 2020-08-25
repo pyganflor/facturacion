@@ -37,6 +37,7 @@ Route::group(['middleware' => 'auth'],function () {
     include_once 'usuarios/proveedores/rutas.php';
     include_once 'usuarios/comprobantes/factura.php';
     include_once 'usuarios/comprobantes/retenciones_cliente.php';
+    include_once 'usuarios/comprobantes/facturas_cliente.php';
 
     Route::group(['middleware'=>'Permiso'],function (){
 

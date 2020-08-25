@@ -28,34 +28,33 @@ class ClienteController extends Controller
         try{
 
             $data=[
-                'id_tipo_identificacion'=> $request->data['id_tipo_identificacion'],
+                'id_tipo_identificacion'=> $request->id_tipo_identificacion,
                 'id_usuario' => Auth::id(),
-                'correo' =>$request->data['correo'],
-                'nombre' => $request->data['nombre'],
-                'id_tipo_pago' => $request->data['id_tipo_pago'],
-                'codigo_pais' => $request->data['codigo_pais'],
-                'tlf' => $request->data['tlf'],
-                'identificacion' => $request->data['identificacion'],
-                'direccion' => $request->data['direccion'],
-                'plazo_pago' => $request->data['plazo_pago'],
-                'ut_plazo_pago' => $request->data['ut_plazo_pago']
+                'correo' =>$request->correo,
+                'nombre' => $request->nombre,
+                'id_tipo_pago' => $request->id_tipo_pago,
+                'codigo_pais' => $request->codigo_pais,
+                'tlf' => $request->tlf,
+                'identificacion' => $request->identificacion,
+                'direccion' => $request->direccion,
+                'plazo_pago' => $request->plazo_pago,
+                'ut_plazo_pago' => $request->ut_plazo_pago
             ];
 
-            $cliente = Cliente::updateOrCreate(['id_cliente'=> $request->data['id_cliente']],$data);
-            $accion = isset($request->data['id_cliente']) ? 'actualizado': 'creado';
+            $cliente = Cliente::updateOrCreate(['id_cliente'=> $request->id_cliente],$data);
+            $accion = isset($request->id_cliente) ? 'actualizado': 'creado';
 
-            if(!isset($request->data['id_cliente']))
-                $cliente = Cliente::all()->last();
+            if(!isset($request->id_cliente))
+                $cliente = Cliente::orderBy('id_cliente','desc')->first();
 
             return response()->json([
                 'msg' => 'El cliente '.$cliente->nombre.' ha sido '.$accion,
-                'idCliente' =>$cliente->id_cliente
+                'idCliente' =>$cliente->id_cliente,
+                'cliente' => $cliente
             ]);
 
         }catch (\Exception $e){
-
             return HomeController::catch($e);
-
         }
 
     }

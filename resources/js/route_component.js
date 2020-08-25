@@ -35,8 +35,12 @@ Vue.component('gestion-proveedores', require('./components/proveedores/Proveedor
 //COMPROBANTES
 Vue.component('gestion-factura', require('./components/comprobantes/FacturaComponent').default);
 Vue.component('gestion-retencion-cliente', require('./components/comprobantes/RetencionClienteComponent').default);
+Vue.component('gestion-factura-cliente', require('./components/comprobantes/FacturaClienteComponent').default);
 
 
 //COMPONENTES TEMPLATE BASE
 Vue.component('base-material-card', require('./components/base/MaterialCard.vue').default);
 Vue.component('base-breadcumbs', require('./components/base/BreadCumbsComponent.vue').default);
+Vue.component('descripcion-vista', require('./components/base/DescripcionVistaComponent.vue').default);
+Vue.component('form-cliente', require('./components/base/FormClienteComponent.vue').default);
+

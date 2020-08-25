@@ -1,19 +1,13 @@
 <template>
     <div class="col-md-12 ">
         <v-form ref="form">
-            <v-alert
-                    color="primary"
-                    dark
+            <descripcion-vista
+                    descripcion="En esta sección puede gestionar sus clientes, agregar nuevos, editar y eliminar"
                     icon="mdi-account-convert"
-                    border="left"
-                    dense
-
-            >
-                En esta sección puede gestionar sus clientes, agregar nuevos, editar y eliminar
-            </v-alert>
+            />
             <v-data-table
                     :headers="headers"
-                    :items="desserts"
+                    :items="dataTable"
                     sort-by="estado"
                     update: sort-desc
                     class="elevation-1"
@@ -39,7 +33,26 @@
                                 hide-details
                                 class="mr-5"
                         ></v-text-field>
-                        <v-dialog
+                        <v-btn
+                                color="primary"
+                                fab dark
+                                small
+                                class="mb-2"
+                                @click="dialog = true"
+                        >
+                            <v-icon>mdi-account-plus</v-icon>
+                        </v-btn>
+                        <form-cliente
+                            :tipoidentificacion=tipoidentificacion
+                            :paises=paises
+                            :dialog=dialog
+                            :editedItem=editedItem
+                            :editedIndex=editedIndex
+                            :tipopago=tipopago
+                            @setDialog=setDialog
+                            @setData=setDataTable
+                        ></form-cliente>
+                        <!--<v-dialog
                                 v-model="dialog"
                                 max-width="900px"
                                 :persistent=true
@@ -172,7 +185,7 @@
                                     </v-col>
                                 </v-row>
                             </v-footer>
-                        </v-dialog>
+                        </v-dialog>-->
                     </v-toolbar>
                 </template>
                 <template v-slot:item.razon_social="{ item }">
@@ -262,8 +275,7 @@
             search : '',
             textAlert: 'No se encontraron registros',
             editedIndex: -1,
-            desserts: [],
-            //tipo_impuestos:[],
+            dataTable: [],
             ut:['Días','Mes','Años'],
             editedItem: {
                 id_cliente:'',
@@ -274,12 +286,10 @@
                 codigo_pais:'',
                 tlf:'',
                 identificacion:'',
-                //id_impuesto:'',
                 direccion:'',
                 plazo_pago:'',
                 ut_plazo_pago:'',
                 estado:true
-                //id_tipo_impuesto:''
             },
             defaultItem: {
                 id_cliente:'',
@@ -290,14 +300,13 @@
                 codigo_pais:'',
                 tlf:'',
                 identificacion:'',
-                //id_impuesto:'',
                 direccion:'',
                 plazo_pago:'',
                 ut_plazo_pago:'',
                 estado:true
-                //id_tipo_impuesto:''
             },
         }),
+
         computed: {
             formTitle () {
                 return this.editedIndex === -1 ? 'Nuevo cliente' : 'Editar cliente '+this.editedItem.nombre
@@ -305,16 +314,12 @@
 
             ...mapState(['paramsAlertQuestion','loadingTable'])
         },
-        watch: {
-            dialog (val) {
-                val || this.closeModal()
-            },
-        },
+
         methods:{
 
             ...mapMutations(['setLoadingTable','setLoadingBtn']),
 
-            consumidorFinal(idTipIdent){
+            /*consumidorFinal(idTipIdent){
                 if(idTipIdent===4){ // 4 es el ID del consumidor final en la tabla tipo_identificacion
                     this.editedItem.identificacion = 9999999999999
                     this.cm=true
@@ -322,21 +327,31 @@
                     this.editedItem.identificacion = ''
                     this.cm=false
                 }
-            },
-
-            /*impuesto(idImpuesto){
-                for(let impuestos of this.impuestos){
-                    if(impuestos.id_impuesto === idImpuesto){
-                        this.tipo_impuestos = impuestos.tipo_impuesto
-                        break;
-                    }
-                }
             },*/
 
+            setDataTable(item){
+                console.log(item)
+
+                if (this.editedIndex > -1) { // ACTUALIZA
+                    Object.assign(this.dataTable[this.editedIndex],this.editedItem)
+                } else { // GUARDA
+                    this.editedItem.id_cliente = item.idCliente;
+                    this.dataTable.push(this.editedItem)
+                }
+            },
+
+            setDialog(estado){
+                this.dialog=estado
+                this.$nextTick(() => {
+                    this.editedItem = Object.assign({}, this.defaultItem)
+                    this.editedIndex = -1
+                });
+            },
+
             editItem (item) {
-                this.editedIndex = this.desserts.indexOf(item)
+                this.dialog = true
+                this.editedIndex = this.dataTable.indexOf(item)
                 this.editedItem = Object.assign({}, item)
-                //this.impuesto(item.id_impuesto)
                 this.dialog = true
             },
 
@@ -371,15 +386,7 @@
                 })
             },
 
-            closeModal () {
-                this.dialog = false;
-                this.$nextTick(() => {
-                    this.editedItem = Object.assign({}, this.defaultItem)
-                    this.editedIndex = -1
-                });
-            },
-
-            save () {
+            /*save () {
 
                 if (!this.$refs.form.validate())
                     return;
@@ -392,10 +399,10 @@
                 }).then(response => {
 
                     if (this.editedIndex > -1) { // ACTUALIZA
-                        Object.assign(this.desserts[this.editedIndex],this.editedItem)
+                        Object.assign(this.dataTable[this.editedIndex],this.editedItem)
                     } else { // GUARDA
                         this.editedItem.id_cliente = response.data.idCliente;
-                        this.desserts.push(this.editedItem)
+                        this.dataTable.push(this.editedItem)
                     }
 
                     this.closeModal();
@@ -420,10 +427,10 @@
                     });
                 });
 
-            }
+            }*/
         },
         mounted() {
-            this.desserts = this.clientes
+            this.dataTable = this.clientes
         }
     }
 </script>

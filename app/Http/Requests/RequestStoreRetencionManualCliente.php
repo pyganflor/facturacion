@@ -28,6 +28,7 @@ class RequestStoreRetencionManualCliente extends FormRequest
      */
     public function rules(Request $request)
     {
+        dd($request->all());
         return [
             'idFactura' => 'required|exists:factura,id_factura',
             'idCliente' => 'required|exists:cliente,id_cliente',

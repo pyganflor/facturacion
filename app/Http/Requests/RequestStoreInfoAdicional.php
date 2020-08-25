@@ -26,6 +26,7 @@ class RequestStoreInfoAdicional extends FormRequest
      */
     public function rules(Request $request)
     {
+
         return [
             'entorno'=> 'required',
             'id_usuario' => 'required|exists:usuario,id_usuario',

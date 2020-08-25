@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Model\Impuesto;
 use App\Model\TipoImpuesto;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 
 class RequestStoreInventario extends FormRequest
 {
@@ -23,8 +24,9 @@ class RequestStoreInventario extends FormRequest
      *
      * @return array
      */
-    public function rules()
+    public function rules(Request $request)
     {
+
         return [
             'articulo'=> 'required|max:300',
             'id_categoria_inventario'=>'required|exists:categoria_inventario,id_categoria_inventario',
@@ -37,22 +39,20 @@ class RequestStoreInventario extends FormRequest
 
                 foreach ($value as $impuesto) {
 
-                    $imp = json_decode($impuesto);
-
-                    if (!$iva && $imp->id_impuesto == 1)
+                    if (!$iva && $impuesto['id_impuesto'] == 1)
                         $iva = true;
 
-                    if (!isset($imp->id_impuesto)) {
+                    if (!isset($impuesto['id_impuesto'])) {
                         $onFailure('No se ha seleccionado el impuesto');
                     } else {
-                        if (!Impuesto::where('id_impuesto', $imp->id_impuesto)->exists())
+                        if (!Impuesto::where('id_impuesto', $impuesto['id_impuesto'])->exists())
                             $onFailure('El impuesto no existe');
                     }
 
-                    if (!isset($imp->id_tipo_impuesto)) {
+                    if (!isset($impuesto['id_tipo_impuesto'])) {
                         $onFailure('No se ha seleccionado el tipo de impuesto');
                     } else {
-                        if (!TipoImpuesto::where('id_tipo_impuesto', $imp->id_tipo_impuesto)->exists())
+                        if (!TipoImpuesto::where('id_tipo_impuesto', $impuesto['id_tipo_impuesto'])->exists())
                             $onFailure('El tipo de impuesto no existe');
                     }
                 }

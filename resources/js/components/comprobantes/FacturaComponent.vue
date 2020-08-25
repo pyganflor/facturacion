@@ -3,15 +3,10 @@
         <v-overlay :value="overlay">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
         </v-overlay>
-        <v-alert
-                color="primary"
-                dark
+        <descripcion-vista
+                descripcion="En esta sección puede realizar las diferentes acciones con sus facturas"
                 icon="mdi-file-document"
-                border="left"
-                dense
-        >
-            En esta sección puede realizar las diferentes acciones con sus facturas
-        </v-alert>
+        />
         <v-data-table
                 :headers="headers"
                 :items="dataTable"
@@ -270,9 +265,20 @@
                                                                             color="primary"
                                                                             title="Crear nuevo cliente"
                                                                             x-small
+                                                                            @click="dialogCliente=true"
                                                                     >
                                                                         <v-icon>mdi-account-multiple-plus</v-icon>
                                                                     </v-btn>
+                                                                    <form-cliente
+                                                                            :tipoidentificacion=tipoidentificacion
+                                                                            :paises=paises
+                                                                            :dialog=dialogCliente
+                                                                            :editedItem=editedItem
+                                                                            :editedIndex=editedIndexCliente
+                                                                            :tipopago=tipopago
+                                                                            @setDialog=setDialog
+                                                                            @setData=setDataCliente
+                                                                    ></form-cliente>
                                                                 </div>
                                                             </v-alert>
                                                         </v-col>
@@ -284,7 +290,7 @@
                                                         >
                                                             <v-select
                                                                     class="mt-5"
-                                                                    :items="clientes"
+                                                                    :items="clientesComponent"
                                                                     label="Cliente"
                                                                     item-text="nombre"
                                                                     item-value="id_cliente"
@@ -319,7 +325,7 @@
                                                         >
                                                             <v-select
 
-                                                                    :items="tipos_pago"
+                                                                    :items="tipopago"
                                                                     label="Tipo de pago"
                                                                     :rules="requiredRule"
                                                                     item-text="nombre"
@@ -706,6 +712,18 @@
 
     export default {
         props:{
+            tipoidentificacion:{
+                type:Array,
+                required:true
+            },
+            paises:{
+                type:Array,
+                required:true
+            },
+            tipopago:{
+                type:Array,
+                required:true
+            },
             clientes:{
                 type:Array,
                 default:[]
@@ -719,10 +737,6 @@
                 default:[]
             },
             punto_emision:{
-                type:Array,
-                default:[]
-            },
-            tipos_pago:{
                 type:Array,
                 default:[]
             },
@@ -745,6 +759,7 @@
             correos:'',
             puntoEmision:'',
             facturero:'',
+            dialogCliente:false,
             dialog: false,
             fechaDocumento:new Date().toISOString().substr(0, 10),
             fechaVencimiento:new Date().toISOString().substr(0, 10),
@@ -767,11 +782,41 @@
             editar :false,
             secuencialEdit :'',
             idFactura:'',
+            editedIndexCliente: -1,
+            clientesComponent:[],
             undTiempo: ['Dias','Semanas','Meses'],
             formaPago:[
                 {id_forma_pago:1,nombre:'Contado'},
                 {id_forma_pago:2,nombre:'Crédito'}
             ],
+            editedItem: {
+                id_cliente:'',
+                id_tipo_identificacion:'',
+                correo: '',
+                nombre: '',
+                id_tipo_pago:'',
+                codigo_pais:'',
+                tlf:'',
+                identificacion:'',
+                direccion:'',
+                plazo_pago:'',
+                ut_plazo_pago:'',
+                estado:true
+            },
+            defaultItem: {
+                id_cliente:'',
+                id_tipo_identificacion:'',
+                correo: '',
+                nombre: '',
+                id_tipo_pago:'',
+                codigo_pais:'',
+                tlf:'',
+                identificacion:'',
+                direccion:'',
+                plazo_pago:'',
+                ut_plazo_pago:'',
+                estado:true
+            },
             headers: [
                 { text: 'Secuencial', value: 'secuencial' },
                 { text: 'Clave acceso', value: 'clave_acceso', align: 'center' },
@@ -1271,8 +1316,6 @@
 
                 })
 
-
-
             },
 
             searchDataTable(){
@@ -1311,12 +1354,29 @@
                     this.overlay = false
                     this.dialog = true
                 })
+            },
+
+            setDialog(estado){
+                this.dialogCliente=estado
+                this.$nextTick(() => {
+                    this.editedItem = Object.assign({}, this.defaultItem)
+                    this.editedIndexCliente = -1
+                });
+            },
+
+            setDataCliente(data){
+                console.log(this.clientes,data.cliente)
+                this.clientesComponent.push(data.cliente)
+                this.idCliente = data.cliente.id_cliente
+                this.setInfo()
             }
 
         },
 
         created () {
             this.getDataComponent()
+
+            this.clientesComponent= this.clientes
 
             if(this.factureros.length===1)
                 this.facturero = this.factureros[0].numero
@@ -1332,9 +1392,7 @@
                     nombre:categoria.categoria
                 })
             }
-
         },
-
 
     }
 </script>

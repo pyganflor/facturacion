@@ -8,7 +8,9 @@
             :factureros="{{$factureros}}"
             :sustento_tributario="{{$sustentoTributario}}"
             :punto_emision="{{$puntoEmision}}"
-            :tipos_pago="{{$tiposPago}}"
+            :tipopago="{{$tiposPago}}"
             :inventario="{{$inventario}}"
+            :tipoidentificacion="{{$tipoIdentificacion}}"
+            :paises="{{$paises}}"
     ></gestion-factura>
 @endsection

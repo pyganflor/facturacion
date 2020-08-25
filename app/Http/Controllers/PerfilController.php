@@ -141,28 +141,26 @@ class PerfilController extends Controller
                 ]
             );
 
-
             $oldFactureros = UsuarioFacturero::where('id_usuario',$request->id_usuario)->pluck('id_usuario_facturero')->toArray();
             $oldptosEmision = UsuarioPtoEmision::where('id_usuario',$request->id_usuario)->pluck('id_usuario_pto_emision')->toArray();
 
             foreach ($request->factureros as $x=> $facturero) {
-                $f = json_decode($facturero);
+
                 UsuarioFacturero::create([
                     'id_usuario' => $request->id_usuario,
-                    'numero' => str_pad($f->numero, 3, '0', STR_PAD_LEFT),
-                    'n_factura' =>str_pad((!isset($f->n_factura) ? 1 : $f->n_factura), 9, '0', STR_PAD_LEFT),
-                    'n_guia_remision' => str_pad((!isset($f->n_guia_remision) ? 1 : $f->n_guia_remision), 9, '0', STR_PAD_LEFT),
-                    'n_nota_debito' => str_pad((!isset($f->n_nota_debito) ? 1 : $f->n_nota_debito), 9, '0', STR_PAD_LEFT),
-                    'n_nota_credito' => str_pad((!isset($f->n_nota_credito) ? 1 : $f->n_nota_credito), 9, '0', STR_PAD_LEFT),
-                    'n_retencion' => str_pad((!isset($f->n_retencion) ? 1 : $f->n_retencion), 9, '0', STR_PAD_LEFT),
+                    'numero' => str_pad($facturero['numero'], 3, '0', STR_PAD_LEFT),
+                    'n_factura' =>str_pad((!isset($facturero['n_factura']) ? 1 : $facturero['n_factura']), 9, '0', STR_PAD_LEFT),
+                    'n_guia_remision' => str_pad((!isset($facturero['n_guia_remision']) ? 1 : $facturero['n_guia_remision']), 9, '0', STR_PAD_LEFT),
+                    'n_nota_debito' => str_pad((!isset($facturero['n_nota_debito']) ? 1 : $facturero['n_nota_debito']), 9, '0', STR_PAD_LEFT),
+                    'n_nota_credito' => str_pad((!isset($facturero['n_nota_credito']) ? 1 : $facturero['n_nota_credito']), 9, '0', STR_PAD_LEFT),
+                    'n_retencion' => str_pad((!isset($facturero['n_retencion']) ? 1 : $facturero['n_retencion']), 9, '0', STR_PAD_LEFT),
                 ]);
             }
 
             foreach ($request->ptoEmision as $y => $ptoEmision) {
-                $p = json_decode($ptoEmision);
                 UsuarioPtoEmision::create([
                     'id_usuario' => $request->id_usuario,
-                    'numero' => str_pad($p->numero, 3, '0', STR_PAD_LEFT)
+                    'numero' => str_pad($ptoEmision['numero'], 3, '0', STR_PAD_LEFT)
                 ]);
             }
 

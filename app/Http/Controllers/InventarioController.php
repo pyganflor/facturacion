@@ -111,12 +111,10 @@ class InventarioController extends Controller
 
            foreach ($request->impuestos as $impuesto) {
 
-                $imp = json_decode($impuesto);
-
                 ArticuloImpuesto::create([
                    'id_articulo_categoria_inventario'=> $articulo->id_articulo_categoria_inventario,
-                    'id_impuesto' => $imp->id_impuesto,
-                    'id_tipo_impuesto' => $imp->id_tipo_impuesto
+                    'id_impuesto' => $impuesto['id_impuesto'],
+                    'id_tipo_impuesto' => $impuesto['id_tipo_impuesto']
                 ]);
 
            }

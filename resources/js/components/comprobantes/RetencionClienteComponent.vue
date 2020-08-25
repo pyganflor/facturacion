@@ -1,17 +1,12 @@
-<template>
+<template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
     <div>
-        <v-overlay :value="overlay" z-index="999">
+        <v-overlay :value="overlay" z-index="999999">
             <v-progress-circular indeterminate size="64"></v-progress-circular>
         </v-overlay>
-        <v-alert
-                color="primary"
-                dark
+        <descripcion-vista
+                descripcion="En esta sección puede realizar las diferentes acciones con las retenciones recibidas de sus clientes"
                 icon="mdi-percent"
-                border="left"
-                dense
-        >
-            En esta sección puede realizar las diferentes acciones con las retenciones recibidas de sus clientes
-        </v-alert>
+        />
         <v-data-table
                 :headers="headers"
                 :items="dataTable"

@@ -8,6 +8,7 @@
             <v-col
                     cols="12"
                     sm="4"
+                    class="mb-4 mb-md-0"
             >
                 <v-card
                         class="mx-auto"
@@ -39,6 +40,7 @@
             <v-col
                     cols="12"
                     sm="4"
+                    class="mb-4 mb-md-0"
             >
                 <v-card
                         class="mx-auto"
@@ -69,6 +71,7 @@
             <v-col
                     cols="12"
                     sm="4"
+                    class="mb-4 mb-md-0"
             >
                 <v-card
                         class="mx-auto"

@@ -20,13 +20,38 @@
                 <v-icon v-else> mdi-dots-vertical </v-icon>
             </v-btn>
 
-            <v-toolbar-title
-                    class="hidden-sm-and-down font-weight-light"
-            />
+            <v-toolbar-title class="hidden-sm-and-down font-weight-light"/>
 
             <v-spacer />
 
-            <div class="mx-3" />
+            <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                            icon
+                            dark
+                            v-bind="attrs"
+                            v-on="on"
+                    >
+                        <v-icon>mdi-file-document</v-icon>
+                    </v-btn>
+
+                </template>
+                <span>Crear factura</span>
+            </v-tooltip>
+
+            <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                            icon
+                            dark
+                            v-bind="attrs"
+                            v-on="on"
+                    >
+                        <v-icon>mdi-file-import</v-icon>
+                    </v-btn>
+                </template>
+                <span>Registrar retención</span>
+            </v-tooltip>
 
             <v-menu
                     bottom
@@ -74,7 +99,6 @@
                     </div>
                 </v-list>
             </v-menu>
-
             <v-btn
                     class="ml-2 white--text"
                     min-width="0"

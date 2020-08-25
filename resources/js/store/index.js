@@ -176,12 +176,15 @@ export default new Vuex.Store({
         httpRequest({commit,state,dispatch},payload){
 
             return new Promise((resolve, reject)=>{
+                let body =  {params: payload.data}
+                if(payload.method === 'post' || payload.method === 'POST')
+                    body = {data: payload.data}
 
                 axios({
-                    method:payload.method,
-                    url: payload.url,
-                    params : payload.data
-                }).then(res => {
+                        method:payload.method,
+                        url: payload.url,
+                        ...body
+                    }).then(res => {
 
                     resolve(res)
 

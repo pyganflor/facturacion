@@ -27,6 +27,7 @@ class RequestUpdateAccesos extends FormRequest
      */
     public function rules(Request $request)
     {
+
         return [
             'usuario' => function($attribute,$value,$onFailure) use ($request){
                 if(strlen($value)<1)
