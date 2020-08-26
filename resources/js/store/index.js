@@ -20,6 +20,10 @@ export default new Vuex.Store({
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar'
         },
+        formaPago:[
+            {id_forma_pago:1,nombre:'Contado'},
+            {id_forma_pago:2,nombre:'Crédito'}
+        ],
         sweetAlert:{
             title:'Éxito',
             html:'',

@@ -11,6 +11,7 @@ use App\Model\{ArticuloCategoriaInventario,
     ArticuloFactura,
     Cliente,
     DetalleFactura,
+    FacturaPago,
     ImpuestoArticuloFactura,
     ImpuestoDetalleFactura,
     SustentoTributario,
@@ -43,7 +44,7 @@ class FacturaController extends Controller
                 ['estado',true]
             ])->get(),
             'factureros' => $usuario->factureros,
-            'sustentoTributario' => SustentoTributario::get(),
+            'sustentoTributario' => SustentoTributario::orderBy('nombre','asc')->get(),
             'puntoEmision' => $usuario->ptoEmision,
             'tiposPago' => TipoPago::orderBy('nombre','asc')->get(),
             'tipoIdentificacion' => TipoIdentificacion::orderBy('nombre','asc')->get(),
@@ -243,7 +244,6 @@ class FacturaController extends Controller
             }
 
             $request->query->add($arrArticulo);
-
 
             $propina = $xml->createElement('propina', '0.00');
             $infoFactura->appendChild($propina);
@@ -560,16 +560,21 @@ class FacturaController extends Controller
                     'id_sustento_tributario' => $request['sustTributario'],
                     'total' => $request['total'],
                     'comentario' => isset($request['comentario']) ? $request['comentario'] : '',
-                    'correos'=> $request['correos'],
-                    'id_forma_pago' => $request['idFormaPago'],
-                    'id_tipo_pago' => $request['idTipoPago'],
-                    'plazo' => $request['plazo'],
-                    'und_tiempo' => $request['undTiempoPlazo']
+                    'correos'=> $request['correos']
                 ]
             );
 
             if(!isset($factura->id_factura))
                 $factura = Factura::orderBy('id_factura','desc')->first();
+
+            FacturaPago::create([
+                'id_factura' => $factura->id_factura,
+                'id_forma_pago' => $request['idFormaPago'],
+                'total' => $request['total'],
+                'id_tipo_pago' => $request['idTipoPago'],
+                'cantidad' => $request['plazo'],
+                'und_tiempo' => $request['undTiempoPlazo']
+            ]);
 
             $detalleFactura = DetalleFactura::updateOrCreate(
                 ['id_factura' => $factura->id_factura],
@@ -654,7 +659,7 @@ class FacturaController extends Controller
             if($request['editar']=="false"){
                 $usuario = Auth::user();
                 $facturero = $usuario->factureros->where('numero',$request['ptoEmi'])->first();
-                $facturero= UsuarioFacturero::find($facturero->id_usuario_facturero);
+                $facturero = UsuarioFacturero::find($facturero->id_usuario_facturero);
                 $facturero->update(['n_factura'=> str_pad($request['secuencial']+1, 9, '0', STR_PAD_LEFT)]);
             }
 
@@ -770,13 +775,13 @@ class FacturaController extends Controller
                 'fechaVenc' => $factura->fecha_venc,
                 'sustTributario' => $factura->id_sustento_tributario,
                 'idCliente' => $factura->id_cliente,
-                'formaPago'=>$factura->id_forma_pago,
                 'comentario' => $factura->comentario,
-                'idTipoPago'=> $factura->id_tipo_pago,
                 'correos'=> $factura->correos,
-                'plazo' => $factura->plazo,
-                'unTiempoPlazo' => $factura->und_tiempo,
-                'articulos' => $factura->articulos
+                'articulos' => $factura->articulos,
+                'formaPago'=>$factura->pagos[0]->id_forma_pago,
+                'idTipoPago'=> $factura->pagos[0]->id_tipo_pago,
+                'plazo' => $factura->pagos[0]->cantidad,
+                'unTiempoPlazo' => $factura->pagos[0]->und_tiempo
             ]);
 
         }catch(\Exception $e){

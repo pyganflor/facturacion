@@ -21,6 +21,7 @@ class ArticuloCategoriaInventario extends Model
         'codigo_a',
         'estado',
         'und',
+        'venta',
         'fecha_registro'
     ];
 

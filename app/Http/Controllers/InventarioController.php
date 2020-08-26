@@ -10,7 +10,6 @@ use App\Http\Requests\RequestStoreInventario;
 class InventarioController extends Controller
 {
     public function inicio(){
-
         return view('inventario.inicio',[
             'inventario' => Inventario::where('id_usuario',Auth::id())->with('categorias')->first(),
             'impuestos' => Impuesto::where('tipo','factura')->with('tipo_impuesto')->get(),
@@ -73,7 +72,7 @@ class InventarioController extends Controller
         try{
 
             $categoria = CategoriaInventario::find($request->id_categoria_inventario);
-            $categoria->update(['estado'=> $request->estado!="true"]);
+            $categoria->update(['estado'=> $request->estado!=true]);
 
             return response()->json([
                 'msg' => 'La categoría ha sido '.($request->estado ? 'desactivada': 'activada'),
@@ -101,6 +100,7 @@ class InventarioController extends Controller
                    'articulo' => $request->articulo, 'neto' => $request->neto,
                    'stock' => $request->stock,
                    'codigo_p' => !isset($request->codigo_p) ? 'ART'.str_pad(($cant+1),6,0,STR_PAD_LEFT) : $request->codigo_p, 'codigo_a' => $request->codigo_a, 'und' => $request->und,
+                   'venta' => $request->venta
                ]
            );
 

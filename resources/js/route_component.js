@@ -35,7 +35,7 @@ Vue.component('gestion-proveedores', require('./components/proveedores/Proveedor
 //COMPROBANTES
 Vue.component('gestion-factura', require('./components/comprobantes/FacturaComponent').default);
 Vue.component('gestion-retencion-cliente', require('./components/comprobantes/RetencionClienteComponent').default);
-Vue.component('gestion-factura-cliente', require('./components/comprobantes/FacturaClienteComponent').default);
+Vue.component('gestion-factura-proveedor', require('./components/comprobantes/FacturaProveedorComponent').default);
 
 
 //COMPONENTES TEMPLATE BASE

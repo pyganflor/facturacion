@@ -14,7 +14,8 @@ class FacturaPago extends Model
 
     protected $fillable = [
         'id_factura',
-        'forma_pago',
+        'id_tipo_pago',
+        'id_forma_pago',
         'total',
         'und_tiempo',
         'cantidad'

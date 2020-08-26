@@ -43,8 +43,6 @@ class RequestStoreFacura extends FormRequest
             }],
             'sustTributario'=> 'required|exists:sustento_tributario,id_sustento_tributario',
             'idCliente'=> 'required|exists:cliente,id_cliente',
-            'formaPago' => 'required|numeric',
-            'idTipoPago' => 'required|numeric|exists:tipo_pago,id_tipo_pago',
             'total' => function($attribute,$value,$onFailure) use ($request){
                 if($value>=200){
                     $cliente= Cliente::find($request->idCliente);
@@ -62,6 +60,8 @@ class RequestStoreFacura extends FormRequest
                     }
                 }
             },
+            'formaPago' => 'required|numeric',
+            'idTipoPago' => 'required|numeric|exists:tipo_pago,id_tipo_pago',
             'plazo' => 'required_if:formaPago,2',
             'undTiempoPlazo' =>  'required_if:formaPago,2',
             'articulos.*' =>function($attribute,$value,$onFailure){

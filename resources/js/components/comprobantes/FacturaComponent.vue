@@ -785,10 +785,6 @@
             editedIndexCliente: -1,
             clientesComponent:[],
             undTiempo: ['Dias','Semanas','Meses'],
-            formaPago:[
-                {id_forma_pago:1,nombre:'Contado'},
-                {id_forma_pago:2,nombre:'Crédito'}
-            ],
             editedItem: {
                 id_cliente:'',
                 id_tipo_identificacion:'',
@@ -856,7 +852,13 @@
                 return this.dates.join(' ~ ')
             },
 
-            ...mapState(['loadingBtn','paramsAlertQuestion','estados','loadingTable']),
+            ...mapState([
+                'loadingBtn',
+                'paramsAlertQuestion',
+                'estados',
+                'loadingTable',
+                'formaPago'
+            ]),
         },
 
         methods: {

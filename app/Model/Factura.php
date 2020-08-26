@@ -44,7 +44,7 @@ class Factura extends Model
     }
 
     public function detalle(){
-        return $this->belongsTo('App\Model\Factura','id_factura');
+        return $this->belongsTo('App\Model\DetalleFactura','id_factura');
     }
 
     public function articulos(){

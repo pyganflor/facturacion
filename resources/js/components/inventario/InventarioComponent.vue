@@ -130,8 +130,8 @@
                                                                         @click="estadoCatg(item)"
                                                                         :color="item.estado ? 'red' : 'success'"
                                                                 >
-                                                                    <v-icon :title="item.estado ? 'Descativar usuario' : 'Activar usuario'">
-                                                                        {{item.estado ? 'mdi-account-remove' : 'mdi-account-check'}}
+                                                                    <v-icon :title="item.estado ? 'Descativar categoría' : 'Activar categoría'">
+                                                                        {{item.estado ? 'mdi-cancel' : 'mdi-check'}}
                                                                     </v-icon>
 
                                                                 </v-btn>
@@ -263,6 +263,14 @@
                                                         type="number"
                                                         dense
                                                 ></v-text-field>
+                                            </v-col>
+                                            <v-col class="pb-0" cols="12">
+                                                <v-checkbox
+                                                        v-model="editedItem.venta"
+                                                        class="mt-0"
+                                                        dense
+                                                        label="Indica si el artículo es para ventas"
+                                                ></v-checkbox>
                                             </v-col>
                                         </v-row>
                                     </v-form>
@@ -419,7 +427,6 @@
             ],
             dialog: false,
             dialogCatg:false,
-            loadingTable:true,
             um:['und','kg','l'],
             correo :'',
             search : '',
@@ -443,7 +450,8 @@
                 und:'',
                 neto:'',
                 stock:'',
-                stockeable:''
+                stockeable:'',
+                venta:''
             },
             defaultItem: {
                 articulo:'',
@@ -454,7 +462,8 @@
                 und:'',
                 neto:'',
                 stock:'',
-                stockeable:''
+                stockeable:'',
+                venta:true
             },
             nombreRules:[
                 v => !!v || 'La nombre del árticulo es obligatorio',
@@ -482,7 +491,6 @@
             dialog (val) {
                 val || this.closeModal()
             },
-
         },
         methods:{
 
@@ -614,6 +622,7 @@
                         codigo_a :this.editedItem.codigo_a,
                         codigo_p: this.editedItem.codigo_p,
                         id_categoria_inventario: this.editedItem.id_categoria_inventario,
+                        venta: this.editedItem.venta,
                         und:this.editedItem.und,
                         neto:this.editedItem.neto,
                         impuestos: impuestos
@@ -641,6 +650,7 @@
                         estado : res.data.articulo.estado,
                         valor : res.data.articulo.neto,
                         stock: res.data.articulo.stock,
+                        venta: res.data.articulo.venta,
                         impuestos : res.data.articulo.impuestos
                     }
 
@@ -747,6 +757,7 @@
                         neto: articulo.neto,
                         estado : articulo.estado,
                         stock: articulo.stock,
+                        venta: articulo.venta,
                         impuestos : impuestos
                     })
                 }
